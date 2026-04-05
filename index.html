@@ -3,190 +3,174 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BEUNA CRM - Workspace</title>
+    <title>BEUNA CRM - Stream & Pipeline</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
         
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: radial-gradient(circle at top left, #1a1a2e, #0f0f1a);
-            color: #f8fafc;
-            min-height: 100vh;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: #09090b;
+            color: #fafafa;
             overflow-x: hidden;
         }
 
-        .glass-panel {
+        .glass {
             background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(24px);
-            -webkit-backdrop-filter: blur(24px);
+            backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
         }
 
         .glass-input {
             background: rgba(0, 0, 0, 0.2);
             border: 1px solid rgba(255, 255, 255, 0.1);
             color: white;
-            transition: all 0.3s ease;
         }
+
+        /* Stream Horizontal Scrollbar Custom */
+        .stream-scroll::-webkit-scrollbar { height: 6px; }
+        .stream-scroll::-webkit-scrollbar-track { background: transparent; }
+        .stream-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+
+        .card-anim { transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .card-anim:hover { transform: translateY(-4px); background: rgba(255,255,255,0.06); }
         
-        .glass-input:focus {
-            outline: none;
-            border-color: rgba(255, 255, 255, 0.3);
-            background: rgba(0, 0, 0, 0.4);
-            box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.05);
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
-
-        .folder-tab {
-            position: relative;
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-bottom: none;
-            transition: all 0.2s ease;
-        }
-        .folder-tab.active {
-            background: rgba(255, 255, 255, 0.08);
-            border-color: rgba(255, 255, 255, 0.15);
-            color: #fff;
-            z-index: 10;
-        }
-        .folder-tab.active::after {
-            content: '';
-            position: absolute;
-            bottom: -1px;
-            left: 0;
-            right: 0;
-            height: 1px;
-            background: rgba(255, 255, 255, 0.08);
-        }
-
-        .kanban-col::-webkit-scrollbar { display: none; }
-        .kanban-col { -ms-overflow-style: none; scrollbar-width: none; }
+        .animate-in { animation: fadeIn 0.4s ease forwards; }
     </style>
 </head>
-<body class="antialiased selection:bg-indigo-500/30">
+<body class="antialiased">
 
     <!-- LOGIN SCREEN -->
-    <div id="loginScreen" class="fixed inset-0 flex items-center justify-center z-50 transition-opacity duration-500">
-        <div class="glass-panel w-full max-w-sm rounded-[2rem] p-8 flex flex-col items-center relative overflow-hidden">
-            <div class="absolute -top-20 -right-20 w-40 h-40 bg-indigo-500 rounded-full mix-blend-multiply filter blur-[64px] opacity-50"></div>
-            
-            <div class="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center mb-6 border border-white/10">
-                <i class="ph-fill ph-planet text-3xl text-indigo-400"></i>
+    <div id="loginScreen" class="fixed inset-0 flex items-center justify-center z-50 transition-opacity duration-500 bg-[#09090b]">
+        <div class="glass w-full max-w-sm rounded-[2.5rem] p-10 flex flex-col items-center relative overflow-hidden">
+            <div class="absolute -top-24 -right-24 w-48 h-48 bg-indigo-600/20 rounded-full blur-[64px]"></div>
+            <div class="w-20 h-20 bg-white/5 rounded-3xl flex items-center justify-center mb-6 border border-white/10">
+                <i class="ph-fill ph-planet text-4xl text-indigo-400"></i>
             </div>
-            <h1 class="text-2xl font-semibold mb-1 tracking-tight">Beuna Workspace</h1>
-            <p class="text-sm text-white/50 mb-8">Enter your credentials to continue</p>
+            <h1 class="text-2xl font-bold mb-2 tracking-tight">Beuna CRM</h1>
+            <p class="text-sm text-white/40 mb-8 text-center">Login to your workspace</p>
 
             <form id="loginForm" class="w-full space-y-4">
-                <div>
-                    <input type="text" id="username" placeholder="Username (e.g. dimas)" class="w-full glass-input rounded-xl px-4 py-3 text-sm placeholder-white/30" required>
-                </div>
-                <div>
-                    <input type="password" id="password" placeholder="Password" class="w-full glass-input rounded-xl px-4 py-3 text-sm placeholder-white/30" required>
-                </div>
-                <button type="submit" id="loginBtn" class="w-full bg-white text-black font-medium rounded-xl px-4 py-3 text-sm hover:bg-gray-200 transition-colors mt-2 flex justify-center items-center gap-2">
+                <input type="text" id="username" placeholder="Username" class="w-full glass-input rounded-2xl px-5 py-4 text-sm focus:outline-none focus:border-indigo-500/50" required>
+                <input type="password" id="password" placeholder="Password" class="w-full glass-input rounded-2xl px-5 py-4 text-sm focus:outline-none focus:border-indigo-500/50" required>
+                <button type="submit" id="loginBtn" class="w-full bg-white text-black font-bold rounded-2xl py-4 text-sm hover:bg-indigo-400 hover:text-white transition-all flex justify-center items-center gap-2">
                     <span>Sign In</span>
-                    <i class="ph ph-arrow-right"></i>
+                    <i class="ph-bold ph-arrow-right"></i>
                 </button>
-                <div id="loginError" class="text-red-400 text-xs text-center hidden mt-2">Invalid credentials</div>
+                <div id="loginError" class="text-red-400 text-xs text-center hidden font-medium">Invalid credentials</div>
             </form>
         </div>
     </div>
 
     <!-- MAIN DASHBOARD -->
-    <div id="mainDashboard" class="hidden min-h-screen p-4 md:p-8 flex flex-col">
+    <div id="mainDashboard" class="hidden min-h-screen p-4 md:p-8 max-w-[1600px] mx-auto">
         
-        <header class="flex justify-between items-center mb-8 glass-panel rounded-2xl px-6 py-4">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-indigo-500/20 rounded-full flex items-center justify-center border border-indigo-500/30">
-                    <i class="ph-fill ph-planet text-indigo-400"></i>
+        <!-- HEADER STATS (BIG CARD) -->
+        <header class="glass rounded-[2.5rem] p-8 md:p-10 mb-10 flex flex-wrap md:flex-nowrap items-center justify-between gap-8 relative overflow-hidden">
+            <div class="absolute -top-24 -left-24 w-64 h-64 bg-indigo-600/20 rounded-full blur-[80px]"></div>
+            
+            <div class="relative z-10">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-10 h-10 bg-indigo-500/20 rounded-xl flex items-center justify-center border border-indigo-500/30">
+                        <i class="ph-fill ph-planet text-indigo-400"></i>
+                    </div>
+                    <span id="userRoleBadge" class="text-[10px] font-black uppercase tracking-widest text-indigo-300 bg-indigo-500/10 px-3 py-1 rounded-full">Project Manager</span>
                 </div>
-                <div>
-                    <h2 class="text-lg font-semibold leading-tight">Beuna CRM</h2>
-                    <p id="userRoleBadge" class="text-xs text-indigo-300 font-medium tracking-wide uppercase">ROLE</p>
+                <h1 class="text-white/40 text-xs font-black uppercase tracking-[0.2em] mb-1">Conversion Performance</h1>
+                <div class="flex items-end gap-3">
+                    <span id="stat-conversion" class="text-6xl md:text-7xl font-black tracking-tighter text-white">0%</span>
+                    <span class="text-green-400 font-bold mb-2 flex items-center gap-1 text-sm">
+                        <i class="ph-bold ph-trend-up"></i> Deal Rate
+                    </span>
                 </div>
             </div>
-            <div class="flex items-center gap-4">
-                <div class="text-right hidden sm:block">
-                    <p id="userFullName" class="text-sm font-medium">Name</p>
-                    <p id="userInitials" class="text-xs text-white/50">@username</p>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-12 relative z-10 w-full md:w-auto border-t md:border-t-0 md:border-l border-white/10 pt-6 md:pt-0 md:pl-12">
+                <div>
+                    <p class="text-white/40 text-[10px] uppercase font-black mb-1 tracking-widest">Total Reach</p>
+                    <p id="stat-reach" class="text-2xl font-bold">0</p>
                 </div>
-                <button onclick="logout()" class="w-10 h-10 glass-panel rounded-full flex items-center justify-center hover:bg-white/10 transition">
-                    <i class="ph ph-sign-out text-lg"></i>
+                <div>
+                    <p class="text-white/40 text-[10px] uppercase font-black mb-1 tracking-widest">On Nego</p>
+                    <p id="stat-nego" class="text-2xl font-bold text-yellow-400">0</p>
+                </div>
+                <div>
+                    <p class="text-white/40 text-[10px] uppercase font-black mb-1 tracking-widest">Closed Won</p>
+                    <p id="stat-deal" class="text-2xl font-bold text-green-400">0</p>
+                </div>
+                <button onclick="logout()" class="w-12 h-12 glass rounded-2xl flex items-center justify-center hover:bg-red-500/20 hover:text-red-400 transition-all self-center ml-auto">
+                    <i class="ph-bold ph-power"></i>
                 </button>
             </div>
         </header>
 
-        <div class="flex gap-2 px-4 relative z-10">
-            <button onclick="switchTab('todo')" id="tab-todo" class="folder-tab active px-6 py-3 rounded-t-xl text-sm font-medium text-white/50 flex items-center gap-2">
-                <i class="ph ph-check-circle"></i> To-Do Harian
-            </button>
-            <button onclick="switchTab('leads')" id="tab-leads" class="folder-tab px-6 py-3 rounded-t-xl text-sm font-medium text-white/50 flex items-center gap-2">
-                <i class="ph ph-kanban"></i> Kanban Leads
-            </button>
-        </div>
-
-        <main class="glass-panel rounded-3xl rounded-tl-none p-6 md:p-8 flex-1 relative z-0">
+        <!-- NEW LEADS POOL (STREAM) -->
+        <section class="mb-12">
+            <div class="flex items-center justify-between mb-6 px-4">
+                <h2 class="text-xl font-bold tracking-tight flex items-center gap-3">
+                    <i class="ph-fill ph-lightning text-yellow-400"></i> Lead Stream 
+                    <span id="count-pool" class="text-xs bg-white/10 px-3 py-1 rounded-full text-white/50 font-bold">0</span>
+                </h2>
+                <input type="text" id="searchLeads" oninput="renderUI(this.value)" placeholder="Search by name or region..." class="glass text-xs rounded-2xl px-6 py-3 w-64 focus:outline-none focus:border-indigo-500/50 transition-all">
+            </div>
             
-            <!-- VIEW: TO DO -->
-            <div id="view-todo" class="block animate-fade-in">
-                <div class="flex justify-between items-center mb-6">
-                    <h3 class="text-xl font-semibold">Your Tasks</h3>
-                    <button id="btnAssignTask" class="hidden bg-white/10 hover:bg-white/20 border border-white/10 px-4 py-2 rounded-lg text-sm transition items-center gap-2">
-                        <i class="ph ph-plus"></i> Assign Task
-                    </button>
-                </div>
-                <div id="todoContainer" class="space-y-3">
-                    <p class="text-sm text-white/40 italic">Loading tasks...</p>
-                </div>
+            <div id="leadStream" class="stream-scroll flex gap-5 overflow-x-auto pb-6 px-4 min-h-[150px]">
+                <!-- Cards injected by JS -->
+                <p class="text-white/20 italic text-sm">Syncing with database...</p>
+            </div>
+        </section>
+
+        <!-- MAIN PIPELINE (KANBAN) -->
+        <section class="grid grid-cols-1 md:grid-cols-3 gap-8 px-4 mb-20">
+            <!-- COL: CHAT -->
+            <div class="flex flex-col gap-5">
+                <h3 class="text-[11px] font-black text-indigo-400 uppercase tracking-[0.2em] flex justify-between items-center border-b border-indigo-500/20 pb-3">
+                    <span>Pesan Terkirim</span>
+                    <span id="count-chat" class="text-white/20 text-lg">0</span>
+                </h3>
+                <div id="col-chat" class="flex flex-col gap-4 min-h-[200px]"></div>
             </div>
 
-            <!-- VIEW: LEADS -->
-            <div id="view-leads" class="hidden animate-fade-in h-full flex flex-col">
-                <div class="flex justify-between items-center mb-6">
-                    <h3 class="text-xl font-semibold">Leads Pipeline</h3>
-                </div>
-
-                <div class="flex gap-4 overflow-x-auto pb-4 kanban-col h-[60vh]">
-                    
-                    <!-- NEW LEAD COL -->
-                    <div class="min-w-[300px] w-[300px] bg-black/20 rounded-2xl p-4 border border-white/5 flex flex-col">
-                        <h4 class="text-sm font-medium text-white/50 mb-4 flex items-center justify-between">
-                            <span>New Lead</span>
-                            <span id="count-new" class="bg-white/10 text-xs px-2 py-0.5 rounded-full">0</span>
-                        </h4>
-                        <div id="list-new" class="flex flex-col gap-3"></div>
-                    </div>
-
-                    <!-- PESAN PERTAMA COL -->
-                    <div class="min-w-[300px] w-[300px] bg-black/20 rounded-2xl p-4 border border-white/5 flex flex-col">
-                        <h4 class="text-sm font-medium text-indigo-300 mb-4 flex items-center justify-between">
-                            <span>Pesan Pertama Terkirim</span>
-                            <span id="count-pesan" class="bg-white/10 text-xs px-2 py-0.5 rounded-full">0</span>
-                        </h4>
-                        <div id="list-pesan" class="flex flex-col gap-3"></div>
-                    </div>
-
-                    <!-- NEGOSIASI COL -->
-                    <div class="min-w-[300px] w-[300px] bg-black/20 rounded-2xl p-4 border border-white/5 flex flex-col">
-                        <h4 class="text-sm font-medium text-yellow-300 mb-4 flex items-center justify-between">
-                            <span>Negosiasi</span>
-                            <span id="count-nego" class="bg-white/10 text-xs px-2 py-0.5 rounded-full">0</span>
-                        </h4>
-                        <div id="list-nego" class="flex flex-col gap-3"></div>
-                    </div>
-
-                </div>
+            <!-- COL: NEGO -->
+            <div class="flex flex-col gap-5">
+                <h3 class="text-[11px] font-black text-yellow-400 uppercase tracking-[0.2em] flex justify-between items-center border-b border-yellow-500/20 pb-3">
+                    <span>Negosiasi</span>
+                    <span id="count-nego-col" class="text-white/20 text-lg">0</span>
+                </h3>
+                <div id="col-nego" class="flex flex-col gap-4 min-h-[200px]"></div>
             </div>
 
-        </main>
+            <!-- COL: DEAL -->
+            <div class="flex flex-col gap-5">
+                <h3 class="text-[11px] font-black text-green-400 uppercase tracking-[0.2em] flex justify-between items-center border-b border-green-500/20 pb-3">
+                    <span>Closing / Deal</span>
+                    <span id="count-deal-col" class="text-white/20 text-lg">0</span>
+                </h3>
+                <div id="col-deal" class="flex flex-col gap-4 min-h-[200px]"></div>
+            </div>
+        </section>
+
+        <!-- REJECTED BASEMENT -->
+        <footer class="border-t border-white/5 pt-12 pb-32 px-4">
+            <button onclick="toggleBasement()" class="flex items-center gap-3 text-white/20 hover:text-white/50 transition-all mx-auto mb-10 group uppercase font-black tracking-[0.3em] text-[10px]">
+                <i id="basement-icon" class="ph-bold ph-caret-down transition-transform"></i>
+                <span>Show Rejected & Lost Leads</span>
+            </button>
+            <div id="basementContent" class="hidden grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 opacity-40">
+                <!-- Rejected cards -->
+            </div>
+        </footer>
     </div>
 
     <script>
-        const WEBHOOK_URL = 'https://n8n-mzbmiib3etk4.kangkung.sumopod.my.id/webhook/beuna-crm-api'; 
+        const WEBHOOK_URL = 'https://n8n-mzbmiib3etk4.kangkung.sumopod.my.id/webhook/beuna-crm-api';
         let currentUser = null;
+        let allLeads = [];
 
         // --- LOGIN LOGIC ---
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
@@ -196,11 +180,10 @@
             const btn = document.getElementById('loginBtn');
             const err = document.getElementById('loginError');
 
-            btn.innerHTML = `<i class="ph ph-spinner animate-spin"></i> Authenticating...`;
+            btn.innerHTML = `<i class="ph-bold ph-spinner animate-spin"></i> AUTHENTICATING...`;
             err.classList.add('hidden');
 
             try {
-                // Tembak n8n
                 const response = await fetch(WEBHOOK_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -210,192 +193,158 @@
                 const res = await response.json();
                 let userData = null;
                 
-                // Deteksi pintar: Cek apakah n8n membalas dengan Array atau Object langsung
                 if (res.status === "success" && res.data) {
-                    if (Array.isArray(res.data) && res.data.length > 0) {
-                        userData = res.data[0]; // Kalau array, ambil data pertama
-                    } else if (!Array.isArray(res.data) && res.data.USERNAME) {
-                        userData = res.data; // Kalau object langsung
-                    }
+                    userData = Array.isArray(res.data) ? res.data[0] : res.data;
                 }
 
-                // Eksekusi Login
-                if (userData) {
+                if (userData && userData.USERNAME) {
                     currentUser = userData; 
                     initDashboard();
                 } else {
-                    throw new Error('Data tidak cocok di n8n');
+                    throw new Error();
                 }
-                
             } catch (error) {
-                console.error("Login Error:", error);
-                btn.innerHTML = `<span>Sign In</span><i class="ph ph-arrow-right"></i>`;
+                btn.innerHTML = `<span>Sign In</span><i class="ph-bold ph-arrow-right"></i>`;
                 err.classList.remove('hidden');
-                err.innerText = "Username/Password salah (Atau CORS n8n belum nyala)";
+                err.innerText = "Access Denied: Wrong credentials or CORS error";
             }
         });
 
-        // --- INIT DASHBOARD ---
         function initDashboard() {
-            document.getElementById('loginScreen').classList.add('opacity-0', 'pointer-events-none');
-            setTimeout(() => {
-                document.getElementById('loginScreen').classList.add('hidden');
-                document.getElementById('mainDashboard').classList.remove('hidden');
-            }, 500);
-
-            document.getElementById('userFullName').innerText = currentUser.FULLNAME || currentUser.USERNAME;
-            document.getElementById('userInitials').innerText = '@' + currentUser.USERNAME;
-            
-            const role = currentUser.ROLE ? currentUser.ROLE.toLowerCase() : 'team member';
-            document.getElementById('userRoleBadge').innerText = role;
-
-            if(role === 'project manager') {
-                document.getElementById('userRoleBadge').classList.add('bg-indigo-500/20', 'px-2', 'py-0.5', 'rounded-md');
-                document.getElementById('btnAssignTask').classList.remove('hidden');
-                document.getElementById('btnAssignTask').classList.add('flex');
-            } else {
-                document.getElementById('userRoleBadge').classList.add('text-white/50');
-            }
-
-            // Langsung fetch data dari n8n!
-            fetchTodos();
-            fetchLeads();
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('mainDashboard').classList.remove('hidden');
+            document.getElementById('userRoleBadge').innerText = currentUser.ROLE || 'Team Member';
+            loadLeads();
         }
 
-        // --- FETCH TO DO DARI N8N ---
-        async function fetchTodos() {
-            const container = document.getElementById('todoContainer');
+        async function loadLeads() {
             try {
-                const response = await fetch(WEBHOOK_URL, {
+                const res = await fetch(WEBHOOK_URL, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ ACTION: 'get_to_do_task' })
-                });
-                const res = await response.json();
-                
-                if (res.status === 'success' && res.data) {
-                    // Normalize data (kalau n8n balikin object tunggal, jadiin array)
-                    const dataArray = Array.isArray(res.data) ? res.data : [res.data];
-
-                    if(dataArray.length === 0 || !dataArray[0].TASK_NAME) {
-                        container.innerHTML = `<p class="text-sm text-white/40 italic">Yeay! No tasks found.</p>`;
-                        return;
-                    }
-                    
-                    container.innerHTML = dataArray.map(task => `
-                        <div class="glass-panel p-4 rounded-xl flex items-center justify-between hover:bg-white/5 transition border border-white/10">
-                            <div class="flex items-center gap-4">
-                                <div class="w-2 h-10 ${task.STATUS === 'DONE' ? 'bg-green-500' : 'bg-indigo-500'} rounded-full"></div>
-                                <div>
-                                    <h4 class="font-medium text-sm">${task.TASK_NAME || 'Unnamed Task'}</h4>
-                                    <p class="text-xs text-white/50">Project: ${task.PROJECT_ID || '-'} • Status: ${task.STATUS || 'To Do'}</p>
-                                </div>
-                            </div>
-                            ${task.STATUS !== 'DONE' ? `
-                            <button class="bg-white/10 hover:bg-white/20 border border-white/10 px-4 py-2 rounded-lg text-sm transition">
-                                Mark as Done
-                            </button>` : `<span class="text-green-400 text-sm flex items-center gap-1"><i class="ph-fill ph-check-circle"></i> Done</span>`}
-                        </div>
-                    `).join('');
-                } else {
-                    container.innerHTML = `<p class="text-sm text-white/40 italic">No tasks available.</p>`;
-                }
-            } catch (error) {
-                container.innerHTML = `<p class="text-sm text-red-400 italic">Error fetching tasks.</p>`;
-            }
-        }
-
-        // --- FETCH LEADS DARI N8N ---
-        async function fetchLeads() {
-            const listNew = document.getElementById('list-new');
-            const listPesan = document.getElementById('list-pesan');
-            const listNego = document.getElementById('list-nego');
-            
-            try {
-                const response = await fetch(WEBHOOK_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({ ACTION: 'get_leads' })
                 });
-                const res = await response.json();
-                
-                if (res.status === 'success' && res.data) {
-                    listNew.innerHTML = ''; listPesan.innerHTML = ''; listNego.innerHTML = '';
-                    let cNew = 0, cPesan = 0, cNego = 0;
+                const response = await res.json();
+                allLeads = response.data || [];
+                renderUI();
+            } catch (e) { console.error("Sync failed", e); }
+        }
 
-                    // Normalize data (kalau n8n balikin object tunggal, jadiin array)
-                    const dataArray = Array.isArray(res.data) ? res.data : [res.data];
+        function renderUI(filterText = "") {
+            const pool = document.getElementById('leadStream');
+            const colChat = document.getElementById('col-chat');
+            const colNego = document.getElementById('col-nego');
+            const colDeal = document.getElementById('col-deal');
+            const basement = document.getElementById('basementContent');
 
-                    dataArray.forEach(lead => {
-                        // Skip if lead is empty object
-                        if(!lead.NAMA_USAHA && !lead.NAMA_LEAD) return;
+            pool.innerHTML = ''; colChat.innerHTML = ''; colNego.innerHTML = ''; colDeal.innerHTML = ''; basement.innerHTML = '';
 
-                        const stat = lead.STATUS || ''; // Jika kosong, anggap New
-                        let waLink = '#';
-                        if(lead.NOMOR_WA) {
-                            // Bersihin spasi/strip trus jadiin format wa.me
-                            waLink = `https://wa.me/${lead.NOMOR_WA.toString().replace(/[^0-9]/g, '')}`;
-                        }
+            let stats = { reach: 0, nego: 0, deal: 0, reject: 0 };
+            const lowerFilter = filterText.toLowerCase();
 
-                        const card = `
-                            <div class="glass-panel p-4 rounded-xl cursor-grab hover:bg-white/5 transition border border-white/10">
-                                <h5 class="font-medium text-sm mb-1">${lead.NAMA_USAHA || lead.NAMA_LEAD || 'No Name'}</h5>
-                                <p class="text-xs text-white/50 mb-3">${lead.INDUSTRI || '-'} • ${lead.DAERAH || '-'}</p>
-                                <div class="flex gap-2">
-                                    <a href="${waLink}" target="_blank" class="flex-1 bg-green-500/20 text-green-400 border border-green-500/30 py-1.5 rounded-lg text-xs flex justify-center items-center gap-1 hover:bg-green-500/30 transition">
-                                        <i class="ph-fill ph-whatsapp-logo text-sm"></i> Chat
-                                    </a>
-                                    ${currentUser.ROLE === 'project manager' ? `
-                                    <button class="w-8 h-8 bg-red-500/10 text-red-400 border border-red-500/20 rounded-lg flex justify-center items-center hover:bg-red-500/20 transition">
-                                        <i class="ph ph-trash"></i>
-                                    </button>` : ''}
-                                </div>
-                            </div>
-                        `;
+            allLeads.forEach(lead => {
+                const name = (lead.NAMA_USAHA || lead.NAMA_LEAD || '').toLowerCase();
+                const region = (lead.DAERAH || '').toLowerCase();
+                if (filterText && !name.includes(lowerFilter) && !region.includes(lowerFilter)) return;
 
-                        // Sorting logic ke kolom yg bener
-                        if(stat === '' || stat.toLowerCase().includes('new')) {
-                            listNew.innerHTML += card; cNew++;
-                        } else if(stat.toLowerCase().includes('pesan')) {
-                            listPesan.innerHTML += card; cPesan++;
-                        } else if(stat.toLowerCase().includes('nego')) {
-                            listNego.innerHTML += card; cNego++;
-                        } else {
-                            // Fallback ke New Lead
-                            listNew.innerHTML += card; cNew++;
-                        }
-                    });
+                const status = (lead.STATUS || '').toLowerCase();
+                const card = createCard(lead);
 
-                    // Update Counter di Title Kolom
-                    document.getElementById('count-new').innerText = cNew;
-                    document.getElementById('count-pesan').innerText = cPesan;
-                    document.getElementById('count-nego').innerText = cNego;
+                if (status === '' || status.includes('new')) {
+                    pool.appendChild(card);
+                } else if (status.includes('pesan')) {
+                    colChat.appendChild(card);
+                    stats.reach++;
+                } else if (status.includes('nego')) {
+                    colNego.appendChild(card);
+                    stats.reach++; stats.nego++;
+                } else if (status.includes('deal') || status.includes('closing')) {
+                    colDeal.appendChild(card);
+                    stats.reach++; stats.deal++;
+                } else if (status.includes('reject')) {
+                    basement.appendChild(card);
+                    stats.reach++; stats.reject++;
                 }
-            } catch (error) {
-                listNew.innerHTML = `<p class="text-sm text-red-400 italic px-2">Failed to load leads.</p>`;
+            });
+
+            // Update Stats
+            document.getElementById('stat-reach').innerText = stats.reach;
+            document.getElementById('stat-nego').innerText = stats.nego;
+            document.getElementById('stat-deal').innerText = stats.deal;
+            const rate = stats.reach > 0 ? Math.round((stats.deal / stats.reach) * 100) : 0;
+            document.getElementById('stat-conversion').innerText = rate + '%';
+            
+            document.getElementById('count-pool').innerText = pool.children.length;
+            document.getElementById('count-chat').innerText = colChat.children.length;
+            document.getElementById('count-nego-col').innerText = colNego.children.length;
+            document.getElementById('count-deal-col').innerText = colDeal.children.length;
+        }
+
+        function createCard(lead) {
+            const div = document.createElement('div');
+            const isPool = (!lead.STATUS || lead.STATUS.toLowerCase().includes('new'));
+            
+            div.className = `glass p-6 rounded-[2rem] min-w-[300px] md:min-w-0 card-anim border border-white/10 animate-in ${isPool ? '' : 'w-full'}`;
+            div.innerHTML = `
+                <div class="flex justify-between items-start mb-4">
+                    <span class="text-[9px] bg-white/10 px-2.5 py-1 rounded-full text-white/60 uppercase font-black tracking-widest">${lead.DAERAH || 'UNKNOWN'}</span>
+                    <div class="flex items-center gap-1 text-indigo-400 text-[10px] font-bold">
+                        <i class="ph-fill ph-star"></i>
+                        <span>${lead.RATING || '0'}</span>
+                    </div>
+                </div>
+                <h4 class="font-bold text-sm mb-1 truncate text-white">${lead.NAMA_USAHA || lead.NAMA_LEAD || 'No Name'}</h4>
+                <p class="text-[10px] text-white/30 mb-6 font-medium tracking-tight">${lead.INDUSTRI || 'General Industry'}</p>
+                
+                <div class="flex gap-2">
+                    ${isPool ? `
+                        <button onclick="updateStatus('${lead.id}', 'Pesan Terkirim', true)" class="flex-1 bg-white text-black text-[10px] font-black py-3 rounded-2xl hover:bg-indigo-500 hover:text-white transition-all uppercase">🚀 Reach</button>
+                        <button onclick="updateStatus('${lead.id}', 'REJECTED')" class="w-12 bg-white/5 text-white/20 py-3 rounded-2xl hover:bg-red-500/20 hover:text-red-400 transition-all border border-white/5"><i class="ph-bold ph-prohibit"></i></button>
+                    ` : `
+                        <a href="https://wa.me/${(lead.NOMOR_WA || '').toString().replace(/[^0-9]/g, '')}" target="_blank" class="flex-1 bg-green-500/10 text-green-400 text-center text-[10px] font-black py-3 rounded-2xl border border-green-500/10 hover:bg-green-500/20 transition-all">WHATSAPP</a>
+                        <button onclick="nextStep('${lead.id}', '${lead.STATUS}')" class="w-12 bg-white/10 text-white py-3 rounded-2xl hover:bg-white/20 transition-all flex justify-center items-center"><i class="ph-bold ph-caret-right"></i></button>
+                    `}
+                </div>
+            `;
+            return div;
+        }
+
+        async function updateStatus(id, newStatus, isReach = false) {
+            if(isReach) {
+                const text = "Halo! Kami dari Beuna Agency melihat profil bisnis Anda. Kami ada ide menarik untuk kolaborasi. Boleh ngobrol sebentar?";
+                navigator.clipboard.writeText(text);
+                // Alert visual simple
+                const pool = document.getElementById('leadStream');
+                pool.insertAdjacentHTML('afterbegin', `<div class="fixed top-10 left-1/2 -translate-x-1/2 bg-green-500 text-white px-6 py-2 rounded-full text-xs font-bold z-[100] animate-bounce">Copied & Moving Lead!</div>`);
+                setTimeout(() => document.querySelector('.animate-bounce').remove(), 2000);
             }
+
+            try {
+                await fetch(WEBHOOK_URL, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ ACTION: 'update_lead_status', lead_id: id, new_status: newStatus })
+                });
+                loadLeads();
+            } catch (e) { console.error("Update failed", e); }
         }
 
-        // --- TAB SWITCHER ---
-        function switchTab(tabName) {
-            document.getElementById('tab-todo').classList.remove('active');
-            document.getElementById('tab-leads').classList.remove('active');
-            document.getElementById('view-todo').classList.add('hidden');
-            document.getElementById('view-leads').classList.add('hidden');
-
-            document.getElementById(`tab-${tabName}`).classList.add('active');
-            document.getElementById(`view-${tabName}`).classList.remove('hidden');
-            document.getElementById(`view-${tabName}`).classList.add('block');
+        function nextStep(id, current) {
+            const s = current.toLowerCase();
+            let next = "Pesan Terkirim";
+            if(s.includes('pesan')) next = "Negosiasi";
+            else if(s.includes('nego')) next = "Closing / Deal";
+            updateStatus(id, next);
         }
 
-        // --- LOGOUT ---
-        function logout() {
-            currentUser = null;
-            document.getElementById('mainDashboard').classList.add('hidden');
-            document.getElementById('loginScreen').classList.remove('hidden', 'opacity-0', 'pointer-events-none');
-            document.getElementById('loginForm').reset();
-            document.getElementById('loginBtn').innerHTML = `<span>Sign In</span><i class="ph ph-arrow-right"></i>`;
+        function toggleBasement() {
+            const content = document.getElementById('basementContent');
+            const icon = document.getElementById('basement-icon');
+            content.classList.toggle('hidden');
+            icon.classList.toggle('rotate-180');
         }
+
+        function logout() { location.reload(); }
     </script>
 </body>
 </html>
