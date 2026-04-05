@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BEUNA CRM - Workspace</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Phosphor Icons for sleek Apple-like iconography -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: radial-gradient(circle at top left, #1a1a2e, #0f0f1a);
+            color: #f8fafc;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Glassmorphism Utilities */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .glass-input {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            transition: all 0.3s ease;
+        }
+        
+        .glass-input:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.3);
+            background: rgba(0, 0, 0, 0.4);
+            box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.05);
+        }
+
+        /* Folder Tab Styling */
+        .folder-tab {
+            position: relative;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-bottom: none;
+            transition: all 0.2s ease;
+        }
+        .folder-tab.active {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.15);
+            color: #fff;
+            z-index: 10;
+        }
+        .folder-tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.08); /* blend with panel */
+        }
+
+        /* Kanban Scrollbar hiding */
+        .kanban-col::-webkit-scrollbar { display: none; }
+        .kanban-col { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="antialiased selection:bg-indigo-500/30">
+
+    <!-- LOGIN SCREEN -->
+    <div id="loginScreen" class="fixed inset-0 flex items-center justify-center z-50 transition-opacity duration-500">
+        <!-- Notif for Mobile Users -->
+        <div class="absolute top-8 left-1/2 -translate-x-1/2 glass-panel px-6 py-3 rounded-full text-sm text-white/70 flex items-center gap-2 md:hidden">
+            <i class="ph ph-laptop text-lg text-indigo-400"></i>
+            For the best experience, open on Desktop
+        </div>
+
+        <div class="glass-panel w-full max-w-sm rounded-[2rem] p-8 flex flex-col items-center relative overflow-hidden">
+            <!-- decorative blur -->
+            <div class="absolute -top-20 -right-20 w-40 h-40 bg-indigo-500 rounded-full mix-blend-multiply filter blur-[64px] opacity-50"></div>
+            
+            <div class="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center mb-6 border border-white/10">
+                <i class="ph-fill ph-planet text-3xl text-indigo-400"></i>
+            </div>
+            <h1 class="text-2xl font-semibold mb-1 tracking-tight">Beuna Workspace</h1>
+            <p class="text-sm text-white/50 mb-8">Enter your credentials to continue</p>
+
+            <form id="loginForm" class="w-full space-y-4">
+                <div>
+                    <input type="text" id="username" placeholder="Username (e.g. dimas)" class="w-full glass-input rounded-xl px-4 py-3 text-sm placeholder-white/30" required>
+                </div>
+                <div>
+                    <input type="password" id="password" placeholder="Password (e.g. 0000)" class="w-full glass-input rounded-xl px-4 py-3 text-sm placeholder-white/30" required>
+                </div>
+                <button type="submit" id="loginBtn" class="w-full bg-white text-black font-medium rounded-xl px-4 py-3 text-sm hover:bg-gray-200 transition-colors mt-2 flex justify-center items-center gap-2">
+                    <span>Sign In</span>
+                    <i class="ph ph-arrow-right"></i>
+                </button>
+                <div id="loginError" class="text-red-400 text-xs text-center hidden mt-2">Invalid credentials</div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MAIN DASHBOARD (Hidden Initially) -->
+    <div id="mainDashboard" class="hidden min-h-screen p-4 md:p-8 flex flex-col">
+        
+        <!-- Header & Profile -->
+        <header class="flex justify-between items-center mb-8 glass-panel rounded-2xl px-6 py-4">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-indigo-500/20 rounded-full flex items-center justify-center border border-indigo-500/30">
+                    <i class="ph-fill ph-planet text-indigo-400"></i>
+                </div>
+                <div>
+                    <h2 class="text-lg font-semibold leading-tight">Beuna CRM</h2>
+                    <p id="userRoleBadge" class="text-xs text-indigo-300 font-medium tracking-wide uppercase">ROLE</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-4">
+                <div class="text-right hidden sm:block">
+                    <p id="userFullName" class="text-sm font-medium">Name</p>
+                    <p id="userInitials" class="text-xs text-white/50">@username</p>
+                </div>
+                <button onclick="logout()" class="w-10 h-10 glass-panel rounded-full flex items-center justify-center hover:bg-white/10 transition">
+                    <i class="ph ph-sign-out text-lg"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Folder Tabs Navigation -->
+        <div class="flex gap-2 px-4 relative z-10">
+            <button onclick="switchTab('todo')" id="tab-todo" class="folder-tab active px-6 py-3 rounded-t-xl text-sm font-medium text-white/50 flex items-center gap-2">
+                <i class="ph ph-check-circle"></i> To-Do Harian
+            </button>
+            <button onclick="switchTab('leads')" id="tab-leads" class="folder-tab px-6 py-3 rounded-t-xl text-sm font-medium text-white/50 flex items-center gap-2">
+                <i class="ph ph-kanban"></i> Kanban Leads
+            </button>
+            <!-- Admin Only Tab Example -->
+            <button id="tab-admin" class="folder-tab hidden px-6 py-3 rounded-t-xl text-sm font-medium text-indigo-300 flex items-center gap-2">
+                <i class="ph ph-chart-line-up"></i> Reports (PM Only)
+            </button>
+        </div>
+
+        <!-- Main Content Area (The Folder Inside) -->
+        <main class="glass-panel rounded-3xl rounded-tl-none p-6 md:p-8 flex-1 relative z-0">
+            
+            <!-- VIEW: TO DO HARIAN -->
+            <div id="view-todo" class="block animate-fade-in">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xl font-semibold">Your Tasks for Today</h3>
+                    <button id="btnAssignTask" class="hidden bg-white/10 hover:bg-white/20 border border-white/10 px-4 py-2 rounded-lg text-sm transition items-center gap-2">
+                        <i class="ph ph-plus"></i> Assign Task
+                    </button>
+                </div>
+                
+                <!-- Task List Container -->
+                <div id="todoContainer" class="space-y-3">
+                    <p class="text-sm text-white/40 italic">Loading tasks...</p>
+                    <!-- Tasks injected by JS -->
+                </div>
+            </div>
+
+            <!-- VIEW: KANBAN LEADS -->
+            <div id="view-leads" class="hidden animate-fade-in h-full flex flex-col">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xl font-semibold">Leads Pipeline</h3>
+                    <button class="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm transition shadow-lg shadow-indigo-500/20 flex items-center gap-2">
+                        <i class="ph ph-plus"></i> Add Lead
+                    </button>
+                </div>
+
+                <!-- Kanban Board -->
+                <div class="flex gap-4 overflow-x-auto pb-4 kanban-col h-[60vh]">
+                    
+                    <!-- Column 1 -->
+                    <div class="min-w-[300px] w-[300px] bg-black/20 rounded-2xl p-4 border border-white/5 flex flex-col">
+                        <h4 class="text-sm font-medium text-white/50 mb-4 flex items-center justify-between">
+                            <span>New Lead</span>
+                            <span class="bg-white/10 text-xs px-2 py-0.5 rounded-full">2</span>
+                        </h4>
+                        <!-- Card -->
+                        <div class="glass-panel p-4 rounded-xl mb-3 cursor-grab hover:bg-white/5 transition">
+                            <h5 class="font-medium text-sm mb-1">Global Bakery Bangka</h5>
+                            <p class="text-xs text-white/50 mb-3">Bakery • Jaksel</p>
+                            <div class="flex gap-2">
+                                <button class="flex-1 bg-green-500/20 text-green-400 border border-green-500/30 py-1.5 rounded-lg text-xs flex justify-center items-center gap-1 hover:bg-green-500/30 transition">
+                                    <i class="ph-fill ph-whatsapp-logo text-sm"></i> Chat
+                                </button>
+                                <button id="btnDeleteCard" class="hidden w-8 h-8 bg-red-500/10 text-red-400 border border-red-500/20 rounded-lg flex justify-center items-center hover:bg-red-500/20 transition">
+                                    <i class="ph ph-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <!-- End Card -->
+                    </div>
+
+                    <!-- Column 2 -->
+                    <div class="min-w-[300px] w-[300px] bg-black/20 rounded-2xl p-4 border border-white/5 flex flex-col">
+                        <h4 class="text-sm font-medium text-indigo-300 mb-4 flex items-center justify-between">
+                            <span>Pesan Pertama Terkirim</span>
+                        </h4>
+                    </div>
+
+                    <!-- Column 3 -->
+                    <div class="min-w-[300px] w-[300px] bg-black/20 rounded-2xl p-4 border border-white/5 flex flex-col">
+                        <h4 class="text-sm font-medium text-yellow-300 mb-4 flex items-center justify-between">
+                            <span>Negosiasi</span>
+                        </h4>
+                    </div>
+
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- LOGIC SCRIPT -->
+    <script>
+        // --- KONFIGURASI BACKEND LU ---
+        const WEBHOOK_URL = 'MASUKKAN_URL_WEBHOOK_POST_N8N_LU_DISINI'; 
+
+        // State Management
+        let currentUser = null;
+
+        // --- LOGIN LOGIC ---
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const u = document.getElementById('username').value;
+            const p = document.getElementById('password').value;
+            const btn = document.getElementById('loginBtn');
+            const err = document.getElementById('loginError');
+
+            btn.innerHTML = `<i class="ph ph-spinner animate-spin"></i> Authenticating...`;
+            err.classList.add('hidden');
+
+            try {
+                // Tembak n8n
+                const response = await fetch(WEBHOOK_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        ACTION: 'get_auth',
+                        username: u,
+                        password: p
+                    })
+                });
+
+                const data = await response.json();
+                
+                // Cek balasan n8n (Asumsi n8n membalas node yg cocok jadi array di dalam 'data')
+                // Logika fallback ini menyesuaikan kalau array kosong = gagal login
+                if (data && data.data && data.data.length > 0) {
+                    currentUser = data.data[0]; 
+                    initDashboard();
+                } else {
+                    // Fallback Dummy Data untuk Testing UI karena belum connect webhook beneran
+                    if(p === '0000') {
+                        if(u === 'dimas') currentUser = { USERNAME: 'dimas', FULLNAME: 'Dimas Santosa', ROLE: 'project manager' };
+                        if(u === 'kiki') currentUser = { USERNAME: 'kiki', FULLNAME: 'Kiki Marpaung', ROLE: 'team member' };
+                        if(u === 'aslam') currentUser = { USERNAME: 'aslam', FULLNAME: 'Aslam Not Lazy', ROLE: 'team member' };
+                    }
+                    
+                    if(currentUser) {
+                        initDashboard();
+                    } else {
+                        throw new Error('Invalid credentials');
+                    }
+                }
+            } catch (error) {
+                btn.innerHTML = `<span>Sign In</span><i class="ph ph-arrow-right"></i>`;
+                err.classList.remove('hidden');
+            }
+        });
+
+        // --- DASHBOARD INIT & ROLE BASED UI ---
+        function initDashboard() {
+            // Hide Login, Show Dashboard
+            document.getElementById('loginScreen').classList.add('opacity-0', 'pointer-events-none');
+            setTimeout(() => {
+                document.getElementById('loginScreen').classList.add('hidden');
+                document.getElementById('mainDashboard').classList.remove('hidden');
+                document.getElementById('mainDashboard').classList.add('animate-fade-in');
+            }, 500);
+
+            // Set Profile Text
+            document.getElementById('userFullName').innerText = currentUser.FULLNAME;
+            document.getElementById('userInitials').innerText = '@' + currentUser.USERNAME;
+            document.getElementById('userRoleBadge').innerText = currentUser.ROLE;
+
+            // --- ROLE BASED RENDER LOGIC ---
+            if(currentUser.ROLE === 'project manager') {
+                document.getElementById('userRoleBadge').classList.add('bg-indigo-500/20', 'px-2', 'py-0.5', 'rounded-md');
+                document.getElementById('btnAssignTask').classList.remove('hidden');
+                document.getElementById('btnAssignTask').classList.add('flex');
+                document.getElementById('tab-admin').classList.remove('hidden');
+                document.getElementById('tab-admin').classList.add('flex');
+                
+                // PM bisa hapus lead
+                const deleteBtns = document.querySelectorAll('#btnDeleteCard');
+                deleteBtns.forEach(btn => {
+                    btn.classList.remove('hidden');
+                    btn.classList.add('flex');
+                });
+            } else {
+                document.getElementById('userRoleBadge').classList.add('text-white/50');
+            }
+
+            fetchDummyTodos(); // Nanti diganti fetch beneran
+        }
+
+        // --- TAB SWITCHER ---
+        function switchTab(tabName) {
+            // Reset tabs
+            document.getElementById('tab-todo').classList.remove('active');
+            document.getElementById('tab-leads').classList.remove('active');
+            // Hide views
+            document.getElementById('view-todo').classList.add('hidden');
+            document.getElementById('view-leads').classList.add('hidden');
+
+            // Set active
+            document.getElementById(`tab-${tabName}`).classList.add('active');
+            document.getElementById(`view-${tabName}`).classList.remove('hidden');
+            document.getElementById(`view-${tabName}`).classList.add('block');
+        }
+
+        // --- LOGOUT ---
+        function logout() {
+            currentUser = null;
+            document.getElementById('mainDashboard').classList.add('hidden');
+            document.getElementById('loginScreen').classList.remove('hidden', 'opacity-0', 'pointer-events-none');
+            document.getElementById('loginForm').reset();
+            document.getElementById('loginBtn').innerHTML = `<span>Sign In</span><i class="ph ph-arrow-right"></i>`;
+        }
+
+        // --- DUMMY DATA INJECTION UNTUK VISUAL ---
+        function fetchDummyTodos() {
+            const container = document.getElementById('todoContainer');
+            container.innerHTML = `
+                <div class="glass-panel p-4 rounded-xl flex items-center justify-between hover:bg-white/5 transition">
+                    <div class="flex items-center gap-4">
+                        <div class="w-2 h-10 bg-indigo-500 rounded-full"></div>
+                        <div>
+                            <h4 class="font-medium text-sm">Follow up Client Bugar Refleksi</h4>
+                            <p class="text-xs text-white/50">Project: P-001 • Status: To Do</p>
+                        </div>
+                    </div>
+                    <button class="bg-white/10 hover:bg-white/20 border border-white/10 px-4 py-2 rounded-lg text-sm transition">
+                        Mark as Done
+                    </button>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>
