@@ -188,7 +188,7 @@
         const WEBHOOK_URL = 'https://n8n-mzbmiib3etk4.kangkung.sumopod.my.id/webhook/beuna-crm-api'; 
         let currentUser = null;
 
-        // --- LOGIN ---
+        // --- LOGIN LOGIC ---
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const u = document.getElementById('username').value;
@@ -200,23 +200,38 @@
             err.classList.add('hidden');
 
             try {
+                // Tembak n8n
                 const response = await fetch(WEBHOOK_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ ACTION: 'get_auth', username: u, password: p })
                 });
 
-                const data = await response.json();
+                const res = await response.json();
+                let userData = null;
                 
-                if (data && data.status === "success" && data.data.length > 0) {
-                    currentUser = data.data[0]; 
+                // Deteksi pintar: Cek apakah n8n membalas dengan Array atau Object langsung
+                if (res.status === "success" && res.data) {
+                    if (Array.isArray(res.data) && res.data.length > 0) {
+                        userData = res.data[0]; // Kalau array, ambil data pertama
+                    } else if (!Array.isArray(res.data) && res.data.USERNAME) {
+                        userData = res.data; // Kalau object langsung
+                    }
+                }
+
+                // Eksekusi Login
+                if (userData) {
+                    currentUser = userData; 
                     initDashboard();
                 } else {
-                    throw new Error('Invalid credentials');
+                    throw new Error('Data tidak cocok di n8n');
                 }
+                
             } catch (error) {
+                console.error("Login Error:", error);
                 btn.innerHTML = `<span>Sign In</span><i class="ph ph-arrow-right"></i>`;
                 err.classList.remove('hidden');
+                err.innerText = "Username/Password salah (Atau CORS n8n belum nyala)";
             }
         });
 
@@ -259,12 +274,15 @@
                 const res = await response.json();
                 
                 if (res.status === 'success' && res.data) {
-                    if(res.data.length === 0) {
+                    // Normalize data (kalau n8n balikin object tunggal, jadiin array)
+                    const dataArray = Array.isArray(res.data) ? res.data : [res.data];
+
+                    if(dataArray.length === 0 || !dataArray[0].TASK_NAME) {
                         container.innerHTML = `<p class="text-sm text-white/40 italic">Yeay! No tasks found.</p>`;
                         return;
                     }
                     
-                    container.innerHTML = res.data.map(task => `
+                    container.innerHTML = dataArray.map(task => `
                         <div class="glass-panel p-4 rounded-xl flex items-center justify-between hover:bg-white/5 transition border border-white/10">
                             <div class="flex items-center gap-4">
                                 <div class="w-2 h-10 ${task.STATUS === 'DONE' ? 'bg-green-500' : 'bg-indigo-500'} rounded-full"></div>
@@ -279,6 +297,8 @@
                             </button>` : `<span class="text-green-400 text-sm flex items-center gap-1"><i class="ph-fill ph-check-circle"></i> Done</span>`}
                         </div>
                     `).join('');
+                } else {
+                    container.innerHTML = `<p class="text-sm text-white/40 italic">No tasks available.</p>`;
                 }
             } catch (error) {
                 container.innerHTML = `<p class="text-sm text-red-400 italic">Error fetching tasks.</p>`;
@@ -303,7 +323,13 @@
                     listNew.innerHTML = ''; listPesan.innerHTML = ''; listNego.innerHTML = '';
                     let cNew = 0, cPesan = 0, cNego = 0;
 
-                    res.data.forEach(lead => {
+                    // Normalize data (kalau n8n balikin object tunggal, jadiin array)
+                    const dataArray = Array.isArray(res.data) ? res.data : [res.data];
+
+                    dataArray.forEach(lead => {
+                        // Skip if lead is empty object
+                        if(!lead.NAMA_USAHA && !lead.NAMA_LEAD) return;
+
                         const stat = lead.STATUS || ''; // Jika kosong, anggap New
                         let waLink = '#';
                         if(lead.NOMOR_WA) {
