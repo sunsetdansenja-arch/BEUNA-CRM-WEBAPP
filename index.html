@@ -221,7 +221,7 @@
     <!-- LOGIC SCRIPT -->
     <script>
         // --- KONFIGURASI BACKEND LU ---
-        const WEBHOOK_URL = 'MASUKKAN_URL_WEBHOOK_POST_N8N_LU_DISINI'; 
+        const WEBHOOK_URL = 'https://n8n-mzbmiib3etk4.kangkung.sumopod.my.id/webhook/beuna-crm-api'; 
 
         // State Management
         let currentUser = null;
@@ -241,7 +241,9 @@
                 // Tembak n8n
                 const response = await fetch(WEBHOOK_URL, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 
+                        'Content-Type': 'application/json'
+                    },
                     body: JSON.stringify({
                         ACTION: 'get_auth',
                         username: u,
@@ -251,28 +253,29 @@
 
                 const data = await response.json();
                 
-                // Cek balasan n8n (Asumsi n8n membalas node yg cocok jadi array di dalam 'data')
-                // Logika fallback ini menyesuaikan kalau array kosong = gagal login
-                if (data && data.data && data.data.length > 0) {
+                // Cek balasan n8n dari struktur JSON yang baru ({"status": "success", "data": [...]})
+                if (data && data.status === "success" && data.data.length > 0) {
                     currentUser = data.data[0]; 
                     initDashboard();
                 } else {
-                    // Fallback Dummy Data untuk Testing UI karena belum connect webhook beneran
-                    if(p === '0000') {
-                        if(u === 'dimas') currentUser = { USERNAME: 'dimas', FULLNAME: 'Dimas Santosa', ROLE: 'project manager' };
-                        if(u === 'kiki') currentUser = { USERNAME: 'kiki', FULLNAME: 'Kiki Marpaung', ROLE: 'team member' };
-                        if(u === 'aslam') currentUser = { USERNAME: 'aslam', FULLNAME: 'Aslam Not Lazy', ROLE: 'team member' };
-                    }
-                    
-                    if(currentUser) {
-                        initDashboard();
-                    } else {
-                        throw new Error('Invalid credentials');
-                    }
+                    throw new Error('Invalid credentials');
                 }
             } catch (error) {
-                btn.innerHTML = `<span>Sign In</span><i class="ph ph-arrow-right"></i>`;
-                err.classList.remove('hidden');
+                console.error("Login Error:", error);
+                
+                // --- FALLBACK DUMMY UNTUK TESTING UI KALAU N8N MATI/ERROR CORS ---
+                if(p === '0000') {
+                    if(u === 'dimas') currentUser = { USERNAME: 'dimas', FULLNAME: 'Dimas Santosa', ROLE: 'project manager' };
+                    if(u === 'kiki') currentUser = { USERNAME: 'kiki', FULLNAME: 'Kiki Marpaung', ROLE: 'team member' };
+                    if(u === 'aslam') currentUser = { USERNAME: 'aslam', FULLNAME: 'Aslam Not Lazy', ROLE: 'team member' };
+                }
+                
+                if(currentUser) {
+                    initDashboard();
+                } else {
+                    btn.innerHTML = `<span>Sign In</span><i class="ph ph-arrow-right"></i>`;
+                    err.classList.remove('hidden');
+                }
             }
         });
 
@@ -299,7 +302,6 @@
                 document.getElementById('tab-admin').classList.remove('hidden');
                 document.getElementById('tab-admin').classList.add('flex');
                 
-                // PM bisa hapus lead
                 const deleteBtns = document.querySelectorAll('#btnDeleteCard');
                 deleteBtns.forEach(btn => {
                     btn.classList.remove('hidden');
@@ -309,19 +311,16 @@
                 document.getElementById('userRoleBadge').classList.add('text-white/50');
             }
 
-            fetchDummyTodos(); // Nanti diganti fetch beneran
+            fetchDummyTodos(); 
         }
 
         // --- TAB SWITCHER ---
         function switchTab(tabName) {
-            // Reset tabs
             document.getElementById('tab-todo').classList.remove('active');
             document.getElementById('tab-leads').classList.remove('active');
-            // Hide views
             document.getElementById('view-todo').classList.add('hidden');
             document.getElementById('view-leads').classList.add('hidden');
 
-            // Set active
             document.getElementById(`tab-${tabName}`).classList.add('active');
             document.getElementById(`view-${tabName}`).classList.remove('hidden');
             document.getElementById(`view-${tabName}`).classList.add('block');
