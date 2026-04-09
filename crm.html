@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Beuna OS - CRM Hub</title>
+    <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/sunsetdansenja-arch/beuna-agency/main/beuna%20logo%20v2.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); color: #1d1d1f; overflow-x: hidden; min-height: 100vh; }
+        .glass-panel { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.6); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.05); }
+        .glass-card { background: rgba(255, 255, 255, 0.9); border: 1px solid rgba(255, 255, 255, 1); transition: all 0.3s ease; box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
+        .glass-card:hover { box-shadow: 0 12px 24px rgba(0,0,0,0.08); transform: translateY(-2px); }
+        .widget-card { background: rgba(255, 255, 255, 0.8); border: 1px solid rgba(255, 255, 255, 1); transition: all 0.3s; cursor: pointer; }
+        .widget-card:hover { transform: translateY(-4px); box-shadow: 0 15px 30px rgba(0,0,0,0.1); }
+        .custom-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 10px; }
+        .status-select { appearance: none; background: transparent; border: none; font-size: 0.65rem; font-weight: bold; text-transform: uppercase; color: #6b7280; cursor: pointer; padding: 4px 8px; outline: none; width: 100%; text-align: left; }
+        .toggle-checkbox:checked { right: 0; border-color: #4f46e5; }
+        .toggle-checkbox:checked + .toggle-label { background-color: #4f46e5; }
+        .timeline-line::before { content: ''; position: absolute; left: 11px; top: 20px; bottom: -20px; width: 2px; background: #e5e7eb; z-index: 0; }
+        .timeline-item:last-child .timeline-line::before { display: none; }
+    </style>
+</head>
+<body class="antialiased flex h-screen overflow-hidden">
+
+    <!-- SIDEBAR -->
+    <aside class="w-20 md:w-64 glass-panel border-r border-white/50 flex flex-col z-20 shadow-xl rounded-r-3xl">
+        <div class="p-6 flex items-center gap-3 border-b border-gray-200/50">
+            <img src="https://raw.githubusercontent.com/sunsetdansenja-arch/beuna-agency/main/beuna%20logo%20v2.png" alt="Logo" class="w-8 h-8">
+            <span class="font-extrabold tracking-widest hidden md:block text-lg text-gray-900">BEUNA</span>
+        </div>
+        <nav class="flex-1 p-4 space-y-2 mt-4">
+            <a href="crm.html" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold bg-white shadow-sm border border-gray-100 text-gray-900 transition-all">
+                <i class="ph-fill ph-funnel text-xl text-indigo-600"></i> <span class="hidden md:block">CRM Hub</span>
+            </a>
+            <a href="docs.html" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold text-gray-500 hover:bg-white/50 hover:text-gray-900 transition-all">
+                <i class="ph-fill ph-files text-xl text-red-600"></i> <span class="hidden md:block">Docs Center</span>
+            </a>
+        </nav>
+        <div class="p-4 border-t border-gray-200/50">
+            <button onclick="logout()" class="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-xs font-bold text-red-600 hover:bg-red-50 transition-all">
+                <i class="ph-bold ph-power text-lg"></i> <span class="hidden md:block">Logout</span>
+            </button>
+        </div>
+    </aside>
+
+    <main class="flex-1 overflow-y-auto relative custom-scroll">
+        <!-- VIEW: CRM DASHBOARD -->
+        <div id="view-hub" class="p-6 md:p-8 space-y-6 max-w-[1400px] mx-auto">
+            <div class="flex flex-col lg:flex-row gap-6">
+                <!-- User Profile -->
+                <div class="glass-card p-5 rounded-3xl w-full lg:w-1/3 flex items-center gap-4">
+                    <div class="w-14 h-14 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-black text-xl uppercase shadow-inner" id="profileInitials"></div>
+                    <div class="flex-1">
+                        <h3 class="text-sm font-bold text-gray-900" id="profileName">Loading...</h3>
+                        <p class="text-[10px] text-gray-500 uppercase tracking-widest font-bold" id="profileRole">Role</p>
+                        <div class="flex gap-4 mt-2 border-t border-gray-100 pt-2">
+                            <div><span class="text-[10px] text-gray-400 block leading-none">My Wins</span><span class="font-black text-green-600 text-sm" id="profileWins">0</span></div>
+                            <div><span class="text-[10px] text-gray-400 block leading-none">Active Prospek</span><span class="font-black text-indigo-600 text-sm" id="profileActive">0</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Global Tracking & Toggle -->
+                <div class="glass-panel p-5 rounded-3xl w-full lg:w-2/3 flex flex-col md:flex-row justify-between items-center gap-6">
+                    <div class="flex items-center gap-6">
+                        <div><p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Agency Leads</p><p class="text-2xl font-black text-gray-900 leading-none mt-1" id="hub-stat-total">0</p></div>
+                        <div class="h-10 w-px bg-gray-300 hidden md:block"></div>
+                        <div><p class="text-[10px] font-bold text-green-600 uppercase tracking-widest">Agency Win Rate</p><p class="text-2xl font-black text-green-600 leading-none mt-1" id="hub-stat-win">0%</p></div>
+                    </div>
+                    
+                    <div class="bg-white p-2 rounded-2xl border border-gray-200 shadow-sm flex items-center gap-3">
+                        <span class="text-xs font-bold text-gray-500" id="labelMyView">My Workspace</span>
+                        <div class="relative inline-block w-12 mr-2 align-middle select-none">
+                            <input type="checkbox" id="viewToggle" onchange="toggleViewMode()" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer z-10"/>
+                            <label for="viewToggle" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer transition-colors"></label>
+                        </div>
+                        <span class="text-xs font-bold text-indigo-600" id="labelTeamView">Team View</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Active Zones -->
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mt-6">
+                <div onclick="openRoom('new')" class="widget-card p-5 rounded-3xl text-center"><div class="w-10 h-10 bg-indigo-50 rounded-full flex items-center justify-center mx-auto mb-2"><i class="ph-fill ph-sparkle text-xl text-indigo-500"></i></div><h4 class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Fresh Leads</h4><p class="text-3xl font-black text-gray-900 mt-1" id="count-new">0</p></div>
+                <div onclick="openRoom('reached')" class="widget-card p-5 rounded-3xl text-center"><div class="w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-2"><i class="ph-fill ph-paper-plane-right text-xl text-blue-500"></i></div><h4 class="text-[10px] font-bold text-blue-600 uppercase tracking-widest">Reached Out</h4><p class="text-3xl font-black text-gray-900 mt-1" id="count-reached">0</p></div>
+                <div onclick="openRoom('meeting')" class="widget-card p-5 rounded-3xl text-center"><div class="w-10 h-10 bg-purple-50 rounded-full flex items-center justify-center mx-auto mb-2"><i class="ph-fill ph-users text-xl text-purple-500"></i></div><h4 class="text-[10px] font-bold text-purple-600 uppercase tracking-widest">Meeting</h4><p class="text-3xl font-black text-gray-900 mt-1" id="count-meeting">0</p></div>
+                <div onclick="openRoom('nego')" class="widget-card p-5 rounded-3xl text-center"><div class="w-10 h-10 bg-yellow-50 rounded-full flex items-center justify-center mx-auto mb-2"><i class="ph-fill ph-handshake text-xl text-yellow-600"></i></div><h4 class="text-[10px] font-bold text-yellow-600 uppercase tracking-widest">Nego & Offer</h4><p class="text-3xl font-black text-gray-900 mt-1" id="count-nego">0</p></div>
+                <div onclick="openRoom('won')" class="widget-card p-5 rounded-3xl text-center border-t-4 border-green-500 col-span-2 md:col-span-1"><div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-2"><i class="ph-fill ph-check-circle text-xl text-green-600"></i></div><h4 class="text-[10px] font-bold text-green-600 uppercase tracking-widest">Closed Won</h4><p class="text-3xl font-black text-green-600 mt-1" id="count-won">0</p></div>
+            </div>
+
+            <!-- Passive Zones -->
+            <div class="grid grid-cols-2 gap-4 opacity-90 mt-4">
+                <div onclick="openRoom('nurture')" class="widget-card p-4 rounded-2xl flex items-center justify-between bg-orange-50/50"><div class="flex items-center gap-3"><div class="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center"><i class="ph-fill ph-clock-snooze text-orange-600"></i></div><h4 class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Nurture (KIV)</h4></div><p class="text-xl font-black text-gray-900" id="count-nurture">0</p></div>
+                <div onclick="openRoom('lost')" class="widget-card p-4 rounded-2xl flex items-center justify-between bg-red-50/50"><div class="flex items-center gap-3"><div class="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center"><i class="ph-fill ph-x-circle text-red-600"></i></div><h4 class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Closed Lost</h4></div><p class="text-xl font-black text-gray-900" id="count-lost">0</p></div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+                <div class="lg:col-span-2 glass-panel rounded-3xl p-6 flex flex-col h-64"><h3 class="text-sm font-bold text-gray-900 mb-4 border-b border-gray-200 pb-2 flex items-center gap-2"><i class="ph-bold ph-pulse text-indigo-600"></i> Live Activity</h3><div id="activityFeedList" class="overflow-y-auto custom-scroll space-y-4"></div></div>
+                <div class="glass-card rounded-3xl p-6 flex flex-col h-64 border-t-4 border-yellow-400"><h3 class="text-sm font-bold text-gray-900 mb-4 border-b border-gray-100 pb-2"><i class="ph-fill ph-trophy text-yellow-500"></i> Top Performers</h3><div id="leaderboardList" class="overflow-y-auto custom-scroll space-y-3"></div></div>
+            </div>
+        </div>
+
+        <!-- VIEW: THE ROOM (DETAIL STAGE) -->
+        <div id="view-room" class="hidden p-6 md:p-10 space-y-6 max-w-[1400px] mx-auto">
+            <button onclick="closeRoom()" class="text-xs font-bold text-gray-500 hover:text-gray-900 flex items-center gap-1 bg-white/50 px-3 py-2 rounded-lg border border-gray-200 w-fit"><i class="ph-bold ph-arrow-left"></i> Kembali ke Dashboard</button>
+            <div class="glass-panel p-8 rounded-3xl">
+                <div class="flex justify-between items-end border-b border-gray-200 pb-6 mb-6">
+                    <div><h2 class="text-3xl font-extrabold text-gray-900 uppercase" id="roomTitle">STAGE NAME</h2></div>
+                    <input type="text" id="localSearch" placeholder="Cari prospek..." onkeyup="filterRoom()" class="w-64 bg-white border border-gray-200 rounded-xl py-2 px-4 text-xs focus:outline-none focus:border-indigo-500">
+                </div>
+                <div id="roomGrid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"></div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let session = JSON.parse(localStorage.getItem('beunaSession'));
+        if(!session) window.location.href = 'index.html';
+
+        let viewMode = session.id === 'admin' ? 'team' : 'personal';
+        let leads = JSON.parse(localStorage.getItem('beunaLeads')) || [];
+        let activities = JSON.parse(localStorage.getItem('beunaActivities')) || [];
+        let activeRoom = '';
+
+        const stageTitles = { 'new': 'Fresh Leads', 'reached': 'Reached Out', 'meeting': 'Meeting', 'nego': 'Nego & Offer', 'won': 'Closed Won', 'nurture': 'Nurture (KIV)', 'lost': 'Closed Lost' };
+
+        window.onload = () => {
+            document.getElementById('profileInitials').innerText = session.initials;
+            document.getElementById('profileName').innerText = session.name;
+            document.getElementById('profileRole').innerText = session.role;
+            if(session.id !== 'admin') {
+                document.getElementById('viewToggle').checked = false;
+                document.getElementById('viewToggle').disabled = true;
+            } else {
+                document.getElementById('viewToggle').checked = true;
+            }
+            renderHub();
+        };
+
+        function toggleViewMode() {
+            viewMode = document.getElementById('viewToggle').checked ? 'team' : 'personal';
+            document.getElementById('labelTeamView').className = viewMode === 'team' ? "text-xs font-bold text-indigo-600" : "text-xs font-bold text-gray-400";
+            document.getElementById('labelMyView').className = viewMode === 'personal' ? "text-xs font-bold text-indigo-600" : "text-xs font-bold text-gray-400";
+            renderHub();
+        }
+
+        function renderHub() {
+            let filteredLeads = viewMode === 'team' ? leads : leads.filter(l => l.pic === session.name || l.status === 'new');
+            
+            // Personal Stats
+            document.getElementById('profileWins').innerText = leads.filter(l => l.pic === session.name && l.status === 'won').length;
+            document.getElementById('profileActive').innerText = leads.filter(l => l.pic === session.name && ['reached','meeting','nego'].includes(l.status)).length;
+
+            // Widget Counts
+            const counts = { 'new':0, 'reached':0, 'meeting':0, 'nego':0, 'won':0, 'nurture':0, 'lost':0 };
+            filteredLeads.forEach(l => { if(counts[l.status] !== undefined) counts[l.status]++; });
+            
+            Object.keys(counts).forEach(k => document.getElementById(`count-${k}`).innerText = counts[k]);
+
+            // Global Stats
+            document.getElementById('hub-stat-total').innerText = leads.length;
+            const winRate = (counts.won + counts.lost) > 0 ? Math.round((counts.won / (counts.won + counts.lost)) * 100) : 0;
+            document.getElementById('hub-stat-win').innerText = winRate + '%';
+
+            renderActivities();
+            renderLeaderboard();
+        }
+
+        function renderActivities() {
+            document.getElementById('activityFeedList').innerHTML = activities.map(a => `
+                <div class="timeline-item relative pl-6 pb-4"><div class="timeline-line"></div><div class="absolute left-0 top-1 w-2 h-2 rounded-full bg-indigo-500 z-10"></div>
+                <p class="text-[10px] text-gray-400 font-mono">${a.time}</p><p class="text-xs text-gray-800"><span class="font-bold">${a.user}</span> ${a.text}</p></div>
+            `).join('');
+        }
+
+        function renderLeaderboard() {
+            let scores = {};
+            leads.filter(l => l.status === 'won' && l.pic).forEach(l => { scores[l.pic] = (scores[l.pic] || 0) + 1; });
+            let sorted = Object.keys(scores).map(pic => ({pic, score: scores[pic]})).sort((a,b) => b.score - a.score);
+            document.getElementById('leaderboardList').innerHTML = sorted.map((item, i) => `
+                <div class="flex justify-between p-2 bg-gray-50 rounded border"><span class="text-xs font-bold">${i+1}. ${item.pic}</span><span class="text-xs font-black text-green-600">${item.score} Deals</span></div>
+            `).join('');
+        }
+
+        function openRoom(status) {
+            activeRoom = status;
+            document.getElementById('view-hub').classList.add('hidden');
+            document.getElementById('view-room').classList.remove('hidden');
+            document.getElementById('roomTitle').innerText = stageTitles[status];
+            filterRoom();
+        }
+
+        function closeRoom() {
+            document.getElementById('view-room').classList.add('hidden');
+            document.getElementById('view-hub').classList.remove('hidden');
+            renderHub();
+        }
+
+        function filterRoom() {
+            const q = document.getElementById('localSearch').value.toLowerCase();
+            let source = viewMode === 'team' ? leads : leads.filter(l => l.pic === session.name || l.status === 'new');
+            source = source.filter(l => l.status === activeRoom && l.name.toLowerCase().includes(q));
+
+            const grid = document.getElementById('roomGrid');
+            grid.innerHTML = source.map(l => {
+                const picBadge = l.pic ? `<span class="bg-indigo-50 text-indigo-600 px-1 rounded text-[10px]">${l.pic}</span>` : `<span class="bg-gray-100 text-gray-400 px-1 rounded text-[10px]">Unassigned</span>`;
+                
+                let actionBtn = '';
+                if(l.status === 'new') {
+                    actionBtn = `<button onclick="claimLead('${l.id}')" class="w-full bg-indigo-50 text-indigo-700 font-bold py-2 rounded-lg text-xs">Ambil & Reach Out</button>`;
+                } else {
+                    const dis = (viewMode === 'personal' && l.pic !== session.name) ? 'disabled' : '';
+                    const select = `
+                        <select onchange="updateStatus('${l.id}', this.value)" class="status-select bg-gray-50 border rounded w-1/3" ${dis}>
+                            <option value="reached" ${l.status==='reached'?'selected':''}>Reached</option>
+                            <option value="meeting" ${l.status==='meeting'?'selected':''}>Meeting</option>
+                            <option value="nego" ${l.status==='nego'?'selected':''}>Nego</option>
+                            <option value="won" ${l.status==='won'?'selected':''}>Won</option>
+                            <option value="nurture" ${l.status==='nurture'?'selected':''}>Nurture</option>
+                            <option value="lost" ${l.status==='lost'?'selected':''}>Lost</option>
+                        </select>`;
+                    
+                    let waBtn = `<button onclick="window.open('https://wa.me/${l.phone}', '_blank')" class="flex-1 bg-green-50 text-green-700 font-bold py-2 rounded-lg text-[10px] text-center">WA</button>`;
+                    let bridgeBtn = '';
+                    if(l.status === 'nego') bridgeBtn = `<a href="docs.html?type=OFF&lead=${l.id}" class="flex-1 bg-yellow-50 text-yellow-700 font-bold py-2 rounded-lg text-[10px] text-center">Offer Letter</a>`;
+                    if(l.status === 'won') bridgeBtn = `<a href="docs.html?type=INV&lead=${l.id}" class="flex-1 bg-blue-50 text-blue-700 font-bold py-2 rounded-lg text-[10px] text-center">Invoice</a>`;
+                    
+                    actionBtn = `<div class="flex gap-2 w-full mt-2">${select}${waBtn}${bridgeBtn}</div>`;
+                }
+
+                return `
+                <div class="glass-card p-4 rounded-xl flex flex-col">
+                    <h4 class="font-bold text-sm truncate">${l.name}</h4>
+                    <div class="flex gap-2 mt-2 mb-4">${picBadge}</div>
+                    ${actionBtn}
+                </div>`;
+            }).join('');
+        }
+
+        function claimLead(id) {
+            let l = leads.find(x => x.id === id);
+            l.pic = session.name; l.status = 'reached';
+            saveData(`Mengambil prospek: ${l.name}`);
+            filterRoom();
+        }
+
+        function updateStatus(id, stat) {
+            let l = leads.find(x => x.id === id);
+            l.status = stat;
+            saveData(`Memindahkan ${l.name} ke ${stageTitles[stat]}`);
+            filterRoom();
+        }
+
+        function saveData(logMsg) {
+            const time = new Date().toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'});
+            activities.unshift({ time, user: session.name, text: logMsg });
+            if(activities.length > 10) activities.pop();
+            
+            localStorage.setItem('beunaLeads', JSON.stringify(leads));
+            localStorage.setItem('beunaActivities', JSON.stringify(activities));
+        }
+
+        function logout() { localStorage.removeItem('beunaSession'); window.location.href = 'index.html'; }
+    </script>
+</body>
+</html>
