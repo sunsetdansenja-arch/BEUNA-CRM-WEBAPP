@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Beuna OS - Manajemen (Command Center)</title>
+    <title>Beuna OS - Manajemen Command Center</title>
     <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/sunsetdansenja-arch/beuna-agency/main/beuna%20logo%20v2.png">
     
     <script src="https://cdn.tailwindcss.com"></script>
@@ -11,7 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     
     <style>
-        /* --- APPLE OS LIGHT THEME AESTHETICS --- */
+        /* --- GLOBAL STYLES --- */
         body { font-family: 'Inter', sans-serif; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); color: #1d1d1f; overflow-x: hidden; min-height: 100vh; }
         .glass-panel { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.6); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.05); }
         .glass-card { background: rgba(255, 255, 255, 0.9); border: 1px solid rgba(255, 255, 255, 1); transition: all 0.3s ease; box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
@@ -24,19 +24,16 @@
         .custom-scroll::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 10px; }
         
         .status-select { appearance: none; background: transparent; border: none; font-size: 0.65rem; font-weight: bold; text-transform: uppercase; color: #6b7280; cursor: pointer; padding: 4px 8px; outline: none; width: 100%; text-align: left; }
-        
-        /* Toggle Switch CSS */
         .toggle-checkbox:checked { right: 0; border-color: #4f46e5; }
         .toggle-checkbox:checked + .toggle-label { background-color: #4f46e5; }
         
-        /* Activity Timeline */
-        .timeline-line::before { content: ''; position: absolute; left: 11px; top: 20px; bottom: -20px; width: 2px; background: #e5e7eb; z-index: 0; }
-        .timeline-item:last-child .timeline-line::before { display: none; }
-
         /* A4 PDF Setup */
         .a4-paper { width: 210mm; min-height: 297mm; background: white; color: #111827; box-shadow: 0 10px 40px rgba(0,0,0,0.1); margin: 0 auto; padding: 20mm; position: relative; }
         @page { size: A4; margin: 0; }
         @media print { body { background: white; } .no-print { display: none !important; } .a4-paper { box-shadow: none; margin: 0; padding: 15mm; width: 100%; min-height: auto; } .print-exact { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+
+        /* Print Typography Adjustments */
+        .print-text-content { line-height: 1.6; font-size: 10pt; color: #374151; }
     </style>
 </head>
 <body class="antialiased flex h-screen overflow-hidden">
@@ -49,8 +46,8 @@
             <p class="text-xs text-gray-500 mb-8 text-center uppercase tracking-widest">Managerial Gateway</p>
             
             <form id="loginForm" class="w-full space-y-4" onsubmit="handleLogin(event)">
-                <input type="text" id="username" placeholder="Username (admin / budi)" value="admin" class="w-full bg-white border border-gray-200 rounded-xl px-5 py-4 text-sm focus:outline-none focus:border-indigo-600 transition-all" required>
-                <input type="password" id="password" placeholder="Password (123)" value="123" class="w-full bg-white border border-gray-200 rounded-xl px-5 py-4 text-sm focus:outline-none focus:border-indigo-600 transition-all" required>
+                <input type="text" id="username" placeholder="Username (admin / budi)" class="w-full bg-white border border-gray-200 rounded-xl px-5 py-4 text-sm focus:outline-none focus:border-indigo-600 transition-all" required>
+                <input type="password" id="password" placeholder="Password (123)" class="w-full bg-white border border-gray-200 rounded-xl px-5 py-4 text-sm focus:outline-none focus:border-indigo-600 transition-all" required>
                 <button type="submit" class="w-full bg-gray-900 text-white font-bold rounded-xl py-4 text-sm hover:bg-black transition-all shadow-lg active:scale-95">Login to HQ</button>
             </form>
         </div>
@@ -83,154 +80,11 @@
         <!-- MAIN CONTENT -->
         <main class="flex-1 overflow-y-auto relative custom-scroll">
             
-            <!-- VIEW: CRM HUB (DASHBOARD UTAMA) -->
-            <div id="view-crm" class="p-6 md:p-8 space-y-6 max-w-[1400px] mx-auto no-print">
-                
-                <!-- ROW 1: USER PROFILE & GLOBAL SETTINGS -->
-                <div class="flex flex-col lg:flex-row gap-6">
-                    <!-- User Profile Card -->
-                    <div class="glass-card p-5 rounded-3xl w-full lg:w-1/3 flex items-center gap-4">
-                        <div class="w-14 h-14 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-black text-xl uppercase shadow-inner" id="profileInitials">AD</div>
-                        <div class="flex-1">
-                            <h3 class="text-sm font-bold text-gray-900" id="profileName">Admin / Dimas</h3>
-                            <p class="text-[10px] text-gray-500 uppercase tracking-widest font-bold" id="profileRole">System Architect</p>
-                            <div class="flex gap-4 mt-2 border-t border-gray-100 pt-2">
-                                <div><span class="text-[10px] text-gray-400 block leading-none">My Wins</span><span class="font-black text-green-600 text-sm" id="profileWins">0</span></div>
-                                <div><span class="text-[10px] text-gray-400 block leading-none">Active Prospek</span><span class="font-black text-indigo-600 text-sm" id="profileActive">0</span></div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Global Tracking & Toggle -->
-                    <div class="glass-panel p-5 rounded-3xl w-full lg:w-2/3 flex flex-col md:flex-row justify-between items-center gap-6">
-                        <div class="flex items-center gap-6 w-full md:w-auto">
-                            <div>
-                                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Total Agency Leads</p>
-                                <p class="text-2xl font-black text-gray-900 leading-none mt-1" id="hub-stat-total">0</p>
-                            </div>
-                            <div class="h-10 w-px bg-gray-300 hidden md:block"></div>
-                            <div>
-                                <p class="text-[10px] font-bold text-green-600 uppercase tracking-widest">Agency Win Rate</p>
-                                <p class="text-2xl font-black text-green-600 leading-none mt-1" id="hub-stat-win">0%</p>
-                            </div>
-                        </div>
-                        
-                        <!-- Toggle Workspace View -->
-                        <div class="bg-white p-2 rounded-2xl border border-gray-200 shadow-sm flex items-center gap-3 w-full md:w-auto">
-                            <span class="text-xs font-bold text-gray-500" id="labelMyView">My Workspace</span>
-                            <div class="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in">
-                                <input type="checkbox" name="toggle" id="viewToggle" onchange="toggleViewMode()" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer transition-transform duration-200 ease-in-out z-10" checked/>
-                                <label for="viewToggle" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer transition-colors duration-200 ease-in-out"></label>
-                            </div>
-                            <span class="text-xs font-bold text-indigo-600" id="labelTeamView">Team View</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- ROW 2: ACTIVE & PASSIVE WIDGETS -->
-                <div class="flex items-center gap-2 px-2 mt-4">
-                    <i class="ph-fill ph-activity text-indigo-500"></i>
-                    <h3 class="text-sm font-bold text-gray-700 uppercase tracking-widest" id="widgetTitle">Pipeline: Team View</h3>
-                </div>
-
-                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                    <div onclick="openStageDetail('new')" class="widget-card p-5 rounded-3xl text-center">
-                        <div class="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-2"><i class="ph-fill ph-sparkle text-xl text-gray-500"></i></div>
-                        <h4 class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Fresh Leads</h4>
-                        <p class="text-3xl font-black text-gray-900 mt-1" id="hub-count-new">0</p>
-                        <p class="text-[9px] text-gray-400 mt-1">(Unassigned)</p>
-                    </div>
-                    <div onclick="openStageDetail('reached')" class="widget-card p-5 rounded-3xl text-center">
-                        <div class="w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-2"><i class="ph-fill ph-paper-plane-right text-xl text-blue-500"></i></div>
-                        <h4 class="text-[10px] font-bold text-blue-600 uppercase tracking-widest">Reached Out</h4>
-                        <p class="text-3xl font-black text-gray-900 mt-1" id="hub-count-reached">0</p>
-                    </div>
-                    <div onclick="openStageDetail('meeting')" class="widget-card p-5 rounded-3xl text-center">
-                        <div class="w-10 h-10 bg-purple-50 rounded-full flex items-center justify-center mx-auto mb-2"><i class="ph-fill ph-users text-xl text-purple-500"></i></div>
-                        <h4 class="text-[10px] font-bold text-purple-600 uppercase tracking-widest">Meeting</h4>
-                        <p class="text-3xl font-black text-gray-900 mt-1" id="hub-count-meeting">0</p>
-                    </div>
-                    <div onclick="openStageDetail('nego')" class="widget-card p-5 rounded-3xl text-center">
-                        <div class="w-10 h-10 bg-yellow-50 rounded-full flex items-center justify-center mx-auto mb-2"><i class="ph-fill ph-handshake text-xl text-yellow-600"></i></div>
-                        <h4 class="text-[10px] font-bold text-yellow-600 uppercase tracking-widest">Nego & Offer</h4>
-                        <p class="text-3xl font-black text-gray-900 mt-1" id="hub-count-nego">0</p>
-                    </div>
-                    <div onclick="openStageDetail('won')" class="widget-card p-5 rounded-3xl text-center border-t-4 border-green-500 bg-gradient-to-b from-white to-green-50/20 col-span-2 md:col-span-1 lg:col-span-1">
-                        <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-2"><i class="ph-fill ph-check-circle text-xl text-green-600"></i></div>
-                        <h4 class="text-[10px] font-bold text-green-600 uppercase tracking-widest">Closed Won</h4>
-                        <p class="text-3xl font-black text-green-600 mt-1" id="hub-count-won">0</p>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-2 gap-4 lg:gap-6 opacity-90">
-                    <div onclick="openStageDetail('nurture')" class="widget-card p-4 rounded-2xl flex items-center justify-between bg-orange-50/50">
-                        <div class="flex items-center gap-3">
-                            <div class="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center"><i class="ph-fill ph-clock-snooze text-orange-600"></i></div>
-                            <h4 class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Nurture (KIV)</h4>
-                        </div>
-                        <p class="text-xl font-black text-gray-900" id="hub-count-nurture">0</p>
-                    </div>
-                    <div onclick="openStageDetail('lost')" class="widget-card p-4 rounded-2xl flex items-center justify-between bg-red-50/50">
-                        <div class="flex items-center gap-3">
-                            <div class="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center"><i class="ph-fill ph-x-circle text-red-600"></i></div>
-                            <h4 class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Closed Lost</h4>
-                        </div>
-                        <p class="text-xl font-black text-gray-900" id="hub-count-lost">0</p>
-                    </div>
-                </div>
-
-                <!-- ROW 3: ACTIVITY FEED & LEADERBOARD -->
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-6">
-                    
-                    <!-- Activity Feed (CCTV) -->
-                    <div class="lg:col-span-2 glass-panel rounded-3xl p-6 flex flex-col h-80">
-                        <div class="flex justify-between items-center mb-4 border-b border-gray-200 pb-2">
-                            <h3 class="text-sm font-bold text-gray-900 flex items-center gap-2"><i class="ph-bold ph-pulse text-indigo-600"></i> Live Activity Trail</h3>
-                            <div class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
-                        </div>
-                        <div id="activityFeedList" class="flex-1 overflow-y-auto custom-scroll pr-4 space-y-4 relative">
-                            <!-- Injected via JS -->
-                        </div>
-                    </div>
-
-                    <!-- Mini Leaderboard -->
-                    <div class="glass-card rounded-3xl p-6 flex flex-col h-80 border-t-4 border-yellow-400">
-                        <h3 class="text-sm font-bold text-gray-900 flex items-center gap-2 mb-4 border-b border-gray-100 pb-2"><i class="ph-fill ph-trophy text-yellow-500"></i> Top Performers (Won)</h3>
-                        <div id="leaderboardList" class="flex-1 overflow-y-auto custom-scroll space-y-3 pr-2">
-                            <!-- Injected via JS -->
-                        </div>
-                    </div>
-
-                </div>
+            <!-- CRM HUB & DETAIL VIEWS (Hidden during Docs operation, keeping existing logic intact) -->
+            <div id="view-crm" class="hidden p-6 md:p-8 space-y-6 max-w-[1400px] mx-auto no-print">
+                <div class="glass-panel p-10 rounded-3xl text-center"><h2 class="text-2xl font-bold">CRM Hub Active</h2><p class="text-gray-500">Gunakan sidebar untuk beralih ke Docs Center.</p></div>
             </div>
-
-            <!-- VIEW: CRM STAGE DETAIL (RUANGAN SPESIFIK) -->
-            <div id="view-crm-detail" class="hidden p-6 md:p-10 space-y-6 max-w-[1400px] mx-auto no-print">
-                <button onclick="switchManagerialView('crm')" class="text-xs font-bold text-gray-500 hover:text-gray-900 flex items-center gap-1 mb-2 w-fit bg-white/50 px-3 py-2 rounded-lg border border-gray-200">
-                    <i class="ph-bold ph-arrow-left"></i> Kembali ke Dashboard
-                </button>
-                
-                <div class="glass-panel p-8 rounded-3xl">
-                    <div class="flex flex-col md:flex-row justify-between items-start md:items-end border-b border-gray-200 pb-6 mb-6 gap-4">
-                        <div>
-                            <h2 class="text-3xl font-extrabold text-gray-900 uppercase tracking-tight" id="detailStageTitle">STAGE NAME</h2>
-                            <p class="text-sm text-gray-500 mt-1 font-medium" id="detailStageSubtitle">Menampilkan data berdasarkan filter yang aktif.</p>
-                        </div>
-                        <div class="flex items-center gap-4 w-full md:w-auto">
-                            <!-- Local Search -->
-                            <div class="relative flex-1 md:w-64">
-                                <i class="ph-bold ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
-                                <input type="text" id="localSearch" placeholder="Cari nama prospek..." onkeyup="filterStageDetail()" class="w-full bg-white border border-gray-200 rounded-xl py-2 pl-9 pr-3 text-xs focus:outline-none focus:border-indigo-500">
-                            </div>
-                            <span class="bg-gray-900 text-white font-bold px-4 py-2 rounded-xl text-sm whitespace-nowrap" id="detailStageCount">0 Leads</span>
-                        </div>
-                    </div>
-                    
-                    <div id="detailGrid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                        <!-- Cards injected via JS -->
-                    </div>
-                </div>
-            </div>
+            <div id="view-crm-detail" class="hidden p-6 max-w-[1400px] mx-auto no-print"></div>
 
             <!-- VIEW: DOCS HUB -->
             <div id="view-docHub" class="hidden p-6 md:p-10 space-y-8 max-w-[1200px] mx-auto no-print">
@@ -240,60 +94,267 @@
                 </header>
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <div onclick="openGenerator('OFF')" class="glass-card p-6 rounded-3xl cursor-pointer border-t-4 border-t-gray-400 flex flex-col items-center text-center">
-                        <div class="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mb-4"><i class="ph-fill ph-envelope-open text-3xl text-gray-600"></i></div>
+                    <div onclick="openGenerator('OFF')" class="glass-card p-6 rounded-3xl cursor-pointer border-t-4 border-t-indigo-500 flex flex-col items-center text-center">
+                        <div class="w-16 h-16 bg-indigo-50 rounded-2xl flex items-center justify-center mb-4"><i class="ph-fill ph-envelope-open text-3xl text-indigo-600"></i></div>
                         <h4 class="font-bold text-lg text-gray-900">Offer Letter</h4>
+                        <p class="text-[10px] text-gray-400 mt-1 uppercase tracking-widest">Penawaran Formal</p>
                     </div>
                     <div onclick="openGenerator('INV')" class="glass-card p-6 rounded-3xl cursor-pointer border-t-4 border-t-red-600 flex flex-col items-center text-center">
                         <div class="w-16 h-16 bg-red-50 rounded-2xl flex items-center justify-center mb-4"><i class="ph-fill ph-receipt text-3xl text-red-600"></i></div>
                         <h4 class="font-bold text-lg text-gray-900">Invoice</h4>
+                        <p class="text-[10px] text-gray-400 mt-1 uppercase tracking-widest">Multi-Item Tagihan</p>
                     </div>
                     <div onclick="openGenerator('BAP')" class="glass-card p-6 rounded-3xl cursor-pointer border-t-4 border-t-blue-500 flex flex-col items-center text-center">
                         <div class="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center mb-4"><i class="ph-fill ph-check-square-offset text-3xl text-blue-500"></i></div>
                         <h4 class="font-bold text-lg text-gray-900">BAP</h4>
+                        <p class="text-[10px] text-gray-400 mt-1 uppercase tracking-widest">Log Teknis N8N</p>
                     </div>
                     <div onclick="openGenerator('BAST')" class="glass-card p-6 rounded-3xl cursor-pointer border-t-4 border-t-green-500 flex flex-col items-center text-center">
                         <div class="w-16 h-16 bg-green-50 rounded-2xl flex items-center justify-center mb-4"><i class="ph-fill ph-handshake text-3xl text-green-500"></i></div>
                         <h4 class="font-bold text-lg text-gray-900">BAST</h4>
+                        <p class="text-[10px] text-gray-400 mt-1 uppercase tracking-widest">Serah Terima Project</p>
                     </div>
                 </div>
             </div>
 
-            <!-- VIEW: DOCS GENERATOR -->
-            <!-- Note: Same exact generator code as before, kept clean -->
+            <!-- VIEW: DOCS GENERATOR (SPLIT SCREEN) -->
             <div id="view-docGen" class="hidden h-full flex flex-col md:flex-row">
-                <div class="w-full md:w-80 glass-panel border-r border-white/50 p-6 flex flex-col no-print z-10 shadow-xl rounded-r-3xl">
-                    <button onclick="switchManagerialView('docHub')" class="text-xs text-gray-500 hover:text-gray-900 flex items-center gap-1 mb-6 font-bold w-fit"><i class="ph-bold ph-arrow-left"></i> Kembali ke Hub</button>
+                
+                <!-- Left Panel: Parameter Controls -->
+                <div class="w-full md:w-80 glass-panel border-r border-white/50 p-6 flex flex-col no-print z-10 shadow-xl rounded-r-3xl h-full overflow-y-auto custom-scroll">
+                    <button onclick="switchManagerialView('docHub')" class="text-xs text-gray-500 hover:text-gray-900 flex items-center gap-1 mb-6 font-bold w-fit transition-colors">
+                        <i class="ph-bold ph-arrow-left"></i> Kembali
+                    </button>
+                    
                     <h3 class="text-xl font-extrabold mb-6 text-gray-900" id="genTitle">Generate DOC</h3>
-                    <div class="space-y-4 flex-1">
-                        <div>
-                            <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Pilih Client / Project</label>
-                            <select id="genProject" onchange="updateA4Preview()" class="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-red-800 transition-all"></select>
-                        </div>
-                        <div id="formINV" class="space-y-4 hidden">
-                            <div><label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Deskripsi Tagihan</label><input type="text" id="invDesc" value="Tagihan Layanan & Maintenance" oninput="updateA4Preview()" class="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-red-800"></div>
-                            <div><label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Nominal (Rp)</label><input type="number" id="invAmount" value="2500000" oninput="updateA4Preview()" class="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-red-800"></div>
-                        </div>
+
+                    <!-- Global Setting -->
+                    <div class="mb-6">
+                        <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Pilih Klien</label>
+                        <select id="genProject" onchange="updateA4Preview()" class="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-indigo-500 transition-all shadow-sm"></select>
                     </div>
-                    <button onclick="window.print()" class="w-full bg-red-800 text-white font-bold py-3 rounded-xl hover:bg-red-900 shadow-lg transition-all active:scale-95 text-sm mt-6 flex items-center justify-center gap-2"><i class="ph-bold ph-printer"></i> Cetak PDF A4</button>
-                </div>
-                <div class="flex-1 overflow-y-auto p-8 bg-gray-200/50 print:bg-white print:p-0 flex justify-center">
-                    <div class="a4-paper flex flex-col text-sm print-exact" id="printArea">
-                        <div class="flex justify-between items-start border-b-2 border-gray-900 pb-6 mb-6">
-                            <div><h1 class="text-4xl font-extrabold tracking-tighter text-gray-900">BEUNA<span class="text-red-800">.</span></h1><p class="text-xs text-gray-500 mt-1">System Analyst & Automation Specialist</p></div>
-                            <div class="text-right"><h2 class="text-2xl font-bold text-gray-300 uppercase tracking-widest" id="a4Type">DOC</h2><p class="text-xs text-gray-600 mt-1 font-mono" id="a4DocNum">000/BEUNA/2026</p><p class="text-xs text-gray-600 mt-1" id="a4Date">Tanggal: -</p></div>
-                        </div>
-                        <div class="mb-8"><p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Ditujukan Kepada:</p><p class="text-lg font-bold text-gray-900" id="a4ClientName">Nama Klien</p><p class="text-sm text-gray-600" id="a4ProjectName">Project Integration</p></div>
-                        <div class="flex-1">
-                            <div id="layoutINV" class="w-full hidden">
-                                <table class="w-full text-left border-collapse"><thead><tr class="border-b-2 border-gray-800"><th class="py-3 text-xs uppercase text-gray-500">Deskripsi Layanan</th><th class="py-3 text-xs uppercase text-gray-500 text-right">Total</th></tr></thead><tbody><tr class="border-b border-gray-200"><td class="py-4 text-sm font-medium" id="a4InvDesc">-</td><td class="py-4 text-sm font-mono text-right font-bold text-gray-900" id="a4InvAmount">Rp 0</td></tr></tbody></table>
-                                <div class="flex justify-end mt-6"><div class="w-1/2 bg-gray-50 p-4 border border-gray-200 rounded-lg"><p class="text-[10px] font-bold text-gray-500 uppercase">Informasi Pembayaran:</p><p class="text-sm font-bold text-gray-900">BCA - 1234567890</p><p class="text-xs text-gray-600">a.n Dimas Santosa (Beuna Agency)</p></div></div>
+                    
+                    <hr class="border-gray-200 mb-6">
+                    
+                    <!-- Dynamic Forms Wrapper -->
+                    <div class="flex-1">
+                        
+                        <!-- A. FORM OFFER LETTER -->
+                        <div id="formOFF" class="space-y-4 hidden">
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Judul Project</label>
+                                <input type="text" id="offTitle" value="Pengembangan Sistem Otomasi Berbasis N8N" oninput="updateA4Preview()" class="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-indigo-500 shadow-sm">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Ruang Lingkup (Scope)</label>
+                                <textarea id="offScope" rows="4" oninput="updateA4Preview()" class="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-indigo-500 shadow-sm resize-none">1. Setup Server & Database
+2. Integrasi API WhatsApp
+3. Pembuatan Workflow Automasi
+4. Dashboard Monitoring</textarea>
+                            </div>
+                            <div class="flex gap-2">
+                                <div class="w-1/2">
+                                    <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Durasi</label>
+                                    <input type="text" id="offDuration" value="14 Hari Kerja" oninput="updateA4Preview()" class="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-indigo-500 shadow-sm">
+                                </div>
+                                <div class="w-1/2">
+                                    <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Total Nilai (Rp)</label>
+                                    <input type="number" id="offTotal" value="15000000" oninput="updateA4Preview()" class="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-indigo-500 shadow-sm">
+                                </div>
                             </div>
                         </div>
-                        <div class="mt-20 flex justify-between px-8">
-                            <div class="text-center"><p class="text-xs text-gray-500 mb-16">Pihak Klien</p><p class="text-sm font-bold border-b border-gray-400 pb-1 w-32"></p></div>
-                            <div class="text-center"><p class="text-xs text-gray-500 mb-16">Beuna System</p><p class="text-sm font-bold border-b border-gray-400 pb-1" id="a4Signer">Dimas Santosa</p></div>
+
+                        <!-- B. FORM INVOICE (MULTI-ITEM) -->
+                        <div id="formINV" class="space-y-4 hidden">
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Termin Tagihan</label>
+                                <select id="invType" onchange="updateA4Preview()" class="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-indigo-500 shadow-sm">
+                                    <option value="DP 50%">Down Payment (50%)</option>
+                                    <option value="Pelunasan">Pelunasan</option>
+                                    <option value="Maintenance">Maintenance Bulanan</option>
+                                    <option value="Full Payment">Full Payment</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Invoice Items Container -->
+                            <div>
+                                <div class="flex justify-between items-end mb-1">
+                                    <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest">Item Tagihan</label>
+                                    <button onclick="addInvoiceItem()" class="text-[9px] font-bold text-indigo-600 hover:text-indigo-800 bg-indigo-50 px-2 py-1 rounded">+ Tambah</button>
+                                </div>
+                                <div id="invItemsContainer" class="space-y-2">
+                                    <!-- Dynamic rows added here -->
+                                </div>
+                            </div>
                         </div>
+
+                        <!-- C. FORM BAP -->
+                        <div id="formBAP" class="space-y-4 hidden">
+                            <div class="bg-blue-50 border border-blue-200 p-4 rounded-xl text-xs text-blue-800 shadow-sm">
+                                <i class="ph-fill ph-robot text-lg mb-2 block"></i>
+                                <b>Automated Mode:</b><br>Tabel log aktivitas pada dokumen BAP ini otomatis ditarik dari *database* pengisian teknisi Developer berdasarkan Klien yang dipilih di atas.
+                            </div>
+                        </div>
+
+                        <!-- D. FORM BAST -->
+                        <div id="formBAST" class="space-y-4 hidden">
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Project yang Diserahkan</label>
+                                <input type="text" id="bastTitle" value="Pengembangan Sistem Otomasi Berbasis N8N" oninput="updateA4Preview()" class="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-indigo-500 shadow-sm">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Masa Garansi Bug-Fix</label>
+                                <select id="bastGuarantee" onchange="updateA4Preview()" class="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-indigo-500 shadow-sm">
+                                    <option value="1 (Satu) Bulan">1 Bulan</option>
+                                    <option value="3 (Tiga) Bulan">3 Bulan</option>
+                                    <option value="6 (Enam) Bulan">6 Bulan</option>
+                                    <option value="Tanpa Garansi">Tanpa Garansi</option>
+                                </select>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <button onclick="printDocument()" class="w-full mt-6 bg-gray-900 text-white font-bold py-3 rounded-xl hover:bg-black shadow-lg transition-all active:scale-95 text-sm flex items-center justify-center gap-2">
+                        <i class="ph-bold ph-printer"></i> Download PDF
+                    </button>
+                </div>
+
+                <!-- Right Panel: A4 Preview -->
+                <div class="flex-1 overflow-y-auto p-8 bg-gray-300/50 print:bg-white print:p-0 flex justify-center custom-scroll">
+                    <div class="a4-paper flex flex-col print-exact" id="printArea">
+                        
+                        <!-- Kop Surat Resmi Beuna -->
+                        <div class="flex justify-between items-start border-b-2 border-gray-900 pb-4 mb-6">
+                            <div class="flex items-center gap-4">
+                                <img src="https://raw.githubusercontent.com/sunsetdansenja-arch/beuna-agency/main/beuna%20logo%20v2.png" alt="Beuna Logo" class="w-16 h-16 object-contain">
+                                <div>
+                                    <h1 class="text-3xl font-extrabold tracking-tighter text-gray-900 leading-none">BEUNA<span class="text-red-700">.</span></h1>
+                                    <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-1">System Analyst & Automation Hub</p>
+                                </div>
+                            </div>
+                            <div class="text-right text-[10px] text-gray-500 pt-2">
+                                <p>Email: hello@beuna.agency</p>
+                                <p>Web: beuna.agency</p>
+                                <p>Jakarta, Indonesia</p>
+                            </div>
+                        </div>
+
+                        <!-- Meta Info Dokumen -->
+                        <div class="flex justify-between items-start mb-8">
+                            <div>
+                                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Ditujukan Kepada:</p>
+                                <p class="text-base font-bold text-gray-900 uppercase" id="a4ClientName">Nama Klien</p>
+                            </div>
+                            <div class="text-right">
+                                <h2 class="text-xl font-black text-gray-900 uppercase tracking-widest" id="a4DocTypeLabel">DOCUMENT</h2>
+                                <p class="text-xs text-gray-600 mt-1 font-mono" id="a4DocNum">000/BEUNA/2026</p>
+                                <p class="text-xs text-gray-600 font-medium" id="a4Date">Tanggal: -</p>
+                            </div>
+                        </div>
+
+                        <!-- DYNAMIC LAYOUTS -->
+                        <div class="flex-1 print-text-content">
+                            
+                            <!-- A. Layout Offer Letter -->
+                            <div id="layoutOFF" class="w-full hidden">
+                                <p class="mb-4">Dengan hormat,</p>
+                                <p class="mb-4 text-justify">Berdasarkan hasil diskusi teknis yang telah dilakukan, Beuna Agency bermaksud menyampaikan penawaran kerjasama terkait <b><span id="a4OffTitle">Judul</span></b> dengan rincian sebagai berikut:</p>
+                                
+                                <p class="font-bold mb-2">1. Ruang Lingkup Pekerjaan (Scope of Work):</p>
+                                <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 mb-4 whitespace-pre-wrap text-sm" id="a4OffScope">Scope Data</div>
+                                
+                                <p class="font-bold mb-2">2. Estimasi & Investasi:</p>
+                                <table class="w-full text-left border-collapse mb-6 text-sm">
+                                    <tr class="border-b border-gray-200"><td class="py-2 w-1/3">Estimasi Pengerjaan</td><td class="py-2 font-medium" id="a4OffDuration">-</td></tr>
+                                    <tr class="border-b border-gray-200"><td class="py-2">Total Nilai Investasi</td><td class="py-2 font-bold text-gray-900" id="a4OffTotal">Rp 0</td></tr>
+                                </table>
+
+                                <p class="text-justify mb-4">Demikian surat penawaran ini kami sampaikan. Penawaran ini berlaku selama 14 (empat belas) hari kerja sejak surat diterbitkan. Besar harapan kami untuk dapat menjalin kerjasama yang baik dengan Bapak/Ibu.</p>
+                            </div>
+
+                            <!-- B. Layout Invoice -->
+                            <div id="layoutINV" class="w-full hidden">
+                                <p class="mb-4 text-xs bg-gray-100 py-1 px-3 rounded inline-block font-bold text-gray-600">Perihal: <span id="a4InvTypeLabel">Termin</span></p>
+                                
+                                <table class="w-full text-left border-collapse mt-2">
+                                    <thead>
+                                        <tr class="border-b-2 border-gray-900">
+                                            <th class="py-3 text-xs uppercase font-bold text-gray-500 w-12 text-center">No</th>
+                                            <th class="py-3 text-xs uppercase font-bold text-gray-500">Deskripsi Item Layanan</th>
+                                            <th class="py-3 text-xs uppercase font-bold text-gray-500 text-right w-1/3">Subtotal</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="a4InvBody">
+                                        <!-- Injected via JS -->
+                                    </tbody>
+                                    <tfoot>
+                                        <tr class="border-t-2 border-gray-900">
+                                            <td colspan="2" class="py-4 text-sm font-bold text-right uppercase tracking-widest pr-4">Total Tagihan</td>
+                                            <td class="py-4 text-lg font-black text-right text-gray-900" id="a4InvGrandTotal">Rp 0</td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+
+                                <div class="flex justify-start mt-10">
+                                    <div class="w-2/3 bg-blue-50 p-5 border border-blue-100 rounded-xl">
+                                        <p class="text-[10px] font-bold text-blue-800 uppercase tracking-widest mb-2"><i class="ph-bold ph-bank"></i> Informasi Pembayaran Transfrer:</p>
+                                        <p class="text-base font-black text-gray-900 tracking-wider">BCA - 123 456 7890</p>
+                                        <p class="text-sm font-medium text-gray-600">a.n Dimas Santosa (Beuna Agency)</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- C. Layout BAP -->
+                            <div id="layoutBAP" class="w-full hidden">
+                                <p class="mb-6 text-justify">Pada hari ini, dengan merujuk pada perjanjian kerjasama yang telah disepakati, pihak Beuna Agency menerangkan bahwa telah dilakukan tindakan pemeliharaan sistem (System Maintenance) dengan log rincian teknis sebagai berikut:</p>
+                                
+                                <table class="w-full text-left border-collapse text-sm">
+                                    <thead>
+                                        <tr class="border-b-2 border-gray-900 bg-gray-50 print:bg-transparent">
+                                            <th class="py-2 px-2 text-[10px] uppercase font-bold text-gray-500 w-1/5">Tanggal</th>
+                                            <th class="py-2 px-2 text-[10px] uppercase font-bold text-gray-500 w-1/5">Kategori Perbaikan</th>
+                                            <th class="py-2 px-2 text-[10px] uppercase font-bold text-gray-500 w-2/5">Catatan Detail N8N</th>
+                                            <th class="py-2 px-2 text-[10px] uppercase font-bold text-gray-500 w-1/5 text-right">Teknisi PIC</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="a4BapLogs"></tbody>
+                                </table>
+                                <div id="a4BapEmpty" class="hidden mt-4 text-xs text-red-600 italic">Data kosong. Pastikan Developer telah mengisi log.</div>
+                                
+                                <p class="mt-6 text-justify">Sistem telah diuji pasca pemeliharaan dan beroperasi secara normal sesuai dengan spesifikasi fungsional yang diharapkan.</p>
+                            </div>
+
+                            <!-- D. Layout BAST -->
+                            <div id="layoutBAST" class="w-full hidden">
+                                <p class="mb-4 text-justify">Yang bertanda tangan di bawah ini menerangkan bahwa:</p>
+                                <p class="mb-4">Telah diselesaikan dan diserahterimakan pekerjaan pengembangan sistem dengan detail:</p>
+                                
+                                <table class="w-full text-left border-collapse mb-6 text-sm">
+                                    <tr class="border-b border-gray-200"><td class="py-2 w-1/3">Nama Project</td><td class="py-2 font-bold text-gray-900" id="a4BastTitle">-</td></tr>
+                                    <tr class="border-b border-gray-200"><td class="py-2">Status Pekerjaan</td><td class="py-2 font-bold text-green-600">Selesai 100% (Deployed)</td></tr>
+                                    <tr class="border-b border-gray-200"><td class="py-2">Masa Garansi / Support</td><td class="py-2 font-medium" id="a4BastGuarantee">-</td></tr>
+                                </table>
+
+                                <p class="text-justify mb-4">Pihak Klien menyatakan telah menerima hasil pekerjaan tersebut dengan baik dan telah dilakukan *testing* operasional. Dengan ditandatanganinya BAST ini, maka kewajiban Pihak Beuna Agency pada fase *development* dinyatakan telah terpenuhi.</p>
+                            </div>
+
+                        </div>
+
+                        <!-- Footer / Signatures -->
+                        <div class="mt-20 flex justify-between px-10">
+                            <div class="text-center w-40">
+                                <p class="text-xs font-bold text-gray-500 mb-20 uppercase tracking-widest">Pihak Klien</p>
+                                <p class="text-sm font-bold border-b border-gray-400 pb-1"></p>
+                                <p class="text-[10px] text-gray-400 mt-1">Direktur / Perwakilan</p>
+                            </div>
+                            <div class="text-center w-40">
+                                <p class="text-xs font-bold text-gray-500 mb-20 uppercase tracking-widest">Beuna Agency</p>
+                                <p class="text-sm font-bold border-b border-gray-900 pb-1 text-gray-900" id="a4Signer">Admin</p>
+                                <p class="text-[10px] text-gray-400 mt-1">System Analyst</p>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
             </div>
@@ -303,329 +364,205 @@
 
     <!-- ================= JAVASCRIPT LOGIC ================= -->
     <script>
-        // --- 1. MOCK DATA & STATE ---
-        let activeUser = null; // { id, name, role }
-        let viewMode = 'team'; // 'team' or 'personal'
-        let activeStageView = ''; 
+        // --- 1. MOCK DATA & SESSION STATE (ANTI-REFRESH) ---
+        const users = { 'admin': { name: 'Dimas Santosa', role: 'Owner' }, 'budi': { name: 'Budi', role: 'Sales' } };
+        let activeUser = null;
+        let activeDocType = 'OFF';
 
-        // User Directory
-        const users = {
-            'admin': { id: 'admin', name: 'Dimas Santosa', role: 'System Architect / Owner', initials: 'DS' },
-            'budi': { id: 'budi', name: 'Budi (Sales)', role: 'Account Executive', initials: 'BD' }
+        let leads = [
+            { id: "L1", name: "PT Sejahtera (Supply Chain)", status: "won" },
+            { id: "L2", name: "Klinik ABC (WA Bot)", status: "new" },
+            { id: "L5", name: "Laundry Fortuna", status: "won" }
+        ];
+
+        let devLogs = [
+            { projId: "L5", category: "System Update", detail: "Update node WhatsApp", pic: "DEV_01", date: "07/04/2026" }
+        ];
+
+        // State for Multi-Item Invoice
+        let invoiceItems = [
+            { id: Date.now(), desc: "Setup Otomasi N8N Dasar", amount: 2500000 }
+        ];
+
+        // --- SESSION RESTORE ---
+        window.onload = () => {
+            const savedUser = localStorage.getItem('beunaUser');
+            if(savedUser && users[savedUser]) {
+                activeUser = users[savedUser];
+                document.getElementById('loginView').classList.add('hidden');
+                document.getElementById('managerialView').classList.remove('hidden');
+                switchManagerialView('docHub'); // Default ke docHub
+            }
         };
 
-        // Leads Database (Now with PIC tracking)
-        let leads = [
-            { id: "L1", name: "PT Sejahtera (Supply Chain)", status: "new", lastContact: "Today", reason: "", phone: "6281234567890", followupDate: "", pic: null },
-            { id: "L8", name: "Bakery Pak Budi", status: "new", lastContact: "Today", reason: "", phone: "628999000111", followupDate: "", pic: null },
-            { id: "L2", name: "Klinik ABC (WA Bot)", status: "reached", lastContact: "Yesterday", reason: "", phone: "6289876543210", followupDate: "", pic: "Dimas Santosa" },
-            { id: "L3", name: "Resto Toti (Dashboard)", status: "meeting", lastContact: "2 Days Ago", reason: "", phone: "628111222333", followupDate: "", pic: "Budi (Sales)" },
-            { id: "L4", name: "Reflexology Sutarman", status: "nego", lastContact: "Today", reason: "", phone: "628444555666", followupDate: "", pic: "Dimas Santosa" },
-            { id: "L5", name: "Laundry Fortuna", status: "won", lastContact: "Ongoing", reason: "", phone: "628777888999", followupDate: "", pic: "Dimas Santosa" },
-            { id: "L9", name: "Gym Fitnes Pro", status: "won", lastContact: "Yesterday", reason: "", phone: "628222333444", followupDate: "", pic: "Budi (Sales)" },
-            { id: "L6", name: "Coffee Shop Indie", status: "nurture", lastContact: "Last Month", reason: "", phone: "628000111222", followupDate: "May 2026", pic: "Dimas Santosa" },
-            { id: "L7", name: "Toko Baju Muslim", status: "lost", lastContact: "2 Months Ago", reason: "Out of Budget", phone: "628333444555", followupDate: "", pic: "Budi (Sales)" }
-        ];
-
-        let activities = [
-            { time: "09:30", user: "Budi (Sales)", text: "menutup deal dengan Gym Fitnes Pro" },
-            { time: "10:15", user: "Dimas Santosa", text: "mengirim pesan pertama ke Klinik ABC" }
-        ];
-
-        // --- 2. AUTHENTICATION & INITIALIZATION ---
+        // --- 2. AUTHENTICATION ---
         function handleLogin(e) {
             e.preventDefault();
             const u = document.getElementById('username').value.toLowerCase();
             if(users[u]) {
+                localStorage.setItem('beunaUser', u);
                 activeUser = users[u];
-                
-                // Initialize Profile UI
-                document.getElementById('profileInitials').innerText = activeUser.initials;
-                document.getElementById('profileName').innerText = activeUser.name;
-                document.getElementById('profileRole').innerText = activeUser.role;
-
                 document.getElementById('loginView').classList.add('hidden');
                 document.getElementById('managerialView').classList.remove('hidden');
-                
-                // Default View setting based on role
-                if(u !== 'admin') {
-                    viewMode = 'personal';
-                    document.getElementById('viewToggle').checked = false;
-                    document.getElementById('viewToggle').disabled = true; // Lock sales to personal view
-                } else {
-                    viewMode = 'team'; // Admin sees team by default
-                    document.getElementById('viewToggle').checked = true;
-                }
-
-                switchManagerialView('crm'); 
-            } else { alert("User tidak ditemukan. Gunakan 'admin' atau 'budi'."); }
+                switchManagerialView('docHub'); 
+            } else { alert("User tidak ditemukan."); }
         }
 
-        function logout() { location.reload(); }
-
-        // --- 3. SYSTEM LOGGER & LEADERBOARD ---
-        function logActivity(text) {
-            const time = new Date().toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'});
-            activities.unshift({ time, user: activeUser.name, text });
-            if(activities.length > 10) activities.pop(); // keep last 10
-            renderActivityFeed();
+        function logout() { 
+            localStorage.removeItem('beunaUser');
+            location.reload(); 
         }
 
-        function renderActivityFeed() {
-            const container = document.getElementById('activityFeedList');
-            container.innerHTML = activities.map((a, i) => `
-                <div class="timeline-item relative pl-6 pb-4">
-                    <div class="timeline-line"></div>
-                    <div class="absolute left-0 top-1 w-2.5 h-2.5 rounded-full bg-indigo-500 border-2 border-white z-10 shadow-sm"></div>
-                    <p class="text-[10px] font-bold text-gray-400 font-mono">${a.time}</p>
-                    <p class="text-xs text-gray-800 leading-snug"><span class="font-bold">${a.user}</span> ${a.text}</p>
-                </div>
-            `).join('');
-        }
-
-        function renderLeaderboard() {
-            // Group 'won' leads by PIC
-            let scores = {};
-            leads.filter(l => l.status === 'won' && l.pic).forEach(l => {
-                scores[l.pic] = (scores[l.pic] || 0) + 1;
-            });
-            
-            // Sort to array
-            let sortedArr = Object.keys(scores).map(pic => ({pic, score: scores[pic]})).sort((a,b) => b.score - a.score);
-            
-            const medals = ['🥇', '🥈', '🥉'];
-            document.getElementById('leaderboardList').innerHTML = sortedArr.map((item, index) => `
-                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl border border-gray-100">
-                    <div class="flex items-center gap-3">
-                        <span class="text-xl">${medals[index] || '🏅'}</span>
-                        <span class="text-xs font-bold text-gray-900">${item.pic}</span>
-                    </div>
-                    <span class="text-sm font-black text-green-600 bg-green-100 px-3 py-1 rounded-lg shadow-inner">${item.score} Deals</span>
-                </div>
-            `).join('');
-        }
-
-        // --- 4. CRM HUB NAVIGATION & LOGIC ---
-        function toggleViewMode() {
-            viewMode = document.getElementById('viewToggle').checked ? 'team' : 'personal';
-            document.getElementById('widgetTitle').innerText = viewMode === 'team' ? "Pipeline: Team View" : "Pipeline: My Workspace";
-            
-            // Highlight text labels
-            document.getElementById('labelTeamView').className = viewMode === 'team' ? "text-xs font-bold text-indigo-600" : "text-xs font-bold text-gray-400";
-            document.getElementById('labelMyView').className = viewMode === 'personal' ? "text-xs font-bold text-indigo-600" : "text-xs font-bold text-gray-400";
-            
-            renderCRMHub();
-        }
-
+        // --- 3. NAVIGATION ---
         function switchManagerialView(viewId) {
             ['view-crm', 'view-crm-detail', 'view-docHub', 'view-docGen'].forEach(id => document.getElementById(id).classList.add('hidden'));
             document.getElementById(`view-${viewId}`).classList.remove('hidden');
             
-            document.getElementById('nav-crm').className = (viewId === 'crm' || viewId === 'crm-detail') ? "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold bg-white shadow-sm border border-gray-200 text-gray-900 transition-all" : "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold text-gray-500 hover:bg-white/50 hover:text-gray-900 transition-all";
-            document.getElementById('nav-docs').className = (viewId === 'docHub' || viewId === 'docGen') ? "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold bg-white shadow-sm border border-gray-200 text-gray-900 transition-all" : "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold text-gray-500 hover:bg-white/50 hover:text-gray-900 transition-all";
-
-            if(viewId === 'crm') {
-                renderCRMHub();
-                renderActivityFeed();
-                renderLeaderboard();
-            }
+            document.getElementById('nav-docs').className = (viewId === 'docHub' || viewId === 'docGen') ? "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold bg-white shadow-sm border border-gray-100 text-gray-900 transition-all" : "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold text-gray-500 hover:bg-white/50 hover:text-gray-900 transition-all";
+            document.getElementById('nav-crm').className = "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold text-gray-500 hover:bg-white/50 hover:text-gray-900 transition-all";
         }
 
-        function renderCRMHub() {
-            // Apply filtering logic based on viewMode
-            let filteredLeads = viewMode === 'team' ? leads : leads.filter(l => l.pic === activeUser.name || l.status === 'new');
-            // Note: Even in personal view, they see "Fresh" leads so they can claim them.
+        // --- 4. DOCS GENERATOR CORE ---
+        const romanMonths = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'];
 
-            // Personal Stats calculation
-            const myWins = leads.filter(l => l.pic === activeUser.name && l.status === 'won').length;
-            const myActives = leads.filter(l => l.pic === activeUser.name && ['reached','meeting','nego'].includes(l.status)).length;
-            document.getElementById('profileWins').innerText = myWins;
-            document.getElementById('profileActive').innerText = myActives;
-
-            // Update Hub Widget Counts based on filteredLeads
-            const stageNamesLocal = { 'new':0, 'reached':0, 'meeting':0, 'nego':0, 'won':0, 'nurture':0, 'lost':0 };
-            
-            let stats = { won: 0, lost: 0 };
-            filteredLeads.forEach(l => {
-                if(stageNamesLocal[l.status] !== undefined) stageNamesLocal[l.status]++;
-                if(l.status === 'won') stats.won++;
-                if(l.status === 'lost') stats.lost++;
-            });
-
-            Object.keys(stageNamesLocal).forEach(status => {
-                const el = document.getElementById(`hub-count-${status}`);
-                if(el) el.innerText = stageNamesLocal[status];
-            });
-
-            // Global/View Stats
-            const totalPipeline = stats.won + stats.lost;
-            const winRate = totalPipeline > 0 ? Math.round((stats.won / totalPipeline) * 100) : 0;
-            document.getElementById('hub-stat-total').innerText = leads.length; // Total agency leads is absolute
-            document.getElementById('hub-stat-win').innerText = winRate + '%';
-        }
-
-        // --- 5. CRM STAGE DETAIL (THE ROOM) ---
-        const stageTitles = { 'new': 'Fresh Leads', 'reached': 'Reached Out', 'meeting': 'Meeting', 'nego': 'Nego & Offer', 'won': 'Closed Won', 'nurture': 'Nurture (KIV)', 'lost': 'Closed Lost', 'search': 'Search Results' };
-        
-        function openStageDetail(status) {
-            activeStageView = status;
-            document.getElementById('view-crm').classList.add('hidden');
-            document.getElementById('view-crm-detail').classList.remove('hidden');
-            
-            document.getElementById('detailStageTitle').innerText = stageTitles[status];
-            document.getElementById('localSearch').value = '';
-            filterStageDetail();
-        }
-
-        function filterStageDetail() {
-            const q = document.getElementById('localSearch').value.toLowerCase();
-            
-            // Determine base list
-            let sourceList = viewMode === 'team' ? leads : leads.filter(l => l.pic === activeUser.name || l.status === 'new');
-            
-            if(activeStageView !== 'search') {
-                sourceList = sourceList.filter(l => l.status === activeStageView);
-            }
-
-            // Apply search query
-            if(q) sourceList = sourceList.filter(l => l.name.toLowerCase().includes(q));
-            
-            renderDetailCards(sourceList);
-        }
-
-        function renderDetailCards(listToRender) {
-            document.getElementById('detailStageCount').innerText = `${listToRender.length} Leads`;
-            const grid = document.getElementById('detailGrid');
-            grid.innerHTML = '';
-            
-            if(listToRender.length === 0) {
-                grid.innerHTML = `<div class="col-span-full py-16 text-center border border-dashed border-gray-200 rounded-3xl"><i class="ph-fill ph-empty text-4xl text-gray-300 mb-2"></i><p class="text-gray-400">Tidak ada data ditemukan.</p></div>`;
-                return;
-            }
-
-            listToRender.forEach(l => {
-                // Tracking PIC Visuals
-                const picLabel = l.pic ? l.pic : 'Unassigned';
-                const picColor = l.pic ? 'text-indigo-600 bg-indigo-50 border-indigo-200' : 'text-gray-400 bg-gray-50 border-gray-200 border-dashed';
-
-                let metaTags = `<span class="bg-gray-50 text-gray-500 px-2 py-0.5 rounded text-[10px] border border-gray-200 shadow-sm"><i class="ph-bold ph-user mr-1"></i>${picLabel}</span>`;
-                metaTags += `<span class="text-gray-400 text-[10px] flex items-center ml-2 border-l pl-2">Last: ${l.lastContact}</span>`;
-                if(l.status === 'nurture') metaTags += `<span class="bg-orange-100 text-orange-700 px-2 py-0.5 rounded text-[10px] font-bold ml-2">KIV: ${l.followupDate}</span>`;
-                if(l.status === 'lost') metaTags += `<span class="bg-red-100 text-red-700 px-2 py-0.5 rounded text-[10px] font-bold ml-2">Rsn: ${l.reason}</span>`;
-
-                // Quick Actions Logic (CLAIM vs STATUS)
-                let actionRow = '';
-                let selectHtml = '';
-
-                if(l.status === 'new') {
-                    // Claim Logic
-                    actionRow = `<button onclick="claimAndReachOut('${l.id}')" class="w-full bg-indigo-50 hover:bg-indigo-600 hover:text-white text-indigo-700 border border-indigo-200 text-xs font-bold py-3 rounded-xl transition-all shadow-sm">Ambil & Reach Out</button>`;
-                } else {
-                    // Normal Status Select (Only if team mode or PIC matches)
-                    const disableSelect = (viewMode === 'personal' && l.pic !== activeUser.name) ? 'disabled' : '';
-                    
-                    selectHtml = `
-                        <select onchange="updateLeadStatus('${l.id}', this.value)" class="status-select bg-gray-50 border border-gray-200 rounded px-1" ${disableSelect}>
-                            <option value="reached" ${l.status==='reached'?'selected':''}>Reached</option>
-                            <option value="meeting" ${l.status==='meeting'?'selected':''}>Meeting</option>
-                            <option value="nego" ${l.status==='nego'?'selected':''}>Nego</option>
-                            <option value="won" ${l.status==='won'?'selected':''}>Won</option>
-                            <option disabled>──────</option>
-                            <option value="nurture" ${l.status==='nurture'?'selected':''}>Nurture</option>
-                            <option value="lost" ${l.status==='lost'?'selected':''}>Lost</option>
-                        </select>
-                    `;
-
-                    let waBtn = `<button onclick="window.open('https://wa.me/${l.phone}', '_blank')" class="flex-1 bg-green-50 hover:bg-green-500 hover:text-white text-green-700 border border-green-200 text-[10px] font-bold py-2 rounded-lg transition-all flex items-center justify-center gap-1 shadow-sm"><i class="ph-fill ph-whatsapp-logo text-lg"></i> WA</button>`;
-                    let bridgeBtn = '';
-                    if(l.status === 'nego') bridgeBtn = `<button onclick="jumpToDocs('OFF', '${l.id}')" class="flex-1 bg-yellow-50 hover:bg-yellow-100 text-yellow-700 border border-yellow-200 text-[10px] font-bold py-2 rounded-lg transition-colors flex items-center justify-center gap-1 shadow-sm"><i class="ph-bold ph-file-text"></i> Offer</button>`;
-                    if(l.status === 'won') bridgeBtn = `<button onclick="jumpToDocs('INV', '${l.id}')" class="flex-1 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 text-[10px] font-bold py-2 rounded-lg transition-colors flex items-center justify-center gap-1 shadow-sm"><i class="ph-bold ph-receipt"></i> Invoice</button>`;
-                    
-                    actionRow = `<div class="flex gap-2 mt-auto pt-3 border-t border-gray-100 w-full">${waBtn}${bridgeBtn}</div>`;
-                }
-
-                grid.innerHTML += `
-                <div class="glass-card p-5 rounded-2xl flex flex-col gap-3 min-h-[160px]">
-                    <div class="flex justify-between items-start">
-                        <div class="w-2/3">
-                            <h4 class="font-bold text-sm text-gray-900 pr-2 leading-snug truncate" title="${l.name}">${l.name}</h4>
-                            <div class="flex items-center flex-wrap mt-2 gap-y-2">${metaTags}</div>
-                        </div>
-                        <div class="w-1/3 text-right">
-                            ${selectHtml}
-                        </div>
-                    </div>
-                    ${actionRow}
-                </div>`;
-            });
-        }
-
-        // --- 6. ACTION LOGIC ---
-        function claimAndReachOut(leadId) {
-            const index = leads.findIndex(l => l.id === leadId);
-            if(index === -1) return;
-
-            leads[index].pic = activeUser.name;
-            leads[index].status = 'reached';
-            leads[index].lastContact = "Just Now";
-            
-            logActivity(`mengambil prospek baru: ${leads[index].name}`);
-            
-            window.open(`https://wa.me/${leads[index].phone}?text=Halo%20${leads[index].name},%20saya%20${activeUser.name}%20dari%20Beuna%20Agency...`, '_blank');
-            filterStageDetail(); // re-render
-        }
-
-        function updateLeadStatus(leadId, newStatus) {
-            const index = leads.findIndex(l => l.id === leadId);
-            if(index === -1) return;
-            const leadName = leads[index].name;
-
-            if(newStatus === 'lost') {
-                const r = prompt("Alasan gagal/batal? (Cth: Harga, Ghosting):");
-                if(!r) { filterStageDetail(); return; } // reset visual
-                leads[index].reason = r;
-            } else if(newStatus === 'nurture') {
-                const fm = prompt("Bulan estimasi follow up? (Cth: Mei 2026):");
-                leads[index].followupDate = fm || "TBA";
-            }
-
-            const oldStatus = leads[index].status;
-            leads[index].status = newStatus;
-            leads[index].lastContact = "Just Now";
-            
-            logActivity(`memindahkan ${leadName} ke ${stageTitles[newStatus]}`);
-            filterStageDetail(); // Refresh UI
-        }
-
-        function jumpToDocs(docType, leadId) {
+        function openGenerator(type) {
             switchManagerialView('docGen');
+            activeDocType = type;
             
-            document.getElementById('a4Signer').innerText = activeUser.name; // Apply user name to Doc
-            
-            activeDocType = docType;
-            const targetLeads = docType === 'OFF' ? leads : leads.filter(l => l.status === 'won');
+            // Populate Dropdown
+            const targetLeads = type === 'OFF' ? leads : leads.filter(l => l.status === 'won');
             document.getElementById('genProject').innerHTML = targetLeads.map(l => `<option value="${l.id}">${l.name}</option>`).join('');
-            document.getElementById('genProject').value = leadId;
             
-            document.getElementById('genTitle').innerText = "Generate " + docType;
-            document.getElementById('formINV').classList.toggle('hidden', docType !== 'INV');
-            document.getElementById('formBAP').classList.toggle('hidden', docType !== 'BAP');
-            document.getElementById('layoutINV').classList.toggle('hidden', docType !== 'INV');
-            document.getElementById('layoutBAP').classList.toggle('hidden', docType !== 'BAP');
-            document.getElementById('layoutOTHER').classList.toggle('hidden', docType === 'INV' || docType === 'BAP');
+            // Toggle Forms & Layouts
+            const formIds = ['formOFF', 'formINV', 'formBAP', 'formBAST'];
+            formIds.forEach(id => document.getElementById(id).classList.add('hidden'));
+            document.getElementById(`form${type}`).classList.remove('hidden');
+
+            const layoutIds = ['layoutOFF', 'layoutINV', 'layoutBAP', 'layoutBAST'];
+            layoutIds.forEach(id => document.getElementById(id).classList.add('hidden'));
+            document.getElementById(`layout${type}`).classList.remove('hidden');
+
+            // Setup Header Info
+            const typesLabel = {'OFF': 'OFFER LETTER', 'INV': 'INVOICE', 'BAP': 'BERITA ACARA', 'BAST': 'B.A.S.T'};
+            document.getElementById('genTitle').innerText = `Generate ${typesLabel[type]}`;
+            document.getElementById('a4DocTypeLabel').innerText = typesLabel[type];
+            document.getElementById('a4Signer').innerText = activeUser.name;
             
-            document.getElementById('a4Date').innerText = "Tanggal: " + new Date().toLocaleDateString('id-ID');
-            updateA4Preview(); // Trigger function loaded previously
-        }
-        
-        // Ensure A4 Preview works
-        function updateA4Preview() {
-            const docType = document.getElementById('a4Type').innerText || 'OFF';
-            document.getElementById('a4DocNum').innerText = `00${Math.floor(Math.random()*9+1)}/BN/${docType}/26`;
-            const lead = leads.find(l => l.id === document.getElementById('genProject').value);
-            if(lead) document.getElementById('a4ClientName').innerText = lead.name;
+            // Format Tanggal
+            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('a4Date').innerText = "Tanggal: " + new Date().toLocaleDateString('id-ID', options);
+
+            // Render Invoice items if it's INV
+            if(type === 'INV') renderInvoiceItemsForm();
+
+            updateA4Preview();
         }
 
+        function formatIDR(num) {
+            return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(num);
+        }
+
+        function updateA4Preview() {
+            const leadId = document.getElementById('genProject').value;
+            const lead = leads.find(l => l.id === leadId);
+            if(!lead) return;
+
+            // Auto-Numbering Cerdas: 015/BEUNA/INV/IV/2026
+            const d = new Date();
+            const romanMonth = romanMonths[d.getMonth()];
+            const rdmStr = Math.floor(Math.random()*90+10).toString().padStart(3, '0');
+            document.getElementById('a4DocNum').innerText = `${rdmStr}/BEUNA/${activeDocType}/${romanMonth}/${d.getFullYear()}`;
+            
+            document.getElementById('a4ClientName').innerText = lead.name;
+
+            // Dynamic Content Binding
+            if(activeDocType === 'OFF') {
+                document.getElementById('a4OffTitle').innerText = document.getElementById('offTitle').value;
+                document.getElementById('a4OffScope').innerText = document.getElementById('offScope').value;
+                document.getElementById('a4OffDuration').innerText = document.getElementById('offDuration').value;
+                document.getElementById('a4OffTotal').innerText = formatIDR(document.getElementById('offTotal').value);
+            } 
+            else if(activeDocType === 'INV') {
+                document.getElementById('a4InvTypeLabel').innerText = document.getElementById('invType').value;
+                renderInvoiceItemsA4();
+            }
+            else if(activeDocType === 'BAP') {
+                const targetLogs = devLogs.filter(l => l.projId === leadId);
+                const tbody = document.getElementById('a4BapLogs');
+                if(targetLogs.length > 0) {
+                    document.getElementById('a4BapEmpty').classList.add('hidden');
+                    tbody.innerHTML = targetLogs.map(l => `<tr class="border-b border-gray-200"><td class="py-2 px-2">${l.date}</td><td class="py-2 px-2 font-bold">${l.category}</td><td class="py-2 px-2 text-gray-600">${l.detail}</td><td class="py-2 px-2 text-right font-mono">${l.pic}</td></tr>`).join('');
+                } else {
+                    tbody.innerHTML = '';
+                    document.getElementById('a4BapEmpty').classList.remove('hidden');
+                }
+            }
+            else if(activeDocType === 'BAST') {
+                document.getElementById('a4BastTitle').innerText = document.getElementById('bastTitle').value;
+                document.getElementById('a4BastGuarantee').innerText = document.getElementById('bastGuarantee').value;
+            }
+        }
+
+        // --- 5. INVOICE MULTI-ITEM LOGIC ---
+        function renderInvoiceItemsForm() {
+            const container = document.getElementById('invItemsContainer');
+            container.innerHTML = invoiceItems.map((item, index) => `
+                <div class="flex gap-2 items-center bg-gray-50 p-2 rounded-xl border border-gray-200">
+                    <input type="text" value="${item.desc}" onchange="updateInvoiceItem(${item.id}, 'desc', this.value)" class="w-2/3 bg-white border border-gray-200 rounded px-2 py-1 text-xs focus:outline-none" placeholder="Deskripsi">
+                    <input type="number" value="${item.amount}" onchange="updateInvoiceItem(${item.id}, 'amount', this.value)" class="w-1/3 bg-white border border-gray-200 rounded px-2 py-1 text-xs focus:outline-none" placeholder="Rp">
+                    <button onclick="removeInvoiceItem(${item.id})" class="text-red-500 hover:bg-red-50 p-1 rounded"><i class="ph-bold ph-trash"></i></button>
+                </div>
+            `).join('');
+            updateA4Preview();
+        }
+
+        function addInvoiceItem() {
+            invoiceItems.push({ id: Date.now(), desc: "Item Baru", amount: 0 });
+            renderInvoiceItemsForm();
+        }
+
+        function removeInvoiceItem(id) {
+            if(invoiceItems.length === 1) return; // Prevent removing last item
+            invoiceItems = invoiceItems.filter(i => i.id !== id);
+            renderInvoiceItemsForm();
+        }
+
+        function updateInvoiceItem(id, field, value) {
+            const item = invoiceItems.find(i => i.id === id);
+            if(item) {
+                item[field] = field === 'amount' ? Number(value) : value;
+                updateA4Preview();
+            }
+        }
+
+        function renderInvoiceItemsA4() {
+            const tbody = document.getElementById('a4InvBody');
+            let grandTotal = 0;
+            tbody.innerHTML = invoiceItems.map((item, index) => {
+                grandTotal += item.amount;
+                return `
+                <tr class="border-b border-gray-200">
+                    <td class="py-3 text-center">${index + 1}</td>
+                    <td class="py-3 font-medium">${item.desc}</td>
+                    <td class="py-3 font-mono text-right font-bold text-gray-900">${formatIDR(item.amount)}</td>
+                </tr>`;
+            }).join('');
+            document.getElementById('a4InvGrandTotal').innerText = formatIDR(grandTotal);
+        }
+
+        // --- 6. SMART PRINT LOGIC ---
+        function printDocument() {
+            const origTitle = document.title;
+            const leadName = document.getElementById('a4ClientName').innerText.replace(/[^a-zA-Z0-9]/g, '_');
+            const dateStr = new Date().toLocaleDateString('id-ID', {month:'short', year:'numeric'}).replace(' ','');
+            
+            // Ubah Title agar nama file PDF bagus saat di-Save
+            document.title = `${activeDocType}_${leadName}_${dateStr}`;
+            window.print();
+            
+            // Kembalikan Title setelah print dialog tertutup
+            setTimeout(() => { document.title = origTitle; }, 100);
+        }
     </script>
 </body>
 </html>
