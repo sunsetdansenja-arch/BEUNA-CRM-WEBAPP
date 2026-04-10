@@ -22,6 +22,8 @@
         .toggle-checkbox:checked + .toggle-label { background-color: #4f46e5; }
         .timeline-line::before { content: ''; position: absolute; left: 11px; top: 20px; bottom: -20px; width: 2px; background: #e5e7eb; z-index: 0; }
         .timeline-item:last-child .timeline-line::before { display: none; }
+        .loader { border-top-color: #4f46e5; -webkit-animation: spinner 1.5s linear infinite; animation: spinner 1.5s linear infinite; }
+        @keyframes spinner { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body class="antialiased flex h-screen overflow-hidden">
@@ -33,9 +35,12 @@
             <span class="font-extrabold tracking-widest hidden md:block text-lg text-gray-900">BEUNA</span>
         </div>
         <nav class="flex-1 p-4 space-y-2 mt-4">
-            <a href="crm.html" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold bg-white shadow-sm border border-gray-100 text-gray-900 transition-all">
+            <button onclick="switchManagerialView('hub')" id="nav-hub" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold bg-white shadow-sm border border-gray-100 text-gray-900 transition-all">
                 <i class="ph-fill ph-funnel text-xl text-indigo-600"></i> <span class="hidden md:block">CRM Hub</span>
-            </a>
+            </button>
+            <button onclick="switchManagerialView('add')" id="nav-add" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold text-gray-500 hover:bg-white/50 hover:text-gray-900 transition-all">
+                <i class="ph-bold ph-plus-circle text-xl text-green-600"></i> <span class="hidden md:block">Add Fresh Lead</span>
+            </button>
             <a href="docs.html" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold text-gray-500 hover:bg-white/50 hover:text-gray-900 transition-all">
                 <i class="ph-fill ph-files text-xl text-red-600"></i> <span class="hidden md:block">Docs Center</span>
             </a>
@@ -48,7 +53,14 @@
     </aside>
 
     <main class="flex-1 overflow-y-auto relative custom-scroll">
-        <!-- VIEW: CRM DASHBOARD -->
+        
+        <!-- GLOBAL LOADING STATE -->
+        <div id="loadingOverlay" class="absolute inset-0 bg-white/50 backdrop-blur-sm z-50 flex flex-col items-center justify-center hidden">
+            <div class="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-12 w-12 mb-4"></div>
+            <p class="text-sm font-bold text-gray-500 animate-pulse">Sinkronisasi Database...</p>
+        </div>
+
+        <!-- VIEW: CRM DASHBOARD HUB -->
         <div id="view-hub" class="p-6 md:p-8 space-y-6 max-w-[1400px] mx-auto">
             <div class="flex flex-col lg:flex-row gap-6">
                 <!-- User Profile -->
@@ -97,7 +109,7 @@
                 <div onclick="openRoom('nurture')" class="widget-card p-4 rounded-2xl flex items-center justify-between bg-orange-50/50"><div class="flex items-center gap-3"><div class="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center"><i class="ph-fill ph-clock-snooze text-orange-600"></i></div><h4 class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Nurture (KIV)</h4></div><p class="text-xl font-black text-gray-900" id="count-nurture">0</p></div>
                 <div onclick="openRoom('lost')" class="widget-card p-4 rounded-2xl flex items-center justify-between bg-red-50/50"><div class="flex items-center gap-3"><div class="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center"><i class="ph-fill ph-x-circle text-red-600"></i></div><h4 class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Closed Lost</h4></div><p class="text-xl font-black text-gray-900" id="count-lost">0</p></div>
             </div>
-
+            
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
                 <div class="lg:col-span-2 glass-panel rounded-3xl p-6 flex flex-col h-64"><h3 class="text-sm font-bold text-gray-900 mb-4 border-b border-gray-200 pb-2 flex items-center gap-2"><i class="ph-bold ph-pulse text-indigo-600"></i> Live Activity</h3><div id="activityFeedList" class="overflow-y-auto custom-scroll space-y-4"></div></div>
                 <div class="glass-card rounded-3xl p-6 flex flex-col h-64 border-t-4 border-yellow-400"><h3 class="text-sm font-bold text-gray-900 mb-4 border-b border-gray-100 pb-2"><i class="ph-fill ph-trophy text-yellow-500"></i> Top Performers</h3><div id="leaderboardList" class="overflow-y-auto custom-scroll space-y-3"></div></div>
@@ -108,21 +120,67 @@
         <div id="view-room" class="hidden p-6 md:p-10 space-y-6 max-w-[1400px] mx-auto">
             <button onclick="closeRoom()" class="text-xs font-bold text-gray-500 hover:text-gray-900 flex items-center gap-1 bg-white/50 px-3 py-2 rounded-lg border border-gray-200 w-fit"><i class="ph-bold ph-arrow-left"></i> Kembali ke Dashboard</button>
             <div class="glass-panel p-8 rounded-3xl">
-                <div class="flex justify-between items-end border-b border-gray-200 pb-6 mb-6">
-                    <div><h2 class="text-3xl font-extrabold text-gray-900 uppercase" id="roomTitle">STAGE NAME</h2></div>
-                    <input type="text" id="localSearch" placeholder="Cari prospek..." onkeyup="filterRoom()" class="w-64 bg-white border border-gray-200 rounded-xl py-2 px-4 text-xs focus:outline-none focus:border-indigo-500">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-end border-b border-gray-200 pb-6 mb-6 gap-4">
+                    <div><h2 class="text-3xl font-extrabold text-gray-900 uppercase" id="roomTitle">STAGE NAME</h2><p class="text-sm text-gray-500 mt-1">Data prospek terintegrasi dengan n8n.</p></div>
+                    <input type="text" id="localSearch" placeholder="Cari prospek..." onkeyup="filterRoom()" class="w-full md:w-64 bg-white border border-gray-200 rounded-xl py-2 px-4 text-xs focus:outline-none focus:border-indigo-500 shadow-sm">
                 </div>
                 <div id="roomGrid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"></div>
             </div>
         </div>
+
+        <!-- VIEW: ADD FRESH LEAD FORM -->
+        <div id="view-add" class="hidden p-6 md:p-10 max-w-[800px] mx-auto">
+            <div class="glass-panel p-8 md:p-12 rounded-3xl mt-10 shadow-xl border-t-4 border-green-500">
+                <h2 class="text-3xl font-extrabold text-gray-900 mb-2">Input Bahan Bakar</h2>
+                <p class="text-sm text-gray-500 mb-8 border-b border-gray-200 pb-6">Tambahkan prospek baru ke dalam database n8n. Data akan otomatis masuk ke zona "Fresh Leads".</p>
+                
+                <form onsubmit="submitNewLead(event)" class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Nama Usaha / Klien *</label>
+                            <input type="text" id="addNama" required class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-500 shadow-sm">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Industri</label>
+                            <input type="text" id="addIndustri" placeholder="Cth: F&B, Retail, dll" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-500 shadow-sm">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Nomor WhatsApp *</label>
+                            <input type="text" id="addWA" required placeholder="0812xxxx (Format Bebas)" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-500 shadow-sm">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Daerah</label>
+                            <input type="text" id="addDaerah" placeholder="Cth: Jakarta Selatan" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-500 shadow-sm">
+                        </div>
+                    </div>
+                    
+                    <div class="pt-4">
+                        <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Berikan Ke PIC (Opsional)</label>
+                        <select id="addPIC" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-500 shadow-sm">
+                            <option value="">-- Biarkan Kosong (Unassigned) --</option>
+                            <option value="Dimas Santosa">Dimas Santosa</option>
+                            <option value="Budi (Sales)">Budi (Sales)</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" id="btnSubmitLead" class="w-full bg-gray-900 text-white font-bold py-4 rounded-xl hover:bg-black shadow-lg transition-all active:scale-95 mt-4">
+                        Tambahkan Prospek ke Database
+                    </button>
+                </form>
+            </div>
+        </div>
+
     </main>
 
     <script>
+        // --- 1. CONFIG & SESSION ---
+        const WEBHOOK_URL = 'https://n8n-mzbmiib3etk4.kangkung.sumopod.my.id/webhook/beuna-crm-api';
+        
         let session = JSON.parse(localStorage.getItem('beunaSession'));
         if(!session) window.location.href = 'index.html';
 
         let viewMode = session.id === 'admin' ? 'team' : 'personal';
-        let leads = JSON.parse(localStorage.getItem('beunaLeads')) || [];
+        let leads = []; // Data kini kosong, akan diisi N8N
         let activities = JSON.parse(localStorage.getItem('beunaActivities')) || [];
         let activeRoom = '';
 
@@ -138,8 +196,89 @@
             } else {
                 document.getElementById('viewToggle').checked = true;
             }
-            renderHub();
+            
+            // Tarik Data dari N8N
+            fetchLeads();
         };
+
+        // --- 2. API COMMUNICATIONS (THE MAGIC) ---
+        async function fetchLeads() {
+            toggleLoader(true);
+            try {
+                const res = await fetch(WEBHOOK_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ACTION: 'get_leads' })
+                });
+                const json = await res.json();
+                
+                if(json.status === 'success' && json.data) {
+                    // Mapping data n8n ke format frontend
+                    leads = json.data.map(item => {
+                        let s = (item.STATUS || 'new').toLowerCase();
+                        if(s === 'new lead') s = 'new'; // Normalisasi jika n8n menyimpan "New Lead"
+                        
+                        return {
+                            id: item.id || item.rowId || Math.random().toString(),
+                            name: item.NAMA_USAHA || 'Tanpa Nama',
+                            industri: item.INDUSTRI || '',
+                            daerah: item.DAERAH || '',
+                            phone: item.NOMOR_WA || '',
+                            pic: item.INPUT || null,
+                            status: s,
+                            lastContact: 'Synced',
+                            reason: item.REASON || '',
+                            followupDate: item.FOLLOWUP || ''
+                        };
+                    });
+                }
+            } catch(e) { 
+                console.error("API Error:", e);
+                alert("Gagal terhubung ke N8N. Memuat data cache jika ada.");
+            } finally {
+                toggleLoader(false);
+                renderHub();
+                if(!document.getElementById('view-room').classList.contains('hidden')) filterRoom();
+            }
+        }
+
+        async function submitNewLead(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btnSubmitLead');
+            btn.innerHTML = 'Mengirim ke N8N...'; btn.disabled = true;
+
+            const payload = {
+                ACTION: 'create_lead',
+                input_by: document.getElementById('addPIC').value, // PIC Opsional
+                nama_usaha: document.getElementById('addNama').value,
+                industri: document.getElementById('addIndustri').value,
+                daerah: document.getElementById('addDaerah').value,
+                nomor_wa: document.getElementById('addWA').value
+            };
+
+            try {
+                const res = await fetch(WEBHOOK_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                if(res.ok) {
+                    alert('Prospek berhasil ditambahkan!');
+                    e.target.reset();
+                    logActivity(`menambahkan prospek baru: ${payload.nama_usaha}`);
+                    switchManagerialView('hub');
+                    fetchLeads(); // Tarik ulang data segar
+                }
+            } catch(e) { alert('Gagal mengirim data.'); } 
+            finally { btn.innerHTML = 'Tambahkan Prospek ke Database'; btn.disabled = false; }
+        }
+
+        // --- 3. UI LOGIC & RENDERERS ---
+        function toggleLoader(show) { document.getElementById('loadingOverlay').classList.toggle('hidden', !show); }
+
+        function switchManagerialView(viewId) {
+            ['view-hub', 'view-room', 'view-add'].forEach(id => document.getElementById(id).classList.add('hidden'));
+            document.getElementById(`view-${viewId}`).classList.remove('hidden');
+            
+            document.getElementById('nav-hub').className = (viewId === 'hub' || viewId === 'room') ? "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold bg-white shadow-sm border border-gray-100 text-gray-900 transition-all" : "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold text-gray-500 hover:bg-white/50 hover:text-gray-900 transition-all";
+            document.getElementById('nav-add').className = (viewId === 'add') ? "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold bg-white shadow-sm border border-gray-100 text-gray-900 transition-all" : "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold text-gray-500 hover:bg-white/50 hover:text-gray-900 transition-all";
+        }
 
         function toggleViewMode() {
             viewMode = document.getElementById('viewToggle').checked ? 'team' : 'personal';
@@ -151,23 +290,18 @@
         function renderHub() {
             let filteredLeads = viewMode === 'team' ? leads : leads.filter(l => l.pic === session.name || l.status === 'new');
             
-            // Personal Stats
             document.getElementById('profileWins').innerText = leads.filter(l => l.pic === session.name && l.status === 'won').length;
             document.getElementById('profileActive').innerText = leads.filter(l => l.pic === session.name && ['reached','meeting','nego'].includes(l.status)).length;
 
-            // Widget Counts
             const counts = { 'new':0, 'reached':0, 'meeting':0, 'nego':0, 'won':0, 'nurture':0, 'lost':0 };
             filteredLeads.forEach(l => { if(counts[l.status] !== undefined) counts[l.status]++; });
-            
             Object.keys(counts).forEach(k => document.getElementById(`count-${k}`).innerText = counts[k]);
 
-            // Global Stats
             document.getElementById('hub-stat-total').innerText = leads.length;
             const winRate = (counts.won + counts.lost) > 0 ? Math.round((counts.won / (counts.won + counts.lost)) * 100) : 0;
             document.getElementById('hub-stat-win').innerText = winRate + '%';
 
-            renderActivities();
-            renderLeaderboard();
+            renderActivities(); renderLeaderboard();
         }
 
         function renderActivities() {
@@ -194,74 +328,85 @@
             filterRoom();
         }
 
-        function closeRoom() {
-            document.getElementById('view-room').classList.add('hidden');
-            document.getElementById('view-hub').classList.remove('hidden');
-            renderHub();
-        }
+        function closeRoom() { document.getElementById('view-room').classList.add('hidden'); document.getElementById('view-hub').classList.remove('hidden'); renderHub(); }
 
         function filterRoom() {
             const q = document.getElementById('localSearch').value.toLowerCase();
             let source = viewMode === 'team' ? leads : leads.filter(l => l.pic === session.name || l.status === 'new');
             source = source.filter(l => l.status === activeRoom && l.name.toLowerCase().includes(q));
 
-            const grid = document.getElementById('roomGrid');
-            grid.innerHTML = source.map(l => {
+            document.getElementById('roomGrid').innerHTML = source.map(l => {
                 const picBadge = l.pic ? `<span class="bg-indigo-50 text-indigo-600 px-1 rounded text-[10px]">${l.pic}</span>` : `<span class="bg-gray-100 text-gray-400 px-1 rounded text-[10px]">Unassigned</span>`;
                 
                 let actionBtn = '';
                 if(l.status === 'new') {
-                    actionBtn = `<button onclick="claimLead('${l.id}')" class="w-full bg-indigo-50 text-indigo-700 font-bold py-2 rounded-lg text-xs">Ambil & Reach Out</button>`;
+                    actionBtn = `<button onclick="claimLead('${l.id}')" class="w-full bg-indigo-50 hover:bg-indigo-600 hover:text-white text-indigo-700 font-bold py-2 rounded-lg text-xs transition-colors">Ambil & Reach Out</button>`;
                 } else {
                     const dis = (viewMode === 'personal' && l.pic !== session.name) ? 'disabled' : '';
-                    const select = `
-                        <select onchange="updateStatus('${l.id}', this.value)" class="status-select bg-gray-50 border rounded w-1/3" ${dis}>
-                            <option value="reached" ${l.status==='reached'?'selected':''}>Reached</option>
-                            <option value="meeting" ${l.status==='meeting'?'selected':''}>Meeting</option>
-                            <option value="nego" ${l.status==='nego'?'selected':''}>Nego</option>
-                            <option value="won" ${l.status==='won'?'selected':''}>Won</option>
-                            <option value="nurture" ${l.status==='nurture'?'selected':''}>Nurture</option>
-                            <option value="lost" ${l.status==='lost'?'selected':''}>Lost</option>
-                        </select>`;
+                    const select = `<select onchange="updateStatus('${l.id}', this.value)" class="status-select bg-gray-50 border rounded w-1/3" ${dis}><option value="reached" ${l.status==='reached'?'selected':''}>Reached</option><option value="meeting" ${l.status==='meeting'?'selected':''}>Meeting</option><option value="nego" ${l.status==='nego'?'selected':''}>Nego</option><option value="won" ${l.status==='won'?'selected':''}>Won</option><option value="nurture" ${l.status==='nurture'?'selected':''}>Nurture</option><option value="lost" ${l.status==='lost'?'selected':''}>Lost</option></select>`;
                     
-                    let waBtn = `<button onclick="window.open('https://wa.me/${l.phone}', '_blank')" class="flex-1 bg-green-50 text-green-700 font-bold py-2 rounded-lg text-[10px] text-center">WA</button>`;
+                    let waBtn = `<button onclick="window.open('https://wa.me/${l.phone}', '_blank')" class="flex-1 bg-green-50 text-green-700 font-bold py-2 rounded-lg text-[10px] text-center hover:bg-green-500 hover:text-white transition-colors">WA</button>`;
                     let bridgeBtn = '';
-                    if(l.status === 'nego') bridgeBtn = `<a href="docs.html?type=OFF&lead=${l.id}" class="flex-1 bg-yellow-50 text-yellow-700 font-bold py-2 rounded-lg text-[10px] text-center">Offer Letter</a>`;
-                    if(l.status === 'won') bridgeBtn = `<a href="docs.html?type=INV&lead=${l.id}" class="flex-1 bg-blue-50 text-blue-700 font-bold py-2 rounded-lg text-[10px] text-center">Invoice</a>`;
-                    
+                    if(l.status === 'nego') bridgeBtn = `<a href="docs.html?type=OFF&lead=${l.id}" class="flex-1 bg-yellow-50 text-yellow-700 font-bold py-2 rounded-lg text-[10px] text-center hover:bg-yellow-400 transition-colors">Offer Letter</a>`;
+                    if(l.status === 'won') bridgeBtn = `<a href="docs.html?type=INV&lead=${l.id}" class="flex-1 bg-blue-50 text-blue-700 font-bold py-2 rounded-lg text-[10px] text-center hover:bg-blue-500 hover:text-white transition-colors">Invoice</a>`;
                     actionBtn = `<div class="flex gap-2 w-full mt-2">${select}${waBtn}${bridgeBtn}</div>`;
                 }
+
+                let extraMeta = '';
+                if(l.daerah) extraMeta += `<span class="text-[9px] text-gray-400 mr-2"><i class="ph-fill ph-map-pin"></i> ${l.daerah}</span>`;
+                if(l.industri) extraMeta += `<span class="text-[9px] text-gray-400"><i class="ph-fill ph-factory"></i> ${l.industri}</span>`;
 
                 return `
                 <div class="glass-card p-4 rounded-xl flex flex-col">
                     <h4 class="font-bold text-sm truncate">${l.name}</h4>
+                    <div class="mt-1">${extraMeta}</div>
                     <div class="flex gap-2 mt-2 mb-4">${picBadge}</div>
                     ${actionBtn}
                 </div>`;
             }).join('');
         }
 
-        function claimLead(id) {
+        // --- 4. ACTION TRIGGERS ---
+        async function claimLead(id) {
+            // Optimistic UI Update
             let l = leads.find(x => x.id === id);
             l.pic = session.name; l.status = 'reached';
-            saveData(`Mengambil prospek: ${l.name}`);
-            filterRoom();
+            filterRoom(); 
+            logActivity(`Mengambil prospek: ${l.name}`);
+
+            // Send to n8n (Background)
+            try {
+                await fetch(WEBHOOK_URL, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ ACTION: 'update_lead_status', lead_id: id, new_status: 'reached', pic: session.name })
+                });
+                window.open(`https://wa.me/${l.phone}?text=Halo%20${l.name},%20saya%20${session.name}%20dari%20Beuna%20Agency...`, '_blank');
+            } catch(e) { console.error(e); }
         }
 
-        function updateStatus(id, stat) {
+        async function updateStatus(id, stat) {
             let l = leads.find(x => x.id === id);
             l.status = stat;
-            saveData(`Memindahkan ${l.name} ke ${stageTitles[stat]}`);
-            filterRoom();
+            filterRoom(); // Optimistic Update
+            logActivity(`Memindahkan ${l.name} ke ${stageTitles[stat]}`);
+
+            // Send to n8n (Background)
+            try {
+                await fetch(WEBHOOK_URL, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ ACTION: 'update_lead_status', lead_id: id, new_status: stat })
+                });
+            } catch(e) { console.error(e); }
         }
 
-        function saveData(logMsg) {
+        function logActivity(text) {
             const time = new Date().toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'});
-            activities.unshift({ time, user: session.name, text: logMsg });
+            activities.unshift({ time, user: session.name, text });
             if(activities.length > 10) activities.pop();
-            
-            localStorage.setItem('beunaLeads', JSON.stringify(leads));
             localStorage.setItem('beunaActivities', JSON.stringify(activities));
+            if(document.getElementById('view-hub').classList.contains('hidden') === false) renderActivities();
         }
 
         function logout() { localStorage.removeItem('beunaSession'); window.location.href = 'index.html'; }
