@@ -8,76 +8,25 @@
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;900&display=swap" rel="stylesheet">
     
     <style>
-        body { 
-            font-family: 'Space Grotesk', sans-serif; 
-            background-color: #f4f4f0; /* Off-white khas brutalism */
-            color: #000; 
-            overflow-x: hidden; 
-            min-height: 100vh; 
-        }
-
-        /* --- NEO-BRUTALISM UTILITIES --- */
+        body { font-family: 'Space Grotesk', sans-serif; background-color: #f4f4f0; color: #000; overflow-x: hidden; min-height: 100vh; }
         .neo-border { border: 3px solid #000; }
-        .neo-shadow { box-shadow: 4px 4px 0px 0px #000; }
         .neo-shadow-sm { box-shadow: 2px 2px 0px 0px #000; }
-        
-        .neo-card { 
-            background-color: #fff; 
-            border: 3px solid #000; 
-            box-shadow: 6px 6px 0px 0px #000; 
-            border-radius: 8px; 
-        }
-        
-        .neo-btn { 
-            border: 3px solid #000; 
-            box-shadow: 4px 4px 0px 0px #000; 
-            border-radius: 8px; 
-            font-weight: 700; 
-            cursor: pointer; 
-            transition: all 0.15s ease; 
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .neo-btn:hover { 
-            transform: translate(2px, 2px); 
-            box-shadow: 2px 2px 0px 0px #000; 
-        }
-        .neo-btn:active { 
-            transform: translate(4px, 4px); 
-            box-shadow: 0px 0px 0px 0px #000; 
-        }
-
-        .neo-input { 
-            border: 3px solid #000; 
-            box-shadow: 3px 3px 0px 0px #000; 
-            border-radius: 8px; 
-            padding: 0.75rem 1rem; 
-            width: 100%; 
-            outline: none; 
-            transition: all 0.2s; 
-            font-weight: 600;
-        }
-        .neo-input:focus { 
-            background-color: #fef08a; /* Kuning stabilo saat fokus */
-            transform: translate(1px, 1px); 
-            box-shadow: 2px 2px 0px 0px #000; 
-        }
-
-        /* Custom Scrollbar */
+        .neo-card { background-color: #fff; border: 3px solid #000; box-shadow: 6px 6px 0px 0px #000; border-radius: 8px; }
+        .neo-btn { border: 3px solid #000; box-shadow: 4px 4px 0px 0px #000; border-radius: 8px; font-weight: 700; cursor: pointer; transition: all 0.15s ease; display: inline-flex; align-items: center; justify-content: center; }
+        .neo-btn:hover { transform: translate(2px, 2px); box-shadow: 2px 2px 0px 0px #000; }
+        .neo-btn:active { transform: translate(4px, 4px); box-shadow: 0px 0px 0px 0px #000; }
+        .neo-input { border: 3px solid #000; box-shadow: 3px 3px 0px 0px #000; border-radius: 8px; padding: 0.75rem 1rem; width: 100%; outline: none; transition: all 0.2s; font-weight: 600; }
+        .neo-input:focus { background-color: #fef08a; transform: translate(1px, 1px); box-shadow: 2px 2px 0px 0px #000; }
         .custom-scroll::-webkit-scrollbar { width: 8px; height: 8px; }
         .custom-scroll::-webkit-scrollbar-track { background: #f4f4f0; border-left: 2px solid #000; }
         .custom-scroll::-webkit-scrollbar-thumb { background: #000; border-radius: 0px; }
-
         .loader { border-top-color: #000; -webkit-animation: spinner 1.5s linear infinite; animation: spinner 1.5s linear infinite; }
         @keyframes spinner { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
         .status-select { appearance: none; background: transparent; border: none; font-size: 0.75rem; font-weight: 900; text-transform: uppercase; outline: none; width: 100%; cursor: pointer; }
     </style>
 </head>
@@ -156,12 +105,14 @@
                         <div><p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Win Rate</p><p class="text-4xl font-black text-[#16a34a] leading-none mt-1" id="hub-stat-win">0%</p></div>
                     </div>
                     
-                    <div class="bg-[#f4f4f0] neo-border px-3 py-2 rounded-lg flex items-center gap-3 w-full md:w-auto">
+                    <div class="bg-[#f4f4f0] neo-border px-4 py-2 rounded-lg flex items-center gap-3 w-full md:w-auto">
                         <span class="text-xs font-black uppercase" id="labelMyView">My View</span>
-                        <div class="relative inline-block w-12 align-middle select-none">
-                            <input type="checkbox" id="viewToggle" onchange="toggleViewMode()" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-3 border-black appearance-none cursor-pointer z-10 transition-transform duration-200"/>
-                            <label for="viewToggle" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 border-3 border-black cursor-pointer transition-colors"></label>
-                        </div>
+                        
+                        <label class="relative inline-flex items-center cursor-pointer" id="toggleContainer">
+                            <input type="checkbox" id="viewToggle" onchange="toggleViewMode()" class="sr-only peer">
+                            <div class="w-12 h-6 bg-[#fca5a5] border-[3px] border-black rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[-3px] after:left-[0px] after:bg-white after:border-[3px] after:border-black after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-[#bbf7d0]"></div>
+                        </label>
+
                         <span class="text-xs font-black uppercase" id="labelTeamView">Team View</span>
                     </div>
                 </div>
@@ -170,44 +121,33 @@
             <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-5 mt-8">
                 <div onclick="openRoom('new')" class="neo-card bg-[#fecaca] p-5 text-center cursor-pointer hover:-translate-y-1 transition-transform group">
                     <div class="w-12 h-12 bg-white neo-border rounded-full flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform"><i class="ph-fill ph-sparkle text-2xl text-black"></i></div>
-                    <h4 class="text-xs font-black uppercase tracking-widest">Fresh</h4>
-                    <p class="text-4xl font-black text-black mt-1" id="count-new">0</p>
+                    <h4 class="text-xs font-black uppercase tracking-widest">Fresh</h4><p class="text-4xl font-black text-black mt-1" id="count-new">0</p>
                 </div>
                 <div onclick="openRoom('reached')" class="neo-card bg-[#bfdbfe] p-5 text-center cursor-pointer hover:-translate-y-1 transition-transform group">
                     <div class="w-12 h-12 bg-white neo-border rounded-full flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform"><i class="ph-fill ph-paper-plane-right text-2xl text-black"></i></div>
-                    <h4 class="text-xs font-black uppercase tracking-widest">Reached</h4>
-                    <p class="text-4xl font-black text-black mt-1" id="count-reached">0</p>
+                    <h4 class="text-xs font-black uppercase tracking-widest">Reached</h4><p class="text-4xl font-black text-black mt-1" id="count-reached">0</p>
                 </div>
                 <div onclick="openRoom('meeting')" class="neo-card bg-[#e9d5ff] p-5 text-center cursor-pointer hover:-translate-y-1 transition-transform group">
                     <div class="w-12 h-12 bg-white neo-border rounded-full flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform"><i class="ph-fill ph-users text-2xl text-black"></i></div>
-                    <h4 class="text-xs font-black uppercase tracking-widest">Meeting</h4>
-                    <p class="text-4xl font-black text-black mt-1" id="count-meeting">0</p>
+                    <h4 class="text-xs font-black uppercase tracking-widest">Meeting</h4><p class="text-4xl font-black text-black mt-1" id="count-meeting">0</p>
                 </div>
                 <div onclick="openRoom('nego')" class="neo-card bg-[#fef08a] p-5 text-center cursor-pointer hover:-translate-y-1 transition-transform group">
                     <div class="w-12 h-12 bg-white neo-border rounded-full flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform"><i class="ph-fill ph-handshake text-2xl text-black"></i></div>
-                    <h4 class="text-xs font-black uppercase tracking-widest">Nego</h4>
-                    <p class="text-4xl font-black text-black mt-1" id="count-nego">0</p>
+                    <h4 class="text-xs font-black uppercase tracking-widest">Nego</h4><p class="text-4xl font-black text-black mt-1" id="count-nego">0</p>
                 </div>
                 <div onclick="openRoom('won')" class="neo-card bg-[#bbf7d0] p-5 text-center cursor-pointer hover:-translate-y-1 transition-transform group col-span-2 md:col-span-1 border-b-[8px]">
                     <div class="w-12 h-12 bg-white neo-border rounded-full flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform"><i class="ph-fill ph-check-circle text-2xl text-black"></i></div>
-                    <h4 class="text-xs font-black uppercase tracking-widest">Won</h4>
-                    <p class="text-4xl font-black text-black mt-1" id="count-won">0</p>
+                    <h4 class="text-xs font-black uppercase tracking-widest">Won</h4><p class="text-4xl font-black text-black mt-1" id="count-won">0</p>
                 </div>
             </div>
 
             <div class="grid grid-cols-2 gap-5 mt-2">
                 <div onclick="openRoom('nurture')" class="neo-card bg-white p-4 flex items-center justify-between cursor-pointer hover:bg-gray-50">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 bg-[#fed7aa] neo-border rounded-full flex items-center justify-center"><i class="ph-bold ph-clock-snooze text-xl"></i></div>
-                        <h4 class="text-xs font-black uppercase tracking-widest">Nurture (KIV)</h4>
-                    </div>
+                    <div class="flex items-center gap-3"><div class="w-10 h-10 bg-[#fed7aa] neo-border rounded-full flex items-center justify-center"><i class="ph-bold ph-clock-snooze text-xl"></i></div><h4 class="text-xs font-black uppercase tracking-widest">Nurture (KIV)</h4></div>
                     <p class="text-2xl font-black text-black" id="count-nurture">0</p>
                 </div>
                 <div onclick="openRoom('lost')" class="neo-card bg-white p-4 flex items-center justify-between cursor-pointer hover:bg-gray-50">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 bg-[#fca5a5] neo-border rounded-full flex items-center justify-center"><i class="ph-bold ph-x-circle text-xl"></i></div>
-                        <h4 class="text-xs font-black uppercase tracking-widest">Closed Lost</h4>
-                    </div>
+                    <div class="flex items-center gap-3"><div class="w-10 h-10 bg-[#fca5a5] neo-border rounded-full flex items-center justify-center"><i class="ph-bold ph-x-circle text-xl"></i></div><h4 class="text-xs font-black uppercase tracking-widest">Closed Lost</h4></div>
                     <p class="text-2xl font-black text-black" id="count-lost">0</p>
                 </div>
             </div>
@@ -242,25 +182,14 @@
             <div class="neo-card bg-[#bbf7d0] p-8 md:p-12 mt-6">
                 <h2 class="text-4xl font-black text-black mb-2 uppercase">Input Prospek</h2>
                 <p class="text-sm font-bold text-gray-700 mb-8 border-b-3 border-black pb-6">Tambahkan prospek baru. Sistem akan otomatis mencatat Anda sebagai penginput.</p>
-                
                 <form onsubmit="submitNewLead(event)" class="space-y-6">
                     <div class="neo-card bg-white p-6">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                            <div>
-                                <label class="block text-xs font-black uppercase tracking-widest mb-2">Nama Usaha / Klien *</label>
-                                <input type="text" id="addNama" required class="neo-input">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-black uppercase tracking-widest mb-2">Industri *</label>
-                                <input type="text" id="addIndustri" required placeholder="Cth: F&B, Retail" class="neo-input">
-                            </div>
-                            <div class="md:col-span-2">
-                                <label class="block text-xs font-black uppercase tracking-widest mb-2">Daerah *</label>
-                                <input type="text" id="addDaerah" required placeholder="Cth: Jakarta Selatan" class="neo-input">
-                            </div>
+                            <div><label class="block text-xs font-black uppercase tracking-widest mb-2">Nama Usaha / Klien *</label><input type="text" id="addNama" required class="neo-input"></div>
+                            <div><label class="block text-xs font-black uppercase tracking-widest mb-2">Industri *</label><input type="text" id="addIndustri" required placeholder="Cth: F&B, Retail" class="neo-input"></div>
+                            <div class="md:col-span-2"><label class="block text-xs font-black uppercase tracking-widest mb-2">Daerah *</label><input type="text" id="addDaerah" required placeholder="Cth: Jakarta Selatan" class="neo-input"></div>
                         </div>
                     </div>
-
                     <div class="neo-card bg-[#fef08a] p-6">
                         <p class="text-sm font-black uppercase tracking-widest mb-4 flex items-center gap-2"><i class="ph-bold ph-address-book text-xl"></i> Kontak (Wajib Isi Minimal 1)</p>
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -269,15 +198,7 @@
                             <div><label class="block text-[10px] font-bold uppercase mb-1">Sosmed / Link</label><input type="text" id="addSosmed" placeholder="@instagram" class="neo-input py-2"></div>
                         </div>
                     </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-                        <div><label class="block text-[10px] font-bold uppercase mb-1">Website (Opsional)</label><input type="text" id="addWeb" placeholder="www.klien.com" class="neo-input py-2 bg-white"></div>
-                        <div><label class="block text-[10px] font-bold uppercase mb-1">Jumlah Review (Opsional)</label><input type="text" id="addReview" placeholder="Cth: 150 Review (4.5)" class="neo-input py-2 bg-white"></div>
-                    </div>
-
-                    <button type="submit" id="btnSubmitLead" class="w-full neo-btn bg-black text-white text-lg py-4 mt-6 hover:bg-gray-800 hover:text-white">
-                        SIMPAN DATA PROSPEK
-                    </button>
+                    <button type="submit" id="btnSubmitLead" class="w-full neo-btn bg-black text-white text-lg py-4 mt-6 hover:bg-gray-800 hover:text-white">SIMPAN DATA PROSPEK</button>
                 </form>
             </div>
         </div>
@@ -298,17 +219,19 @@
         let pendingWonId = null;
 
         const stageTitles = { 'new': 'Fresh Leads', 'reached': 'Reached Out', 'meeting': 'Meeting', 'nego': 'Nego & Offer', 'won': 'Closed Won', 'nurture': 'Nurture (KIV)', 'lost': 'Closed Lost' };
-        
-        // Warna Neo-Brutalism per Status
         const stageColors = { 'new': '#fecaca', 'reached': '#bfdbfe', 'meeting': '#e9d5ff', 'nego': '#fef08a', 'won': '#bbf7d0', 'nurture': '#fed7aa', 'lost': '#fca5a5' };
 
         window.onload = () => {
             document.getElementById('profileInitials').innerText = session.initials;
             document.getElementById('profileName').innerText = session.name;
             document.getElementById('profileRole').innerText = session.role;
+            
+            // Kunci Toggle jika bukan Admin
             if(session.id !== 'admin') {
                 document.getElementById('viewToggle').checked = false;
                 document.getElementById('viewToggle').disabled = true;
+                document.getElementById('toggleContainer').classList.add('opacity-50', 'cursor-not-allowed');
+                document.getElementById('labelTeamView').innerText = "(Khusus Admin)";
             } else {
                 document.getElementById('viewToggle').checked = true;
             }
@@ -333,7 +256,8 @@
                         if(s === 'new lead') s = 'new'; 
                         
                         return {
-                            id: item.id || item.rowId || Math.random().toString(),
+                            // Mencegah Type Mismatch dengan memaksa ID jadi String!
+                            id: String(item.id || item.rowId || Math.random().toString()), 
                             name: item.NAMA_USAHA || 'Tanpa Nama',
                             industri: item.INDUSTRI || '',
                             daerah: item.DAERAH || '',
@@ -348,9 +272,8 @@
                         };
                     });
                 }
-            } catch(e) { 
-                console.error("API Error:", e);
-            } finally {
+            } catch(e) { console.error("API Error:", e); } 
+            finally {
                 toggleLoader(false);
                 renderHub();
                 if(!document.getElementById('view-room').classList.contains('hidden')) filterRoom();
@@ -359,13 +282,12 @@
 
         async function submitNewLead(e) {
             e.preventDefault();
-            
             const wa = document.getElementById('addWA').value.trim();
             const email = document.getElementById('addEmail').value.trim();
             const sosmed = document.getElementById('addSosmed').value.trim();
             
             if(!wa && !email && !sosmed) {
-                alert("Validasi Gagal: Anda harus mengisi minimal salah satu dari Nomor WA, Email, atau Sosmed.");
+                alert("Validasi Gagal: Isi minimal Nomor WA, Email, atau Sosmed.");
                 return;
             }
 
@@ -373,50 +295,42 @@
             btn.innerHTML = 'MENGIRIM...'; btn.disabled = true;
 
             const payload = {
-                ACTION: 'create_lead',
-                input_by: session.name, 
-                nama_usaha: document.getElementById('addNama').value,
-                industri: document.getElementById('addIndustri').value,
-                daerah: document.getElementById('addDaerah').value,
-                nomor_wa: wa,
-                email: email,
-                sosmed: sosmed,
-                website: document.getElementById('addWeb').value,
-                jumlah_review: document.getElementById('addReview').value,
+                ACTION: 'create_lead', input_by: session.name, 
+                nama_usaha: document.getElementById('addNama').value, industri: document.getElementById('addIndustri').value,
+                daerah: document.getElementById('addDaerah').value, nomor_wa: wa, email: email, sosmed: sosmed,
+                website: document.getElementById('addWeb').value, jumlah_review: document.getElementById('addReview').value,
                 new_status: 'New Lead'
             };
 
             try {
                 const res = await fetch(WEBHOOK_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
                 if(res.ok) {
-                    e.target.reset();
-                    logActivity(`Menambahkan prospek baru: ${payload.nama_usaha}`);
-                    switchManagerialView('hub');
-                    fetchLeads(); 
+                    e.target.reset(); logActivity(`Menambahkan prospek baru: ${payload.nama_usaha}`);
+                    switchManagerialView('hub'); fetchLeads(); 
                 }
             } catch(e) { alert('Gagal mengirim data.'); } 
             finally { btn.innerHTML = 'SIMPAN DATA PROSPEK'; btn.disabled = false; }
         }
 
-        // --- 3. UI LOGIC & RENDERERS ---
+        // --- 3. UI LOGIC ---
         function toggleLoader(show) { document.getElementById('loadingOverlay').classList.toggle('hidden', !show); }
 
         function switchManagerialView(viewId) {
             ['view-hub', 'view-room', 'view-add'].forEach(id => document.getElementById(id).classList.add('hidden'));
             document.getElementById(`view-${viewId}`).classList.remove('hidden');
-            
             const bgActive = "w-full neo-btn bg-[#fef08a] px-4 py-3 text-sm flex gap-3 text-black";
             const bgInactive = "w-full neo-btn bg-white px-4 py-3 text-sm flex gap-3 text-black hover:bg-[#e5e5e5]";
-            
             document.getElementById('nav-hub').className = (viewId === 'hub' || viewId === 'room') ? bgActive : bgInactive;
             document.getElementById('nav-add').className = (viewId === 'add') ? bgActive : bgInactive;
         }
 
         function toggleViewMode() {
+            if(session.id !== 'admin') return; // Double protection
             viewMode = document.getElementById('viewToggle').checked ? 'team' : 'personal';
             document.getElementById('labelTeamView').style.color = viewMode === 'team' ? "#000" : "#a3a3a3";
             document.getElementById('labelMyView').style.color = viewMode === 'personal' ? "#000" : "#a3a3a3";
             renderHub();
+            if(!document.getElementById('view-room').classList.contains('hidden')) filterRoom();
         }
 
         function renderHub() {
@@ -460,10 +374,7 @@
             document.getElementById('view-hub').classList.add('hidden');
             document.getElementById('view-room').classList.remove('hidden');
             document.getElementById('roomTitle').innerText = stageTitles[status];
-            
-            // Set Header Color based on Status
             document.getElementById('roomTitle').style.borderBottom = `6px solid ${stageColors[status]}`;
-            
             filterRoom();
         }
 
@@ -483,27 +394,15 @@
                 } else {
                     const dis = (viewMode === 'personal' && l.pic !== session.name) ? 'disabled' : '';
                     const select = `<select onchange="handleStatusChange('${l.id}', this.value)" id="sel_${l.id}" class="status-select w-full h-full px-2" ${dis}>
-                        <option value="reached" ${l.status==='reached'?'selected':''}>Reached</option>
-                        <option value="meeting" ${l.status==='meeting'?'selected':''}>Meeting</option>
-                        <option value="nego" ${l.status==='nego'?'selected':''}>Nego</option>
-                        <option value="won" ${l.status==='won'?'selected':''}>Won</option>
-                        <option value="nurture" ${l.status==='nurture'?'selected':''}>Nurture</option>
-                        <option value="lost" ${l.status==='lost'?'selected':''}>Lost</option>
+                        <option value="reached" ${l.status==='reached'?'selected':''}>Reached</option><option value="meeting" ${l.status==='meeting'?'selected':''}>Meeting</option><option value="nego" ${l.status==='nego'?'selected':''}>Nego</option><option value="won" ${l.status==='won'?'selected':''}>Won</option><option value="nurture" ${l.status==='nurture'?'selected':''}>Nurture</option><option value="lost" ${l.status==='lost'?'selected':''}>Lost</option>
                     </select>`;
                     
-                    let waUrl = `https://wa.me/${l.phone}`;
-                    let waBtn = `<button onclick="window.open('${waUrl}', '_blank')" class="neo-btn bg-[#bbf7d0] p-2 flex-1"><i class="ph-fill ph-whatsapp-logo text-xl"></i></button>`;
+                    let waBtn = `<button onclick="window.open('https://wa.me/${l.phone}', '_blank')" class="neo-btn bg-[#bbf7d0] p-2 flex-1"><i class="ph-fill ph-whatsapp-logo text-xl"></i></button>`;
                     let bridgeBtn = '';
                     if(l.status === 'nego') bridgeBtn = `<a href="docs.html?type=OFF&lead=${l.id}" class="neo-btn bg-[#fef08a] py-2 flex-1 text-[10px] uppercase tracking-wider">Offer</a>`;
                     if(l.status === 'won') bridgeBtn = `<a href="docs.html?type=INV&lead=${l.id}" class="neo-btn bg-[#bfdbfe] py-2 flex-1 text-[10px] uppercase tracking-wider">Invoice</a>`;
                     
-                    actionBtn = `<div class="flex gap-2 w-full mt-4 border-t-3 border-black pt-4">
-                        <div class="neo-border bg-white rounded-lg flex-1 overflow-hidden shadow-[2px_2px_0_0_#000] relative">
-                            <div class="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none"><i class="ph-bold ph-caret-down text-black"></i></div>
-                            ${select}
-                        </div>
-                        ${waBtn}${bridgeBtn}
-                    </div>`;
+                    actionBtn = `<div class="flex gap-2 w-full mt-4 border-t-3 border-black pt-4"><div class="neo-border bg-white rounded-lg flex-1 overflow-hidden shadow-[2px_2px_0_0_#000] relative"><div class="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none"><i class="ph-bold ph-caret-down text-black"></i></div>${select}</div>${waBtn}${bridgeBtn}</div>`;
                 }
 
                 let contactMeta = '';
@@ -514,9 +413,7 @@
                 return `
                 <div class="neo-card p-6 flex flex-col justify-between" style="background-color: ${stageColors[l.status]};">
                     <div>
-                        <div class="flex justify-between items-start mb-3 gap-2">
-                            <h4 class="font-black text-lg leading-tight uppercase w-full truncate" title="${l.name}">${l.name}</h4>
-                        </div>
+                        <div class="flex justify-between items-start mb-3 gap-2"><h4 class="font-black text-lg leading-tight uppercase w-full truncate" title="${l.name}">${l.name}</h4></div>
                         <div class="flex flex-wrap gap-2 mb-3">${picBadge}</div>
                         <p class="text-xs font-bold text-black border-l-2 border-black pl-2 uppercase tracking-widest">${l.industri} - ${l.daerah}</p>
                         <div class="mt-3 bg-white/50 px-2 py-1 border border-black rounded inline-block">${contactMeta}</div>
@@ -528,9 +425,12 @@
 
         // --- 4. ACTION TRIGGERS ---
         async function claimLead(id) {
-            let l = leads.find(x => x.id === id);
+            let l = leads.find(x => String(x.id) === String(id)); // Proteksi String Match!
+            if(!l) return;
+            
             l.pic = session.name; l.status = 'reached';
             filterRoom(); 
+            renderHub(); // Update background stats
             logActivity(`Mengklaim prospek: ${l.name}`);
 
             try {
@@ -545,8 +445,8 @@
 
         function handleStatusChange(id, stat) {
             if(stat === 'won') {
-                pendingWonId = id;
-                const lead = leads.find(x => x.id === id);
+                pendingWonId = String(id);
+                const lead = leads.find(x => String(x.id) === pendingWonId);
                 document.getElementById('wonClientName').innerText = lead.name;
                 document.getElementById('modalWon').classList.remove('hidden');
                 document.getElementById(`sel_${id}`).value = lead.status;
@@ -555,35 +455,29 @@
             }
         }
 
-        function cancelWon() {
-            document.getElementById('modalWon').classList.add('hidden');
-            pendingWonId = null;
-        }
+        function cancelWon() { document.getElementById('modalWon').classList.add('hidden'); pendingWonId = null; }
 
         function confirmWon(type) {
             let pType = type === 'Custom' ? document.getElementById('customWonType').value : type;
             if(type === 'Custom' && !pType) return alert('Isi tipe custom!');
-            
             document.getElementById('modalWon').classList.add('hidden');
             updateStatusPayload(pendingWonId, 'won', null, null, pType);
             pendingWonId = null;
         }
 
         async function updateStatusPayload(id, stat, reason = null, followup = null, projectType = null) {
-            let l = leads.find(x => x.id === id);
+            let l = leads.find(x => String(x.id) === String(id));
+            if(!l) return;
             
-            if(stat === 'lost') {
-                reason = prompt("Alasan gagal/batal? (Cth: Harga, Ghosting):");
-                if(!reason) return;
-            } else if(stat === 'nurture') {
-                followup = prompt("Bulan estimasi follow up? (Cth: Mei 2026):");
-            }
+            if(stat === 'lost') { reason = prompt("Alasan gagal/batal? (Cth: Harga, Ghosting):"); if(!reason) return; } 
+            else if(stat === 'nurture') { followup = prompt("Bulan estimasi follow up? (Cth: Mei 2026):"); }
 
             l.status = stat;
             if(reason) l.reason = reason;
             if(followup) l.followupDate = followup;
             
             filterRoom(); 
+            renderHub(); // Update background stats
             logActivity(`Memindahkan ${l.name} ke ${stageTitles[stat]}`);
 
             const payload = { ACTION: 'update_lead_status', lead_id: id, new_status: stat };
@@ -595,7 +489,7 @@
             try {
                 await fetch(WEBHOOK_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
             } catch(e) { console.error(e); }
-            finally { toggleLoader(false); fetchLeads(); /* Tarik ulang untuk sync */ }
+            finally { toggleLoader(false); fetchLeads(); }
         }
 
         function logActivity(text) {
