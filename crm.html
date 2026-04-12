@@ -92,28 +92,28 @@
                         <h3 class="text-lg font-black text-black leading-none" id="profileName">Loading...</h3>
                         <p class="text-xs font-bold text-gray-700 uppercase tracking-widest mt-1" id="profileRole">Role</p>
                         <div class="flex gap-4 mt-3 pt-3 border-t-2 border-black">
-                            <div><span class="text-[10px] font-bold text-gray-600 uppercase block leading-none">Wins</span><span class="font-black text-black text-lg" id="profileWins">0</span></div>
-                            <div><span class="text-[10px] font-bold text-gray-600 uppercase block leading-none">Active</span><span class="font-black text-black text-lg" id="profileActive">0</span></div>
+                            <div><span class="text-[10px] font-bold text-gray-600 uppercase block leading-none">My Wins</span><span class="font-black text-black text-lg" id="profileWins">0</span></div>
+                            <div><span class="text-[10px] font-bold text-gray-600 uppercase block leading-none">My Active</span><span class="font-black text-black text-lg" id="profileActive">0</span></div>
                         </div>
                     </div>
                 </div>
 
                 <div class="neo-card bg-white p-6 w-full lg:w-2/3 flex flex-col md:flex-row justify-between items-center gap-6">
                     <div class="flex items-center gap-8 w-full md:w-auto">
-                        <div><p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Total Leads</p><p class="text-4xl font-black text-black leading-none mt-1" id="hub-stat-total">0</p></div>
+                        <div><p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Agency Leads</p><p class="text-4xl font-black text-black leading-none mt-1" id="hub-stat-total">0</p></div>
                         <div class="h-12 w-[3px] bg-black hidden md:block"></div>
-                        <div><p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Win Rate</p><p class="text-4xl font-black text-[#16a34a] leading-none mt-1" id="hub-stat-win">0%</p></div>
+                        <div><p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Agency Win Rate</p><p class="text-4xl font-black text-[#16a34a] leading-none mt-1" id="hub-stat-win">0%</p></div>
                     </div>
                     
                     <div class="bg-[#f4f4f0] neo-border px-4 py-2 rounded-lg flex items-center gap-3 w-full md:w-auto">
-                        <span class="text-xs font-black uppercase" id="labelMyView">My View</span>
+                        <span class="text-xs font-black uppercase transition-colors" id="labelMyView" style="color: #000;">My View</span>
                         
                         <label class="relative inline-flex items-center cursor-pointer" id="toggleContainer">
                             <input type="checkbox" id="viewToggle" onchange="toggleViewMode()" class="sr-only peer">
                             <div class="w-12 h-6 bg-[#fca5a5] border-[3px] border-black rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[-3px] after:left-[0px] after:bg-white after:border-[3px] after:border-black after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-[#bbf7d0]"></div>
                         </label>
 
-                        <span class="text-xs font-black uppercase" id="labelTeamView">Team View</span>
+                        <span class="text-xs font-black uppercase transition-colors" id="labelTeamView" style="color: #a3a3a3;">Team View</span>
                     </div>
                 </div>
             </div>
@@ -212,7 +212,8 @@
         let session = JSON.parse(localStorage.getItem('beunaSession'));
         if(!session) window.location.href = 'index.html';
 
-        let viewMode = session.id === 'admin' ? 'team' : 'personal';
+        // Default ke 'personal' view saat pertama kali load
+        let viewMode = 'personal';
         let leads = []; 
         let activities = JSON.parse(localStorage.getItem('beunaActivities')) || [];
         let activeRoom = '';
@@ -226,15 +227,10 @@
             document.getElementById('profileName').innerText = session.name;
             document.getElementById('profileRole').innerText = session.role;
             
-            // Kunci Toggle jika bukan Admin
-            if(session.id !== 'admin') {
-                document.getElementById('viewToggle').checked = false;
-                document.getElementById('viewToggle').disabled = true;
-                document.getElementById('toggleContainer').classList.add('opacity-50', 'cursor-not-allowed');
-                document.getElementById('labelTeamView').innerText = "(Khusus Admin)";
-            } else {
-                document.getElementById('viewToggle').checked = true;
-            }
+            // Set sakelar sesuai default viewMode ('personal')
+            document.getElementById('viewToggle').checked = false;
+            document.getElementById('labelTeamView').style.color = "#a3a3a3";
+            document.getElementById('labelMyView').style.color = "#000";
             
             fetchLeads();
         };
@@ -256,7 +252,6 @@
                         if(s === 'new lead') s = 'new'; 
                         
                         return {
-                            // Mencegah Type Mismatch dengan memaksa ID jadi String!
                             id: String(item.id || item.rowId || Math.random().toString()), 
                             name: item.NAMA_USAHA || 'Tanpa Nama',
                             industri: item.INDUSTRI || '',
@@ -325,7 +320,6 @@
         }
 
         function toggleViewMode() {
-            if(session.id !== 'admin') return; // Double protection
             viewMode = document.getElementById('viewToggle').checked ? 'team' : 'personal';
             document.getElementById('labelTeamView').style.color = viewMode === 'team' ? "#000" : "#a3a3a3";
             document.getElementById('labelMyView').style.color = viewMode === 'personal' ? "#000" : "#a3a3a3";
@@ -334,6 +328,9 @@
         }
 
         function renderHub() {
+            // FILTER LOGIC:
+            // Jika Team View: Tampilkan semua leads.
+            // Jika My View: Tampilkan leads milik user ATAU leads yang masih fresh (unassigned).
             let filteredLeads = viewMode === 'team' ? leads : leads.filter(l => l.pic === session.name || l.status === 'new');
             
             document.getElementById('profileWins').innerText = leads.filter(l => l.pic === session.name && l.status === 'won').length;
@@ -343,8 +340,13 @@
             filteredLeads.forEach(l => { if(counts[l.status] !== undefined) counts[l.status]++; });
             Object.keys(counts).forEach(k => document.getElementById(`count-${k}`).innerText = counts[k]);
 
+            // Agency Global Stats (Tetap menghitung dari seluruh leads agar kelihatan progres perusahaan)
             document.getElementById('hub-stat-total').innerText = leads.length;
-            const winRate = (counts.won + counts.lost) > 0 ? Math.round((counts.won / (counts.won + counts.lost)) * 100) : 0;
+            
+            // Hitung global win rate (Won / (Won + Lost))
+            const globalCounts = { won: 0, lost: 0 };
+            leads.forEach(l => { if(l.status === 'won') globalCounts.won++; if(l.status === 'lost') globalCounts.lost++; });
+            const winRate = (globalCounts.won + globalCounts.lost) > 0 ? Math.round((globalCounts.won / (globalCounts.won + globalCounts.lost)) * 100) : 0;
             document.getElementById('hub-stat-win').innerText = winRate + '%';
 
             renderActivities(); renderLeaderboard();
@@ -390,19 +392,24 @@
                 
                 let actionBtn = '';
                 if(l.status === 'new') {
+                    // Tombol Ambil
                     actionBtn = `<button onclick="claimLead('${l.id}')" class="w-full neo-btn bg-[#bbf7d0] py-3 mt-4 text-xs tracking-widest uppercase">Ambil & Reach Out</button>`;
                 } else {
+                    // LOGIKA IZIN EDIT STATUS:
+                    // Jika View Mode = 'personal', dropdown & tombol HANYA aktif jika PIC sama dengan user yang login.
+                    // Jika View Mode = 'team', dropdown & tombol BISA DIEDIT OLEH SIAPA SAJA (transparansi penuh / gotong royong).
                     const dis = (viewMode === 'personal' && l.pic !== session.name) ? 'disabled' : '';
+                    
                     const select = `<select onchange="handleStatusChange('${l.id}', this.value)" id="sel_${l.id}" class="status-select w-full h-full px-2" ${dis}>
                         <option value="reached" ${l.status==='reached'?'selected':''}>Reached</option><option value="meeting" ${l.status==='meeting'?'selected':''}>Meeting</option><option value="nego" ${l.status==='nego'?'selected':''}>Nego</option><option value="won" ${l.status==='won'?'selected':''}>Won</option><option value="nurture" ${l.status==='nurture'?'selected':''}>Nurture</option><option value="lost" ${l.status==='lost'?'selected':''}>Lost</option>
                     </select>`;
                     
-                    let waBtn = `<button onclick="window.open('https://wa.me/${l.phone}', '_blank')" class="neo-btn bg-[#bbf7d0] p-2 flex-1"><i class="ph-fill ph-whatsapp-logo text-xl"></i></button>`;
+                    let waBtn = `<button ${dis} onclick="window.open('https://wa.me/${l.phone}', '_blank')" class="neo-btn bg-[#bbf7d0] p-2 flex-1 disabled:opacity-50 disabled:cursor-not-allowed"><i class="ph-fill ph-whatsapp-logo text-xl"></i></button>`;
                     let bridgeBtn = '';
-                    if(l.status === 'nego') bridgeBtn = `<a href="docs.html?type=OFF&lead=${l.id}" class="neo-btn bg-[#fef08a] py-2 flex-1 text-[10px] uppercase tracking-wider">Offer</a>`;
-                    if(l.status === 'won') bridgeBtn = `<a href="docs.html?type=INV&lead=${l.id}" class="neo-btn bg-[#bfdbfe] py-2 flex-1 text-[10px] uppercase tracking-wider">Invoice</a>`;
+                    if(l.status === 'nego') bridgeBtn = `<a href="docs.html?type=OFF&lead=${l.id}" class="neo-btn bg-[#fef08a] py-2 flex-1 text-[10px] uppercase tracking-wider ${dis ? 'pointer-events-none opacity-50' : ''}">Offer</a>`;
+                    if(l.status === 'won') bridgeBtn = `<a href="docs.html?type=INV&lead=${l.id}" class="neo-btn bg-[#bfdbfe] py-2 flex-1 text-[10px] uppercase tracking-wider ${dis ? 'pointer-events-none opacity-50' : ''}">Invoice</a>`;
                     
-                    actionBtn = `<div class="flex gap-2 w-full mt-4 border-t-3 border-black pt-4"><div class="neo-border bg-white rounded-lg flex-1 overflow-hidden shadow-[2px_2px_0_0_#000] relative"><div class="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none"><i class="ph-bold ph-caret-down text-black"></i></div>${select}</div>${waBtn}${bridgeBtn}</div>`;
+                    actionBtn = `<div class="flex gap-2 w-full mt-4 border-t-3 border-black pt-4"><div class="neo-border bg-white rounded-lg flex-1 overflow-hidden shadow-[2px_2px_0_0_#000] relative ${dis ? 'opacity-50' : ''}"><div class="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none"><i class="ph-bold ph-caret-down text-black"></i></div>${select}</div>${waBtn}${bridgeBtn}</div>`;
                 }
 
                 let contactMeta = '';
@@ -425,12 +432,12 @@
 
         // --- 4. ACTION TRIGGERS ---
         async function claimLead(id) {
-            let l = leads.find(x => String(x.id) === String(id)); // Proteksi String Match!
+            let l = leads.find(x => String(x.id) === String(id)); 
             if(!l) return;
             
             l.pic = session.name; l.status = 'reached';
             filterRoom(); 
-            renderHub(); // Update background stats
+            renderHub(); 
             logActivity(`Mengklaim prospek: ${l.name}`);
 
             try {
@@ -476,11 +483,17 @@
             if(reason) l.reason = reason;
             if(followup) l.followupDate = followup;
             
+            // Perbarui PIC jika yang memindahkan status bukan pemilik aslinya (Gotong Royong Mode)
+            const currentActor = session.name;
+            if(l.pic !== currentActor && viewMode === 'team') {
+                l.pic = currentActor;
+            }
+
             filterRoom(); 
-            renderHub(); // Update background stats
+            renderHub(); 
             logActivity(`Memindahkan ${l.name} ke ${stageTitles[stat]}`);
 
-            const payload = { ACTION: 'update_lead_status', lead_id: id, new_status: stat };
+            const payload = { ACTION: 'update_lead_status', lead_id: id, new_status: stat, pic: l.pic };
             if(reason) payload.reason = reason;
             if(followup) payload.followup = followup;
             if(projectType) payload.project_type = projectType; 
