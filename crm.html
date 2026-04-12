@@ -5,166 +5,278 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Beuna OS - CRM Hub</title>
     <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/sunsetdansenja-arch/beuna-agency/main/beuna%20logo%20v2.png">
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;900&display=swap" rel="stylesheet">
+    
     <style>
-        body { font-family: 'Inter', sans-serif; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); color: #1d1d1f; overflow-x: hidden; min-height: 100vh; }
-        .glass-panel { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.6); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.05); }
-        .glass-card { background: rgba(255, 255, 255, 0.9); border: 1px solid rgba(255, 255, 255, 1); transition: all 0.3s ease; box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
-        .glass-card:hover { box-shadow: 0 12px 24px rgba(0,0,0,0.08); transform: translateY(-2px); }
-        .widget-card { background: rgba(255, 255, 255, 0.8); border: 1px solid rgba(255, 255, 255, 1); transition: all 0.3s; cursor: pointer; }
-        .widget-card:hover { transform: translateY(-4px); box-shadow: 0 15px 30px rgba(0,0,0,0.1); }
-        .custom-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
-        .custom-scroll::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 10px; }
-        .status-select { appearance: none; background: transparent; border: none; font-size: 0.65rem; font-weight: bold; text-transform: uppercase; color: #6b7280; cursor: pointer; padding: 4px 8px; outline: none; width: 100%; text-align: left; }
-        .toggle-checkbox:checked { right: 0; border-color: #4f46e5; }
-        .toggle-checkbox:checked + .toggle-label { background-color: #4f46e5; }
-        .timeline-line::before { content: ''; position: absolute; left: 11px; top: 20px; bottom: -20px; width: 2px; background: #e5e7eb; z-index: 0; }
-        .timeline-item:last-child .timeline-line::before { display: none; }
-        .loader { border-top-color: #4f46e5; -webkit-animation: spinner 1.5s linear infinite; animation: spinner 1.5s linear infinite; }
+        body { 
+            font-family: 'Space Grotesk', sans-serif; 
+            background-color: #f4f4f0; /* Off-white khas brutalism */
+            color: #000; 
+            overflow-x: hidden; 
+            min-height: 100vh; 
+        }
+
+        /* --- NEO-BRUTALISM UTILITIES --- */
+        .neo-border { border: 3px solid #000; }
+        .neo-shadow { box-shadow: 4px 4px 0px 0px #000; }
+        .neo-shadow-sm { box-shadow: 2px 2px 0px 0px #000; }
+        
+        .neo-card { 
+            background-color: #fff; 
+            border: 3px solid #000; 
+            box-shadow: 6px 6px 0px 0px #000; 
+            border-radius: 8px; 
+        }
+        
+        .neo-btn { 
+            border: 3px solid #000; 
+            box-shadow: 4px 4px 0px 0px #000; 
+            border-radius: 8px; 
+            font-weight: 700; 
+            cursor: pointer; 
+            transition: all 0.15s ease; 
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .neo-btn:hover { 
+            transform: translate(2px, 2px); 
+            box-shadow: 2px 2px 0px 0px #000; 
+        }
+        .neo-btn:active { 
+            transform: translate(4px, 4px); 
+            box-shadow: 0px 0px 0px 0px #000; 
+        }
+
+        .neo-input { 
+            border: 3px solid #000; 
+            box-shadow: 3px 3px 0px 0px #000; 
+            border-radius: 8px; 
+            padding: 0.75rem 1rem; 
+            width: 100%; 
+            outline: none; 
+            transition: all 0.2s; 
+            font-weight: 600;
+        }
+        .neo-input:focus { 
+            background-color: #fef08a; /* Kuning stabilo saat fokus */
+            transform: translate(1px, 1px); 
+            box-shadow: 2px 2px 0px 0px #000; 
+        }
+
+        /* Custom Scrollbar */
+        .custom-scroll::-webkit-scrollbar { width: 8px; height: 8px; }
+        .custom-scroll::-webkit-scrollbar-track { background: #f4f4f0; border-left: 2px solid #000; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #000; border-radius: 0px; }
+
+        .loader { border-top-color: #000; -webkit-animation: spinner 1.5s linear infinite; animation: spinner 1.5s linear infinite; }
         @keyframes spinner { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .status-select { appearance: none; background: transparent; border: none; font-size: 0.75rem; font-weight: 900; text-transform: uppercase; outline: none; width: 100%; cursor: pointer; }
     </style>
 </head>
-<body class="antialiased flex h-screen overflow-hidden">
+<body class="antialiased flex h-screen overflow-hidden selection:bg-black selection:text-white">
 
-    <!-- SIDEBAR -->
-    <aside class="w-20 md:w-64 glass-panel border-r border-white/50 flex flex-col z-20 shadow-xl rounded-r-3xl">
-        <div class="p-6 flex items-center gap-3 border-b border-gray-200/50">
-            <img src="https://raw.githubusercontent.com/sunsetdansenja-arch/beuna-agency/main/beuna%20logo%20v2.png" alt="Logo" class="w-8 h-8">
-            <span class="font-extrabold tracking-widest hidden md:block text-lg text-gray-900">BEUNA</span>
+    <aside class="w-20 md:w-64 bg-white neo-border border-l-0 border-t-0 border-b-0 flex flex-col z-20">
+        <div class="p-6 flex items-center gap-3 border-b-3 border-black border-b-[3px]">
+            <img src="https://raw.githubusercontent.com/sunsetdansenja-arch/beuna-agency/main/beuna%20logo%20v2.png" alt="Logo" class="w-10 h-10 object-contain">
+            <span class="font-black tracking-widest hidden md:block text-2xl uppercase">Beuna.</span>
         </div>
-        <nav class="flex-1 p-4 space-y-2 mt-4">
-            <button onclick="switchManagerialView('hub')" id="nav-hub" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold bg-white shadow-sm border border-gray-100 text-gray-900 transition-all">
-                <i class="ph-fill ph-funnel text-xl text-indigo-600"></i> <span class="hidden md:block">CRM Hub</span>
+        <nav class="flex-1 p-4 space-y-4 mt-2">
+            <button onclick="switchManagerialView('hub')" id="nav-hub" class="w-full neo-btn bg-[#fef08a] px-4 py-3 text-sm flex gap-3 text-black">
+                <i class="ph-bold ph-funnel text-xl"></i> <span class="hidden md:block">CRM Hub</span>
             </button>
-            <button onclick="switchManagerialView('add')" id="nav-add" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold text-gray-500 hover:bg-white/50 hover:text-gray-900 transition-all">
-                <i class="ph-bold ph-plus-circle text-xl text-green-600"></i> <span class="hidden md:block">Add Fresh Lead</span>
+            <button onclick="switchManagerialView('add')" id="nav-add" class="w-full neo-btn bg-white px-4 py-3 text-sm flex gap-3 text-black hover:bg-[#bbf7d0]">
+                <i class="ph-bold ph-plus-circle text-xl"></i> <span class="hidden md:block">Fresh Lead</span>
             </button>
-            <a href="docs.html" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold text-gray-500 hover:bg-white/50 hover:text-gray-900 transition-all">
-                <i class="ph-fill ph-files text-xl text-red-600"></i> <span class="hidden md:block">Docs Center</span>
+            <a href="docs.html" class="w-full neo-btn bg-white px-4 py-3 text-sm flex gap-3 text-black hover:bg-[#fecaca]">
+                <i class="ph-bold ph-files text-xl"></i> <span class="hidden md:block">Docs Center</span>
             </a>
         </nav>
-        <div class="p-4 border-t border-gray-200/50">
-            <button onclick="logout()" class="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-xs font-bold text-red-600 hover:bg-red-50 transition-all">
+        <div class="p-4 border-t-[3px] border-black bg-[#f4f4f0]">
+            <button onclick="logout()" class="w-full neo-btn bg-[#fca5a5] text-black px-4 py-3 text-xs flex gap-2">
                 <i class="ph-bold ph-power text-lg"></i> <span class="hidden md:block">Logout</span>
             </button>
         </div>
     </aside>
 
-    <main class="flex-1 overflow-y-auto relative custom-scroll">
+    <main class="flex-1 overflow-y-auto relative custom-scroll bg-[#f4f4f0]">
         
-        <!-- GLOBAL LOADING STATE -->
-        <div id="loadingOverlay" class="absolute inset-0 bg-white/50 backdrop-blur-sm z-50 flex flex-col items-center justify-center hidden">
-            <div class="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-12 w-12 mb-4"></div>
-            <p class="text-sm font-bold text-gray-500 animate-pulse">Sinkronisasi Database...</p>
+        <div id="loadingOverlay" class="absolute inset-0 bg-[#f4f4f0]/80 backdrop-blur-sm z-50 flex flex-col items-center justify-center hidden">
+            <div class="loader ease-linear rounded-full border-4 border-t-4 border-gray-300 h-12 w-12 mb-4"></div>
+            <p class="text-sm font-black uppercase tracking-widest bg-black text-white px-4 py-1">SINKRONISASI N8N...</p>
         </div>
 
-        <!-- VIEW: CRM DASHBOARD HUB -->
-        <div id="view-hub" class="p-6 md:p-8 space-y-6 max-w-[1400px] mx-auto">
+        <div id="modalWon" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-[60] flex items-center justify-center hidden">
+            <div class="neo-card bg-white p-8 w-full max-w-md transform transition-all">
+                <div class="w-16 h-16 bg-[#bbf7d0] neo-border rounded-full flex items-center justify-center mx-auto mb-4 neo-shadow-sm">
+                    <i class="ph-fill ph-confetti text-3xl text-black"></i>
+                </div>
+                <h3 class="text-3xl font-black text-center text-black mb-1 uppercase">Deal Closed!</h3>
+                <p class="text-sm font-bold text-gray-600 text-center mb-6">Pilih kategori project untuk <span id="wonClientName" class="text-black bg-[#fef08a] px-1"></span></p>
+                
+                <div class="space-y-3">
+                    <button onclick="confirmWon('Website')" class="w-full neo-btn bg-white py-3 hover:bg-[#bfdbfe]">Website Landing / Profil</button>
+                    <button onclick="confirmWon('Webapp')" class="w-full neo-btn bg-white py-3 hover:bg-[#bfdbfe]">Web Application (Dashboard)</button>
+                    <button onclick="confirmWon('Automation')" class="w-full neo-btn bg-white py-3 hover:bg-[#bfdbfe]">N8N / WA Automation</button>
+                    <div class="flex gap-2 mt-4 pt-4 border-t-2 border-black border-dashed">
+                        <input type="text" id="customWonType" placeholder="Tipe Lainnya..." class="neo-input flex-1 py-2">
+                        <button onclick="confirmWon('Custom')" class="neo-btn bg-black text-white px-4 hover:bg-gray-800">OK</button>
+                    </div>
+                </div>
+                <button onclick="cancelWon()" class="w-full mt-6 text-xs font-bold text-gray-500 hover:text-black uppercase underline decoration-2 underline-offset-4">Batal</button>
+            </div>
+        </div>
+
+        <div id="view-hub" class="p-6 md:p-10 space-y-8 max-w-[1400px] mx-auto">
+            
             <div class="flex flex-col lg:flex-row gap-6">
-                <!-- User Profile -->
-                <div class="glass-card p-5 rounded-3xl w-full lg:w-1/3 flex items-center gap-4">
-                    <div class="w-14 h-14 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-black text-xl uppercase shadow-inner" id="profileInitials"></div>
+                <div class="neo-card bg-[#fef08a] p-6 w-full lg:w-1/3 flex items-center gap-5">
+                    <div class="w-16 h-16 bg-white neo-border flex items-center justify-center font-black text-2xl uppercase neo-shadow-sm" id="profileInitials"></div>
                     <div class="flex-1">
-                        <h3 class="text-sm font-bold text-gray-900" id="profileName">Loading...</h3>
-                        <p class="text-[10px] text-gray-500 uppercase tracking-widest font-bold" id="profileRole">Role</p>
-                        <div class="flex gap-4 mt-2 border-t border-gray-100 pt-2">
-                            <div><span class="text-[10px] text-gray-400 block leading-none">My Wins</span><span class="font-black text-green-600 text-sm" id="profileWins">0</span></div>
-                            <div><span class="text-[10px] text-gray-400 block leading-none">Active Prospek</span><span class="font-black text-indigo-600 text-sm" id="profileActive">0</span></div>
+                        <h3 class="text-lg font-black text-black leading-none" id="profileName">Loading...</h3>
+                        <p class="text-xs font-bold text-gray-700 uppercase tracking-widest mt-1" id="profileRole">Role</p>
+                        <div class="flex gap-4 mt-3 pt-3 border-t-2 border-black">
+                            <div><span class="text-[10px] font-bold text-gray-600 uppercase block leading-none">Wins</span><span class="font-black text-black text-lg" id="profileWins">0</span></div>
+                            <div><span class="text-[10px] font-bold text-gray-600 uppercase block leading-none">Active</span><span class="font-black text-black text-lg" id="profileActive">0</span></div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Global Tracking & Toggle -->
-                <div class="glass-panel p-5 rounded-3xl w-full lg:w-2/3 flex flex-col md:flex-row justify-between items-center gap-6">
-                    <div class="flex items-center gap-6">
-                        <div><p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Agency Leads</p><p class="text-2xl font-black text-gray-900 leading-none mt-1" id="hub-stat-total">0</p></div>
-                        <div class="h-10 w-px bg-gray-300 hidden md:block"></div>
-                        <div><p class="text-[10px] font-bold text-green-600 uppercase tracking-widest">Agency Win Rate</p><p class="text-2xl font-black text-green-600 leading-none mt-1" id="hub-stat-win">0%</p></div>
+                <div class="neo-card bg-white p-6 w-full lg:w-2/3 flex flex-col md:flex-row justify-between items-center gap-6">
+                    <div class="flex items-center gap-8 w-full md:w-auto">
+                        <div><p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Total Leads</p><p class="text-4xl font-black text-black leading-none mt-1" id="hub-stat-total">0</p></div>
+                        <div class="h-12 w-[3px] bg-black hidden md:block"></div>
+                        <div><p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Win Rate</p><p class="text-4xl font-black text-[#16a34a] leading-none mt-1" id="hub-stat-win">0%</p></div>
                     </div>
                     
-                    <div class="bg-white p-2 rounded-2xl border border-gray-200 shadow-sm flex items-center gap-3">
-                        <span class="text-xs font-bold text-gray-500" id="labelMyView">My Workspace</span>
-                        <div class="relative inline-block w-12 mr-2 align-middle select-none">
-                            <input type="checkbox" id="viewToggle" onchange="toggleViewMode()" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer z-10"/>
-                            <label for="viewToggle" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer transition-colors"></label>
+                    <div class="bg-[#f4f4f0] neo-border px-3 py-2 rounded-lg flex items-center gap-3 w-full md:w-auto">
+                        <span class="text-xs font-black uppercase" id="labelMyView">My View</span>
+                        <div class="relative inline-block w-12 align-middle select-none">
+                            <input type="checkbox" id="viewToggle" onchange="toggleViewMode()" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-3 border-black appearance-none cursor-pointer z-10 transition-transform duration-200"/>
+                            <label for="viewToggle" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 border-3 border-black cursor-pointer transition-colors"></label>
                         </div>
-                        <span class="text-xs font-bold text-indigo-600" id="labelTeamView">Team View</span>
+                        <span class="text-xs font-black uppercase" id="labelTeamView">Team View</span>
                     </div>
                 </div>
             </div>
 
-            <!-- Active Zones -->
-            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mt-6">
-                <div onclick="openRoom('new')" class="widget-card p-5 rounded-3xl text-center"><div class="w-10 h-10 bg-indigo-50 rounded-full flex items-center justify-center mx-auto mb-2"><i class="ph-fill ph-sparkle text-xl text-indigo-500"></i></div><h4 class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Fresh Leads</h4><p class="text-3xl font-black text-gray-900 mt-1" id="count-new">0</p></div>
-                <div onclick="openRoom('reached')" class="widget-card p-5 rounded-3xl text-center"><div class="w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-2"><i class="ph-fill ph-paper-plane-right text-xl text-blue-500"></i></div><h4 class="text-[10px] font-bold text-blue-600 uppercase tracking-widest">Reached Out</h4><p class="text-3xl font-black text-gray-900 mt-1" id="count-reached">0</p></div>
-                <div onclick="openRoom('meeting')" class="widget-card p-5 rounded-3xl text-center"><div class="w-10 h-10 bg-purple-50 rounded-full flex items-center justify-center mx-auto mb-2"><i class="ph-fill ph-users text-xl text-purple-500"></i></div><h4 class="text-[10px] font-bold text-purple-600 uppercase tracking-widest">Meeting</h4><p class="text-3xl font-black text-gray-900 mt-1" id="count-meeting">0</p></div>
-                <div onclick="openRoom('nego')" class="widget-card p-5 rounded-3xl text-center"><div class="w-10 h-10 bg-yellow-50 rounded-full flex items-center justify-center mx-auto mb-2"><i class="ph-fill ph-handshake text-xl text-yellow-600"></i></div><h4 class="text-[10px] font-bold text-yellow-600 uppercase tracking-widest">Nego & Offer</h4><p class="text-3xl font-black text-gray-900 mt-1" id="count-nego">0</p></div>
-                <div onclick="openRoom('won')" class="widget-card p-5 rounded-3xl text-center border-t-4 border-green-500 col-span-2 md:col-span-1"><div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-2"><i class="ph-fill ph-check-circle text-xl text-green-600"></i></div><h4 class="text-[10px] font-bold text-green-600 uppercase tracking-widest">Closed Won</h4><p class="text-3xl font-black text-green-600 mt-1" id="count-won">0</p></div>
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-5 mt-8">
+                <div onclick="openRoom('new')" class="neo-card bg-[#fecaca] p-5 text-center cursor-pointer hover:-translate-y-1 transition-transform group">
+                    <div class="w-12 h-12 bg-white neo-border rounded-full flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform"><i class="ph-fill ph-sparkle text-2xl text-black"></i></div>
+                    <h4 class="text-xs font-black uppercase tracking-widest">Fresh</h4>
+                    <p class="text-4xl font-black text-black mt-1" id="count-new">0</p>
+                </div>
+                <div onclick="openRoom('reached')" class="neo-card bg-[#bfdbfe] p-5 text-center cursor-pointer hover:-translate-y-1 transition-transform group">
+                    <div class="w-12 h-12 bg-white neo-border rounded-full flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform"><i class="ph-fill ph-paper-plane-right text-2xl text-black"></i></div>
+                    <h4 class="text-xs font-black uppercase tracking-widest">Reached</h4>
+                    <p class="text-4xl font-black text-black mt-1" id="count-reached">0</p>
+                </div>
+                <div onclick="openRoom('meeting')" class="neo-card bg-[#e9d5ff] p-5 text-center cursor-pointer hover:-translate-y-1 transition-transform group">
+                    <div class="w-12 h-12 bg-white neo-border rounded-full flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform"><i class="ph-fill ph-users text-2xl text-black"></i></div>
+                    <h4 class="text-xs font-black uppercase tracking-widest">Meeting</h4>
+                    <p class="text-4xl font-black text-black mt-1" id="count-meeting">0</p>
+                </div>
+                <div onclick="openRoom('nego')" class="neo-card bg-[#fef08a] p-5 text-center cursor-pointer hover:-translate-y-1 transition-transform group">
+                    <div class="w-12 h-12 bg-white neo-border rounded-full flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform"><i class="ph-fill ph-handshake text-2xl text-black"></i></div>
+                    <h4 class="text-xs font-black uppercase tracking-widest">Nego</h4>
+                    <p class="text-4xl font-black text-black mt-1" id="count-nego">0</p>
+                </div>
+                <div onclick="openRoom('won')" class="neo-card bg-[#bbf7d0] p-5 text-center cursor-pointer hover:-translate-y-1 transition-transform group col-span-2 md:col-span-1 border-b-[8px]">
+                    <div class="w-12 h-12 bg-white neo-border rounded-full flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform"><i class="ph-fill ph-check-circle text-2xl text-black"></i></div>
+                    <h4 class="text-xs font-black uppercase tracking-widest">Won</h4>
+                    <p class="text-4xl font-black text-black mt-1" id="count-won">0</p>
+                </div>
             </div>
 
-            <!-- Passive Zones -->
-            <div class="grid grid-cols-2 gap-4 opacity-90 mt-4">
-                <div onclick="openRoom('nurture')" class="widget-card p-4 rounded-2xl flex items-center justify-between bg-orange-50/50"><div class="flex items-center gap-3"><div class="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center"><i class="ph-fill ph-clock-snooze text-orange-600"></i></div><h4 class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Nurture (KIV)</h4></div><p class="text-xl font-black text-gray-900" id="count-nurture">0</p></div>
-                <div onclick="openRoom('lost')" class="widget-card p-4 rounded-2xl flex items-center justify-between bg-red-50/50"><div class="flex items-center gap-3"><div class="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center"><i class="ph-fill ph-x-circle text-red-600"></i></div><h4 class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Closed Lost</h4></div><p class="text-xl font-black text-gray-900" id="count-lost">0</p></div>
+            <div class="grid grid-cols-2 gap-5 mt-2">
+                <div onclick="openRoom('nurture')" class="neo-card bg-white p-4 flex items-center justify-between cursor-pointer hover:bg-gray-50">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-[#fed7aa] neo-border rounded-full flex items-center justify-center"><i class="ph-bold ph-clock-snooze text-xl"></i></div>
+                        <h4 class="text-xs font-black uppercase tracking-widest">Nurture (KIV)</h4>
+                    </div>
+                    <p class="text-2xl font-black text-black" id="count-nurture">0</p>
+                </div>
+                <div onclick="openRoom('lost')" class="neo-card bg-white p-4 flex items-center justify-between cursor-pointer hover:bg-gray-50">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-[#fca5a5] neo-border rounded-full flex items-center justify-center"><i class="ph-bold ph-x-circle text-xl"></i></div>
+                        <h4 class="text-xs font-black uppercase tracking-widest">Closed Lost</h4>
+                    </div>
+                    <p class="text-2xl font-black text-black" id="count-lost">0</p>
+                </div>
             </div>
             
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
-                <div class="lg:col-span-2 glass-panel rounded-3xl p-6 flex flex-col h-64"><h3 class="text-sm font-bold text-gray-900 mb-4 border-b border-gray-200 pb-2 flex items-center gap-2"><i class="ph-bold ph-pulse text-indigo-600"></i> Live Activity</h3><div id="activityFeedList" class="overflow-y-auto custom-scroll space-y-4"></div></div>
-                <div class="glass-card rounded-3xl p-6 flex flex-col h-64 border-t-4 border-yellow-400"><h3 class="text-sm font-bold text-gray-900 mb-4 border-b border-gray-100 pb-2"><i class="ph-fill ph-trophy text-yellow-500"></i> Top Performers</h3><div id="leaderboardList" class="overflow-y-auto custom-scroll space-y-3"></div></div>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
+                <div class="lg:col-span-2 neo-card bg-white p-6 flex flex-col h-72">
+                    <h3 class="text-sm font-black uppercase tracking-widest mb-4 border-b-3 border-black pb-2 flex items-center gap-2"><i class="ph-bold ph-pulse text-xl"></i> Live Activity</h3>
+                    <div id="activityFeedList" class="overflow-y-auto custom-scroll space-y-4 pr-2"></div>
+                </div>
+                <div class="neo-card bg-white p-6 flex flex-col h-72">
+                    <h3 class="text-sm font-black uppercase tracking-widest mb-4 border-b-3 border-black pb-2 flex items-center gap-2"><i class="ph-fill ph-trophy text-xl text-[#eab308]"></i> Leaderboard</h3>
+                    <div id="leaderboardList" class="overflow-y-auto custom-scroll space-y-3 pr-2"></div>
+                </div>
             </div>
         </div>
 
-        <!-- VIEW: THE ROOM (DETAIL STAGE) -->
         <div id="view-room" class="hidden p-6 md:p-10 space-y-6 max-w-[1400px] mx-auto">
-            <button onclick="closeRoom()" class="text-xs font-bold text-gray-500 hover:text-gray-900 flex items-center gap-1 bg-white/50 px-3 py-2 rounded-lg border border-gray-200 w-fit"><i class="ph-bold ph-arrow-left"></i> Kembali ke Dashboard</button>
-            <div class="glass-panel p-8 rounded-3xl">
-                <div class="flex flex-col md:flex-row justify-between items-start md:items-end border-b border-gray-200 pb-6 mb-6 gap-4">
-                    <div><h2 class="text-3xl font-extrabold text-gray-900 uppercase" id="roomTitle">STAGE NAME</h2><p class="text-sm text-gray-500 mt-1">Data prospek terintegrasi dengan n8n.</p></div>
-                    <input type="text" id="localSearch" placeholder="Cari prospek..." onkeyup="filterRoom()" class="w-full md:w-64 bg-white border border-gray-200 rounded-xl py-2 px-4 text-xs focus:outline-none focus:border-indigo-500 shadow-sm">
+            <button onclick="closeRoom()" class="neo-btn bg-white px-4 py-2 text-xs uppercase tracking-widest mb-2"><i class="ph-bold ph-arrow-left mr-2"></i> Back to Hub</button>
+            <div class="neo-card bg-white p-8">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-end border-b-[3px] border-black pb-6 mb-8 gap-4">
+                    <div>
+                        <h2 class="text-4xl font-black text-black uppercase" id="roomTitle">STAGE NAME</h2>
+                        <p class="text-sm font-bold text-gray-500 mt-2 bg-[#f4f4f0] inline-block px-2 border border-black">Data tersinkronisasi via N8N.</p>
+                    </div>
+                    <input type="text" id="localSearch" placeholder="Cari prospek..." onkeyup="filterRoom()" class="neo-input md:w-72">
                 </div>
                 <div id="roomGrid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"></div>
             </div>
         </div>
 
-        <!-- VIEW: ADD FRESH LEAD FORM -->
-        <div id="view-add" class="hidden p-6 md:p-10 max-w-[800px] mx-auto">
-            <div class="glass-panel p-8 md:p-12 rounded-3xl mt-10 shadow-xl border-t-4 border-green-500">
-                <h2 class="text-3xl font-extrabold text-gray-900 mb-2">Input Bahan Bakar</h2>
-                <p class="text-sm text-gray-500 mb-8 border-b border-gray-200 pb-6">Tambahkan prospek baru ke dalam database n8n. Data akan otomatis masuk ke zona "Fresh Leads".</p>
+        <div id="view-add" class="hidden p-6 md:p-10 max-w-[900px] mx-auto">
+            <div class="neo-card bg-[#bbf7d0] p-8 md:p-12 mt-6">
+                <h2 class="text-4xl font-black text-black mb-2 uppercase">Input Prospek</h2>
+                <p class="text-sm font-bold text-gray-700 mb-8 border-b-3 border-black pb-6">Tambahkan prospek baru. Sistem akan otomatis mencatat Anda sebagai penginput.</p>
                 
                 <form onsubmit="submitNewLead(event)" class="space-y-6">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                            <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Nama Usaha / Klien *</label>
-                            <input type="text" id="addNama" required class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-500 shadow-sm">
+                    <div class="neo-card bg-white p-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                            <div>
+                                <label class="block text-xs font-black uppercase tracking-widest mb-2">Nama Usaha / Klien *</label>
+                                <input type="text" id="addNama" required class="neo-input">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-black uppercase tracking-widest mb-2">Industri *</label>
+                                <input type="text" id="addIndustri" required placeholder="Cth: F&B, Retail" class="neo-input">
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="block text-xs font-black uppercase tracking-widest mb-2">Daerah *</label>
+                                <input type="text" id="addDaerah" required placeholder="Cth: Jakarta Selatan" class="neo-input">
+                            </div>
                         </div>
-                        <div>
-                            <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Industri</label>
-                            <input type="text" id="addIndustri" placeholder="Cth: F&B, Retail, dll" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-500 shadow-sm">
-                        </div>
-                        <div>
-                            <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Nomor WhatsApp *</label>
-                            <input type="text" id="addWA" required placeholder="0812xxxx (Format Bebas)" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-500 shadow-sm">
-                        </div>
-                        <div>
-                            <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Daerah</label>
-                            <input type="text" id="addDaerah" placeholder="Cth: Jakarta Selatan" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-500 shadow-sm">
-                        </div>
-                    </div>
-                    
-                    <div class="pt-4">
-                        <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Berikan Ke PIC (Opsional)</label>
-                        <select id="addPIC" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-500 shadow-sm">
-                            <option value="">-- Biarkan Kosong (Unassigned) --</option>
-                            <option value="Dimas Santosa">Dimas Santosa</option>
-                            <option value="Budi (Sales)">Budi (Sales)</option>
-                        </select>
                     </div>
 
-                    <button type="submit" id="btnSubmitLead" class="w-full bg-gray-900 text-white font-bold py-4 rounded-xl hover:bg-black shadow-lg transition-all active:scale-95 mt-4">
-                        Tambahkan Prospek ke Database
+                    <div class="neo-card bg-[#fef08a] p-6">
+                        <p class="text-sm font-black uppercase tracking-widest mb-4 flex items-center gap-2"><i class="ph-bold ph-address-book text-xl"></i> Kontak (Wajib Isi Minimal 1)</p>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div><label class="block text-[10px] font-bold uppercase mb-1">Nomor WA</label><input type="text" id="addWA" placeholder="0812xxxx" class="neo-input py-2"></div>
+                            <div><label class="block text-[10px] font-bold uppercase mb-1">Email</label><input type="email" id="addEmail" placeholder="klien@email.com" class="neo-input py-2"></div>
+                            <div><label class="block text-[10px] font-bold uppercase mb-1">Sosmed / Link</label><input type="text" id="addSosmed" placeholder="@instagram" class="neo-input py-2"></div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                        <div><label class="block text-[10px] font-bold uppercase mb-1">Website (Opsional)</label><input type="text" id="addWeb" placeholder="www.klien.com" class="neo-input py-2 bg-white"></div>
+                        <div><label class="block text-[10px] font-bold uppercase mb-1">Jumlah Review (Opsional)</label><input type="text" id="addReview" placeholder="Cth: 150 Review (4.5)" class="neo-input py-2 bg-white"></div>
+                    </div>
+
+                    <button type="submit" id="btnSubmitLead" class="w-full neo-btn bg-black text-white text-lg py-4 mt-6 hover:bg-gray-800 hover:text-white">
+                        SIMPAN DATA PROSPEK
                     </button>
                 </form>
             </div>
@@ -180,11 +292,15 @@
         if(!session) window.location.href = 'index.html';
 
         let viewMode = session.id === 'admin' ? 'team' : 'personal';
-        let leads = []; // Data kini kosong, akan diisi N8N
+        let leads = []; 
         let activities = JSON.parse(localStorage.getItem('beunaActivities')) || [];
         let activeRoom = '';
+        let pendingWonId = null;
 
         const stageTitles = { 'new': 'Fresh Leads', 'reached': 'Reached Out', 'meeting': 'Meeting', 'nego': 'Nego & Offer', 'won': 'Closed Won', 'nurture': 'Nurture (KIV)', 'lost': 'Closed Lost' };
+        
+        // Warna Neo-Brutalism per Status
+        const stageColors = { 'new': '#fecaca', 'reached': '#bfdbfe', 'meeting': '#e9d5ff', 'nego': '#fef08a', 'won': '#bbf7d0', 'nurture': '#fed7aa', 'lost': '#fca5a5' };
 
         window.onload = () => {
             document.getElementById('profileInitials').innerText = session.initials;
@@ -197,11 +313,10 @@
                 document.getElementById('viewToggle').checked = true;
             }
             
-            // Tarik Data dari N8N
             fetchLeads();
         };
 
-        // --- 2. API COMMUNICATIONS (THE MAGIC) ---
+        // --- 2. API COMMUNICATIONS ---
         async function fetchLeads() {
             toggleLoader(true);
             try {
@@ -213,10 +328,9 @@
                 const json = await res.json();
                 
                 if(json.status === 'success' && json.data) {
-                    // Mapping data n8n ke format frontend
                     leads = json.data.map(item => {
                         let s = (item.STATUS || 'new').toLowerCase();
-                        if(s === 'new lead') s = 'new'; // Normalisasi jika n8n menyimpan "New Lead"
+                        if(s === 'new lead') s = 'new'; 
                         
                         return {
                             id: item.id || item.rowId || Math.random().toString(),
@@ -224,6 +338,8 @@
                             industri: item.INDUSTRI || '',
                             daerah: item.DAERAH || '',
                             phone: item.NOMOR_WA || '',
+                            email: item.EMAIL || '',
+                            sosmed: item.SOSMED || '',
                             pic: item.INPUT || null,
                             status: s,
                             lastContact: 'Synced',
@@ -234,7 +350,6 @@
                 }
             } catch(e) { 
                 console.error("API Error:", e);
-                alert("Gagal terhubung ke N8N. Memuat data cache jika ada.");
             } finally {
                 toggleLoader(false);
                 renderHub();
@@ -244,29 +359,43 @@
 
         async function submitNewLead(e) {
             e.preventDefault();
+            
+            const wa = document.getElementById('addWA').value.trim();
+            const email = document.getElementById('addEmail').value.trim();
+            const sosmed = document.getElementById('addSosmed').value.trim();
+            
+            if(!wa && !email && !sosmed) {
+                alert("Validasi Gagal: Anda harus mengisi minimal salah satu dari Nomor WA, Email, atau Sosmed.");
+                return;
+            }
+
             const btn = document.getElementById('btnSubmitLead');
-            btn.innerHTML = 'Mengirim ke N8N...'; btn.disabled = true;
+            btn.innerHTML = 'MENGIRIM...'; btn.disabled = true;
 
             const payload = {
                 ACTION: 'create_lead',
-                input_by: document.getElementById('addPIC').value, // PIC Opsional
+                input_by: session.name, 
                 nama_usaha: document.getElementById('addNama').value,
                 industri: document.getElementById('addIndustri').value,
                 daerah: document.getElementById('addDaerah').value,
-                nomor_wa: document.getElementById('addWA').value
+                nomor_wa: wa,
+                email: email,
+                sosmed: sosmed,
+                website: document.getElementById('addWeb').value,
+                jumlah_review: document.getElementById('addReview').value,
+                new_status: 'New Lead'
             };
 
             try {
                 const res = await fetch(WEBHOOK_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
                 if(res.ok) {
-                    alert('Prospek berhasil ditambahkan!');
                     e.target.reset();
-                    logActivity(`menambahkan prospek baru: ${payload.nama_usaha}`);
+                    logActivity(`Menambahkan prospek baru: ${payload.nama_usaha}`);
                     switchManagerialView('hub');
-                    fetchLeads(); // Tarik ulang data segar
+                    fetchLeads(); 
                 }
             } catch(e) { alert('Gagal mengirim data.'); } 
-            finally { btn.innerHTML = 'Tambahkan Prospek ke Database'; btn.disabled = false; }
+            finally { btn.innerHTML = 'SIMPAN DATA PROSPEK'; btn.disabled = false; }
         }
 
         // --- 3. UI LOGIC & RENDERERS ---
@@ -276,14 +405,17 @@
             ['view-hub', 'view-room', 'view-add'].forEach(id => document.getElementById(id).classList.add('hidden'));
             document.getElementById(`view-${viewId}`).classList.remove('hidden');
             
-            document.getElementById('nav-hub').className = (viewId === 'hub' || viewId === 'room') ? "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold bg-white shadow-sm border border-gray-100 text-gray-900 transition-all" : "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold text-gray-500 hover:bg-white/50 hover:text-gray-900 transition-all";
-            document.getElementById('nav-add').className = (viewId === 'add') ? "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold bg-white shadow-sm border border-gray-100 text-gray-900 transition-all" : "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold text-gray-500 hover:bg-white/50 hover:text-gray-900 transition-all";
+            const bgActive = "w-full neo-btn bg-[#fef08a] px-4 py-3 text-sm flex gap-3 text-black";
+            const bgInactive = "w-full neo-btn bg-white px-4 py-3 text-sm flex gap-3 text-black hover:bg-[#e5e5e5]";
+            
+            document.getElementById('nav-hub').className = (viewId === 'hub' || viewId === 'room') ? bgActive : bgInactive;
+            document.getElementById('nav-add').className = (viewId === 'add') ? bgActive : bgInactive;
         }
 
         function toggleViewMode() {
             viewMode = document.getElementById('viewToggle').checked ? 'team' : 'personal';
-            document.getElementById('labelTeamView').className = viewMode === 'team' ? "text-xs font-bold text-indigo-600" : "text-xs font-bold text-gray-400";
-            document.getElementById('labelMyView').className = viewMode === 'personal' ? "text-xs font-bold text-indigo-600" : "text-xs font-bold text-gray-400";
+            document.getElementById('labelTeamView').style.color = viewMode === 'team' ? "#000" : "#a3a3a3";
+            document.getElementById('labelMyView').style.color = viewMode === 'personal' ? "#000" : "#a3a3a3";
             renderHub();
         }
 
@@ -306,8 +438,8 @@
 
         function renderActivities() {
             document.getElementById('activityFeedList').innerHTML = activities.map(a => `
-                <div class="timeline-item relative pl-6 pb-4"><div class="timeline-line"></div><div class="absolute left-0 top-1 w-2 h-2 rounded-full bg-indigo-500 z-10"></div>
-                <p class="text-[10px] text-gray-400 font-mono">${a.time}</p><p class="text-xs text-gray-800"><span class="font-bold">${a.user}</span> ${a.text}</p></div>
+                <div class="timeline-item relative pl-6 pb-4"><div class="timeline-line"></div><div class="absolute left-[-3px] top-1 w-3 h-3 rounded-full border-2 border-black bg-[#fef08a] z-10"></div>
+                <p class="text-[10px] font-black text-gray-500 font-mono uppercase">${a.time}</p><p class="text-sm font-bold text-black mt-1"><span class="bg-black text-white px-1 mr-1">${a.user}</span> ${a.text}</p></div>
             `).join('');
         }
 
@@ -316,7 +448,10 @@
             leads.filter(l => l.status === 'won' && l.pic).forEach(l => { scores[l.pic] = (scores[l.pic] || 0) + 1; });
             let sorted = Object.keys(scores).map(pic => ({pic, score: scores[pic]})).sort((a,b) => b.score - a.score);
             document.getElementById('leaderboardList').innerHTML = sorted.map((item, i) => `
-                <div class="flex justify-between p-2 bg-gray-50 rounded border"><span class="text-xs font-bold">${i+1}. ${item.pic}</span><span class="text-xs font-black text-green-600">${item.score} Deals</span></div>
+                <div class="flex justify-between items-center p-3 neo-border bg-[#f4f4f0] rounded-lg mb-2">
+                    <span class="text-sm font-black uppercase tracking-wider">${i+1}. ${item.pic}</span>
+                    <span class="text-sm font-black text-black bg-[#16a34a] text-white px-3 py-1 neo-border shadow-[2px_2px_0_0_#000] rounded">${item.score} DEALS</span>
+                </div>
             `).join('');
         }
 
@@ -325,6 +460,10 @@
             document.getElementById('view-hub').classList.add('hidden');
             document.getElementById('view-room').classList.remove('hidden');
             document.getElementById('roomTitle').innerText = stageTitles[status];
+            
+            // Set Header Color based on Status
+            document.getElementById('roomTitle').style.borderBottom = `6px solid ${stageColors[status]}`;
+            
             filterRoom();
         }
 
@@ -336,31 +475,52 @@
             source = source.filter(l => l.status === activeRoom && l.name.toLowerCase().includes(q));
 
             document.getElementById('roomGrid').innerHTML = source.map(l => {
-                const picBadge = l.pic ? `<span class="bg-indigo-50 text-indigo-600 px-1 rounded text-[10px]">${l.pic}</span>` : `<span class="bg-gray-100 text-gray-400 px-1 rounded text-[10px]">Unassigned</span>`;
+                const picBadge = l.pic ? `<span class="bg-black text-white px-2 py-1 font-bold text-[10px] uppercase border border-black"><i class="ph-bold ph-user"></i> ${l.pic}</span>` : `<span class="bg-gray-200 text-black px-2 py-1 font-bold text-[10px] uppercase border border-black">Unassigned</span>`;
                 
                 let actionBtn = '';
                 if(l.status === 'new') {
-                    actionBtn = `<button onclick="claimLead('${l.id}')" class="w-full bg-indigo-50 hover:bg-indigo-600 hover:text-white text-indigo-700 font-bold py-2 rounded-lg text-xs transition-colors">Ambil & Reach Out</button>`;
+                    actionBtn = `<button onclick="claimLead('${l.id}')" class="w-full neo-btn bg-[#bbf7d0] py-3 mt-4 text-xs tracking-widest uppercase">Ambil & Reach Out</button>`;
                 } else {
                     const dis = (viewMode === 'personal' && l.pic !== session.name) ? 'disabled' : '';
-                    const select = `<select onchange="updateStatus('${l.id}', this.value)" class="status-select bg-gray-50 border rounded w-1/3" ${dis}><option value="reached" ${l.status==='reached'?'selected':''}>Reached</option><option value="meeting" ${l.status==='meeting'?'selected':''}>Meeting</option><option value="nego" ${l.status==='nego'?'selected':''}>Nego</option><option value="won" ${l.status==='won'?'selected':''}>Won</option><option value="nurture" ${l.status==='nurture'?'selected':''}>Nurture</option><option value="lost" ${l.status==='lost'?'selected':''}>Lost</option></select>`;
+                    const select = `<select onchange="handleStatusChange('${l.id}', this.value)" id="sel_${l.id}" class="status-select w-full h-full px-2" ${dis}>
+                        <option value="reached" ${l.status==='reached'?'selected':''}>Reached</option>
+                        <option value="meeting" ${l.status==='meeting'?'selected':''}>Meeting</option>
+                        <option value="nego" ${l.status==='nego'?'selected':''}>Nego</option>
+                        <option value="won" ${l.status==='won'?'selected':''}>Won</option>
+                        <option value="nurture" ${l.status==='nurture'?'selected':''}>Nurture</option>
+                        <option value="lost" ${l.status==='lost'?'selected':''}>Lost</option>
+                    </select>`;
                     
-                    let waBtn = `<button onclick="window.open('https://wa.me/${l.phone}', '_blank')" class="flex-1 bg-green-50 text-green-700 font-bold py-2 rounded-lg text-[10px] text-center hover:bg-green-500 hover:text-white transition-colors">WA</button>`;
+                    let waUrl = `https://wa.me/${l.phone}`;
+                    let waBtn = `<button onclick="window.open('${waUrl}', '_blank')" class="neo-btn bg-[#bbf7d0] p-2 flex-1"><i class="ph-fill ph-whatsapp-logo text-xl"></i></button>`;
                     let bridgeBtn = '';
-                    if(l.status === 'nego') bridgeBtn = `<a href="docs.html?type=OFF&lead=${l.id}" class="flex-1 bg-yellow-50 text-yellow-700 font-bold py-2 rounded-lg text-[10px] text-center hover:bg-yellow-400 transition-colors">Offer Letter</a>`;
-                    if(l.status === 'won') bridgeBtn = `<a href="docs.html?type=INV&lead=${l.id}" class="flex-1 bg-blue-50 text-blue-700 font-bold py-2 rounded-lg text-[10px] text-center hover:bg-blue-500 hover:text-white transition-colors">Invoice</a>`;
-                    actionBtn = `<div class="flex gap-2 w-full mt-2">${select}${waBtn}${bridgeBtn}</div>`;
+                    if(l.status === 'nego') bridgeBtn = `<a href="docs.html?type=OFF&lead=${l.id}" class="neo-btn bg-[#fef08a] py-2 flex-1 text-[10px] uppercase tracking-wider">Offer</a>`;
+                    if(l.status === 'won') bridgeBtn = `<a href="docs.html?type=INV&lead=${l.id}" class="neo-btn bg-[#bfdbfe] py-2 flex-1 text-[10px] uppercase tracking-wider">Invoice</a>`;
+                    
+                    actionBtn = `<div class="flex gap-2 w-full mt-4 border-t-3 border-black pt-4">
+                        <div class="neo-border bg-white rounded-lg flex-1 overflow-hidden shadow-[2px_2px_0_0_#000] relative">
+                            <div class="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none"><i class="ph-bold ph-caret-down text-black"></i></div>
+                            ${select}
+                        </div>
+                        ${waBtn}${bridgeBtn}
+                    </div>`;
                 }
 
-                let extraMeta = '';
-                if(l.daerah) extraMeta += `<span class="text-[9px] text-gray-400 mr-2"><i class="ph-fill ph-map-pin"></i> ${l.daerah}</span>`;
-                if(l.industri) extraMeta += `<span class="text-[9px] text-gray-400"><i class="ph-fill ph-factory"></i> ${l.industri}</span>`;
+                let contactMeta = '';
+                if(l.phone) contactMeta += `<span class="text-[10px] font-bold text-gray-700 mr-3"><i class="ph-bold ph-phone"></i> ${l.phone}</span>`;
+                if(l.email) contactMeta += `<span class="text-[10px] font-bold text-gray-700 mr-3"><i class="ph-bold ph-envelope"></i> Email</span>`;
+                if(l.sosmed) contactMeta += `<span class="text-[10px] font-bold text-gray-700"><i class="ph-bold ph-link"></i> Link</span>`;
 
                 return `
-                <div class="glass-card p-4 rounded-xl flex flex-col">
-                    <h4 class="font-bold text-sm truncate">${l.name}</h4>
-                    <div class="mt-1">${extraMeta}</div>
-                    <div class="flex gap-2 mt-2 mb-4">${picBadge}</div>
+                <div class="neo-card p-6 flex flex-col justify-between" style="background-color: ${stageColors[l.status]};">
+                    <div>
+                        <div class="flex justify-between items-start mb-3 gap-2">
+                            <h4 class="font-black text-lg leading-tight uppercase w-full truncate" title="${l.name}">${l.name}</h4>
+                        </div>
+                        <div class="flex flex-wrap gap-2 mb-3">${picBadge}</div>
+                        <p class="text-xs font-bold text-black border-l-2 border-black pl-2 uppercase tracking-widest">${l.industri} - ${l.daerah}</p>
+                        <div class="mt-3 bg-white/50 px-2 py-1 border border-black rounded inline-block">${contactMeta}</div>
+                    </div>
                     ${actionBtn}
                 </div>`;
             }).join('');
@@ -368,37 +528,74 @@
 
         // --- 4. ACTION TRIGGERS ---
         async function claimLead(id) {
-            // Optimistic UI Update
             let l = leads.find(x => x.id === id);
             l.pic = session.name; l.status = 'reached';
             filterRoom(); 
-            logActivity(`Mengambil prospek: ${l.name}`);
+            logActivity(`Mengklaim prospek: ${l.name}`);
 
-            // Send to n8n (Background)
             try {
                 await fetch(WEBHOOK_URL, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({ ACTION: 'update_lead_status', lead_id: id, new_status: 'reached', pic: session.name })
                 });
-                window.open(`https://wa.me/${l.phone}?text=Halo%20${l.name},%20saya%20${session.name}%20dari%20Beuna%20Agency...`, '_blank');
+                if(l.phone) window.open(`https://wa.me/${l.phone}?text=Halo%20${l.name},%20saya%20${session.name}%20dari%20Beuna%20Agency...`, '_blank');
             } catch(e) { console.error(e); }
         }
 
-        async function updateStatus(id, stat) {
+        function handleStatusChange(id, stat) {
+            if(stat === 'won') {
+                pendingWonId = id;
+                const lead = leads.find(x => x.id === id);
+                document.getElementById('wonClientName').innerText = lead.name;
+                document.getElementById('modalWon').classList.remove('hidden');
+                document.getElementById(`sel_${id}`).value = lead.status;
+            } else {
+                updateStatusPayload(id, stat, null, null, null);
+            }
+        }
+
+        function cancelWon() {
+            document.getElementById('modalWon').classList.add('hidden');
+            pendingWonId = null;
+        }
+
+        function confirmWon(type) {
+            let pType = type === 'Custom' ? document.getElementById('customWonType').value : type;
+            if(type === 'Custom' && !pType) return alert('Isi tipe custom!');
+            
+            document.getElementById('modalWon').classList.add('hidden');
+            updateStatusPayload(pendingWonId, 'won', null, null, pType);
+            pendingWonId = null;
+        }
+
+        async function updateStatusPayload(id, stat, reason = null, followup = null, projectType = null) {
             let l = leads.find(x => x.id === id);
+            
+            if(stat === 'lost') {
+                reason = prompt("Alasan gagal/batal? (Cth: Harga, Ghosting):");
+                if(!reason) return;
+            } else if(stat === 'nurture') {
+                followup = prompt("Bulan estimasi follow up? (Cth: Mei 2026):");
+            }
+
             l.status = stat;
-            filterRoom(); // Optimistic Update
+            if(reason) l.reason = reason;
+            if(followup) l.followupDate = followup;
+            
+            filterRoom(); 
             logActivity(`Memindahkan ${l.name} ke ${stageTitles[stat]}`);
 
-            // Send to n8n (Background)
+            const payload = { ACTION: 'update_lead_status', lead_id: id, new_status: stat };
+            if(reason) payload.reason = reason;
+            if(followup) payload.followup = followup;
+            if(projectType) payload.project_type = projectType; 
+
+            toggleLoader(true);
             try {
-                await fetch(WEBHOOK_URL, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ ACTION: 'update_lead_status', lead_id: id, new_status: stat })
-                });
+                await fetch(WEBHOOK_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
             } catch(e) { console.error(e); }
+            finally { toggleLoader(false); fetchLeads(); /* Tarik ulang untuk sync */ }
         }
 
         function logActivity(text) {
