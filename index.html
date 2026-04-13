@@ -8,62 +8,19 @@
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;900&display=swap" rel="stylesheet">
     
     <style>
-        body { 
-            font-family: 'Space Grotesk', sans-serif; 
-            background-color: #f4f4f0; 
-            color: #000; 
-            min-height: 100vh; 
-        }
-
-        /* --- NEO-BRUTALISM UTILITIES --- */
+        body { font-family: 'Space Grotesk', sans-serif; background-color: #f4f4f0; color: #000; min-height: 100vh; }
         .neo-border { border: 3px solid #000; }
-        .neo-card { 
-            background-color: #fff; 
-            border: 3px solid #000; 
-            box-shadow: 8px 8px 0px 0px #000; 
-            border-radius: 12px; 
-        }
-        
-        .neo-btn { 
-            border: 3px solid #000; 
-            box-shadow: 4px 4px 0px 0px #000; 
-            border-radius: 8px; 
-            font-weight: 900; 
-            cursor: pointer; 
-            transition: all 0.15s ease; 
-        }
-        .neo-btn:hover { 
-            transform: translate(2px, 2px); 
-            box-shadow: 2px 2px 0px 0px #000; 
-        }
-        .neo-btn:active { 
-            transform: translate(4px, 4px); 
-            box-shadow: 0px 0px 0px 0px #000; 
-        }
-
-        .neo-input { 
-            border: 3px solid #000; 
-            box-shadow: 3px 3px 0px 0px #000; 
-            border-radius: 8px; 
-            padding: 1rem 1.25rem; 
-            width: 100%; 
-            outline: none; 
-            transition: all 0.2s; 
-            font-weight: 700;
-            font-size: 1rem;
-        }
-        .neo-input:focus { 
-            background-color: #fef08a; /* Kuning stabilo saat fokus */
-            transform: translate(1px, 1px); 
-            box-shadow: 2px 2px 0px 0px #000; 
-        }
-
+        .neo-card { background-color: #fff; border: 3px solid #000; box-shadow: 8px 8px 0px 0px #000; border-radius: 12px; }
+        .neo-btn { border: 3px solid #000; box-shadow: 4px 4px 0px 0px #000; border-radius: 8px; font-weight: 900; cursor: pointer; transition: all 0.15s ease; }
+        .neo-btn:hover { transform: translate(2px, 2px); box-shadow: 2px 2px 0px 0px #000; }
+        .neo-btn:active { transform: translate(4px, 4px); box-shadow: 0px 0px 0px 0px #000; }
+        .neo-input { border: 3px solid #000; box-shadow: 3px 3px 0px 0px #000; border-radius: 8px; padding: 1rem 1.25rem; width: 100%; outline: none; transition: all 0.2s; font-weight: 700; font-size: 1rem; }
+        .neo-input:focus { background-color: #fef08a; transform: translate(1px, 1px); box-shadow: 2px 2px 0px 0px #000; }
         .loader { border-top-color: #000; -webkit-animation: spinner 1s linear infinite; animation: spinner 1s linear infinite; }
         @keyframes spinner { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
@@ -72,7 +29,7 @@
 
     <div id="loadingOverlay" class="absolute inset-0 bg-[#f4f4f0]/80 backdrop-blur-sm z-50 flex flex-col items-center justify-center hidden">
         <div class="loader ease-linear rounded-full border-4 border-t-4 border-gray-300 h-16 w-16 mb-4"></div>
-        <p class="text-lg font-black uppercase tracking-widest bg-black text-white px-6 py-2 neo-border">Otentikasi N8N...</p>
+        <p class="text-lg font-black uppercase tracking-widest bg-black text-white px-6 py-2 neo-border">Otentikasi Sistem...</p>
     </div>
 
     <div class="neo-card p-10 w-full max-w-md flex flex-col items-center relative z-10 m-4">
@@ -104,10 +61,16 @@
     <script>
         const WEBHOOK_URL = 'https://n8n-mzbmiib3etk4.kangkung.sumopod.my.id/webhook/beuna-crm-api';
 
-        // Cek apakah sudah login sebelumnya
+        // Cek apakah sudah login sebelumnya (Smart Auto-Routing)
         window.onload = () => {
-            if(localStorage.getItem('beunaSession')) {
-                window.location.href = 'crm.html';
+            const savedSession = localStorage.getItem('beunaSession');
+            if(savedSession) {
+                const session = JSON.parse(savedSession);
+                if(session.role.toLowerCase() === 'developer') {
+                    window.location.href = 'developer.html';
+                } else {
+                    window.location.href = 'crm.html';
+                }
             }
         };
 
@@ -119,12 +82,11 @@
             const btn = document.getElementById('loginBtn');
             const loader = document.getElementById('loadingOverlay');
 
-            // Kunci UI saat proses
             loader.classList.remove('hidden');
             btn.disabled = true;
 
             try {
-                // Tembak Webhook N8N untuk meminta data Auth
+                // Tarik data Auth dari N8N
                 const res = await fetch(WEBHOOK_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -135,14 +97,12 @@
 
                 if(json.status === 'success' && json.data) {
                     
-                    // Cari user yang Username & Password-nya persis dengan inputan
                     const validUser = json.data.find(row => 
                         row.USERNAME && row.USERNAME.toLowerCase() === u && 
                         row.PASSWORD && row.PASSWORD.toString() === p
                     );
 
                     if(validUser) {
-                        // Susun Session Object berdasarkan kolom N8N
                         const sessionData = {
                             id: validUser.USERNAME.toLowerCase(),
                             name: validUser.FULL_NAME || validUser.USERNAME,
@@ -150,9 +110,15 @@
                             initials: validUser.INITIALS || validUser.USERNAME.substring(0,2).toUpperCase()
                         };
 
-                        // Simpan ke Browser dan lompat ke CRM
+                        // Simpan Session
                         localStorage.setItem('beunaSession', JSON.stringify(sessionData));
-                        window.location.href = 'crm.html';
+                        
+                        // SMART ROUTING BERDASARKAN ROLE
+                        if(sessionData.role.toLowerCase() === 'developer') {
+                            window.location.href = 'developer.html';
+                        } else {
+                            window.location.href = 'crm.html';
+                        }
                     } else {
                         alert("❌ Username atau Password tidak cocok dengan database kami.");
                     }
@@ -163,9 +129,8 @@
 
             } catch(error) {
                 console.error("Login Error:", error);
-                alert("📡 Terjadi kesalahan koneksi. Pastikan N8N Anda sedang aktif dan URL Webhook benar.");
+                alert("📡 Terjadi kesalahan koneksi. Pastikan N8N Anda sedang aktif.");
             } finally {
-                // Buka kembali UI
                 loader.classList.add('hidden');
                 btn.disabled = false;
             }
