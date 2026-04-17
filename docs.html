@@ -8,7 +8,6 @@
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;900&display=swap" rel="stylesheet">
     
     <style>
@@ -17,11 +16,21 @@
         .neo-card { background-color: #fff; border: 3px solid #000; box-shadow: 6px 6px 0px 0px #000; border-radius: 8px; }
         .neo-btn { border: 3px solid #000; box-shadow: 4px 4px 0px 0px #000; border-radius: 8px; font-weight: 700; cursor: pointer; transition: all 0.15s ease; display: inline-flex; align-items: center; justify-content: center; }
         .neo-btn:hover { transform: translate(1px, 1px); box-shadow: 3px 3px 0px 0px #000; }
-        .neo-input { border: 3px solid #000; box-shadow: 2px 2px 0px 0px #000; border-radius: 6px; padding: 0.5rem 0.75rem; width: 100%; outline: none; transition: all 0.2s; font-weight: 600; font-size: 0.875rem; }
+        .neo-input { border: 3px solid #000; box-shadow: 2px 2px 0px 0px #000; border-radius: 6px; padding: 0.6rem 0.75rem; width: 100%; outline: none; transition: all 0.2s; font-weight: 600; font-size: 0.875rem; }
         .neo-input:focus { background-color: #fef08a; }
         
-        /* KERTAS A4 PREVIEW */
-        .a4-container { width: 210mm; min-height: 297mm; padding: 15mm 20mm; margin: 0 auto; background: white; border: 2px solid #000; box-shadow: 10px 10px 0px 0px rgba(0,0,0,0.2); transform-origin: top center; position: relative; }
+        /* KERTAS A4 PREVIEW (LAYAR) */
+        .a4-container { 
+            width: 210mm; 
+            min-height: 297mm; 
+            padding: 20mm; 
+            margin: 0 auto; 
+            background: white; 
+            border: 2px solid #000; 
+            box-shadow: 10px 10px 0px 0px rgba(0,0,0,0.15); 
+            box-sizing: border-box;
+            display: block;
+        }
         
         .custom-scroll::-webkit-scrollbar { width: 8px; }
         .custom-scroll::-webkit-scrollbar-track { background: #f4f4f0; }
@@ -29,26 +38,35 @@
         .loader { border-top-color: #000; animation: spinner 1.5s linear infinite; }
         @keyframes spinner { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* TATA LETAK CETAK MULTIPAGE YANG SEMPURNA */
+        /* ====== NATIVE PRINT ENGINE CSS ====== */
         @media print {
+            @page { 
+                size: A4 portrait; 
+                margin: 15mm; /* Serahkan margin halaman ke mesin browser */
+            }
             body { background: white; margin: 0; padding: 0; }
+            
             /* Sembunyikan elemen UI Dashboard */
-            aside, #controlPanel, #topHeader, #printBtn, .hide-on-print { display: none !important; }
-            /* Maksimalkan area main */
+            aside, #controlPanel, #topHeader, .hide-on-print { display: none !important; }
+            
+            /* Maksimalkan area kertas */
             main { padding: 0 !important; margin: 0 !important; background: white !important; display: block !important; overflow: visible !important; }
             .a4-container { width: 100% !important; margin: 0 !important; padding: 0 !important; border: none !important; box-shadow: none !important; min-height: auto !important; }
             
-            /* Anti-Terpotong untuk Multipage */
+            /* Anti-Terpotong untuk Tabel Multipage */
             table { page-break-inside: auto; width: 100%; border-collapse: collapse; }
             tr { page-break-inside: avoid; page-break-after: auto; }
-            td, th { border: 1px solid #000 !important; }
+            td, th { page-break-inside: avoid; border: 1px solid #000 !important; }
+            
+            /* Trik agar Header Tabel terulang otomatis di halaman ke-2, 3, dst */
             thead { display: table-header-group; }
             tfoot { display: table-footer-group; }
             
+            /* Jaga Tanda Tangan agar tidak terpotong ke halaman lain */
             .print-break-avoid { break-inside: avoid; page-break-inside: avoid; }
             
-            /* Paksa warna background ikut tercetak */
-            * { -webkit-print-color-adjust: exact !important; color-adjust: exact !important; }
+            /* Paksa warna background ikut tercetak di PDF */
+            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
         }
     </style>
 </head>
@@ -110,7 +128,9 @@
                     
                     <div id="f-OFF" class="doc-form space-y-4">
                         <div><label class="block text-[10px] font-black uppercase mb-1">Judul Project</label><input type="text" id="offTitle" value="Pengembangan Sistem & Automasi" oninput="renderA4()" class="neo-input"></div>
-                        <div><label class="block text-[10px] font-black uppercase mb-1">Scope Pekerjaan</label><textarea id="offScope" rows="4" oninput="renderA4()" class="neo-input text-xs">1. Analisa Kebutuhan Sistem\n2. Setup N8N & Integrasi WhatsApp\n3. UAT & Handover</textarea></div>
+                        <div><label class="block text-[10px] font-black uppercase mb-1">Scope Pekerjaan</label><textarea id="offScope" rows="4" oninput="renderA4()" class="neo-input text-xs leading-relaxed">1. Analisa Kebutuhan Sistem
+2. Setup N8N & Integrasi WhatsApp
+3. UAT & Handover</textarea></div>
                         <div class="grid grid-cols-2 gap-3">
                             <div><label class="block text-[10px] font-black uppercase mb-1">Durasi</label><input type="text" id="offDur" value="14 Hari Kerja" oninput="renderA4()" class="neo-input"></div>
                             <div><label class="block text-[10px] font-black uppercase mb-1">Investasi (Nett)</label><input type="number" id="offAmt" value="15000000" oninput="renderA4()" class="neo-input"></div>
@@ -141,7 +161,7 @@
 
                     <div id="f-BAP" class="doc-form hidden">
                         <div class="bg-[#bbf7d0] neo-border p-4 text-[11px] font-bold text-black leading-relaxed">
-                            <i class="ph-bold ph-magic-wand mr-1"></i> Data BAP di-generate otomatis. Ketik nama klien di atas, sistem akan menarik log teknis langsung dari database N8N Developer.
+                            <i class="ph-bold ph-magic-wand mr-1"></i> Data BAP di-generate otomatis. Ketik nama klien di atas, sistem akan menarik log teknis langsung dari database N8N.
                         </div>
                     </div>
 
@@ -159,29 +179,27 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-2 gap-3 mt-8">
-                    <button onclick="window.print()" class="w-full neo-btn bg-white border-2 border-black py-3 text-xs uppercase font-black hover:bg-gray-100">
-                        <i class="ph-bold ph-printer mr-2 text-base"></i> Cetak
+                <div class="mt-8">
+                    <button onclick="window.print()" class="w-full neo-btn bg-black text-white py-4 text-sm uppercase font-black tracking-widest hover:bg-gray-800">
+                        <i class="ph-bold ph-printer mr-2 text-xl"></i> Cetak / Simpan PDF
                     </button>
-                    <button onclick="downloadPDF()" class="w-full neo-btn bg-black text-white py-3 text-xs uppercase font-black hover:bg-gray-800">
-                        <i class="ph-bold ph-download-simple mr-2 text-base"></i> Unduh PDF
-                    </button>
+                    <p class="text-center text-[9px] text-gray-500 font-bold mt-2">*Gunakan opsi 'Save as PDF' di jendela print browser Anda.</p>
                 </div>
             </div>
         </div>
 
-        <div class="flex-1 overflow-y-auto p-4 md:p-10 flex justify-center custom-scroll bg-[#525659] pb-20">
-            <div id="pdfArea" class="a4-container flex flex-col text-black">
+        <div class="flex-1 overflow-y-auto p-4 md:p-10 custom-scroll bg-[#525659] pb-20">
+            <div id="pdfArea" class="a4-container text-black text-[14px] leading-relaxed">
                 
-                <div class="flex justify-between border-b-[4px] border-black pb-6 mb-8 items-start print-break-avoid">
+                <div class="flex justify-between border-b-[4px] border-black pb-6 mb-8 items-center print-break-avoid">
                     <div class="flex items-center gap-5">
-                        <img src="https://raw.githubusercontent.com/sunsetdansenja-arch/beuna-agency/main/beuna%20logo%20v2.png" class="w-16 h-16 object-contain" crossorigin="anonymous">
+                        <img src="https://raw.githubusercontent.com/sunsetdansenja-arch/beuna-agency/main/beuna%20logo%20v2.png" class="w-14 h-14 object-contain">
                         <div>
                             <h1 class="text-3xl font-black tracking-tighter leading-none">BEUNA<span class="text-[#fca5a5]">.</span></h1>
-                            <p class="text-[8px] font-black uppercase tracking-[0.1em] mt-2 bg-black text-white px-2 py-0.5 inline-block">Tech & Automation Agency</p>
+                            <p class="text-[9px] font-black uppercase tracking-[0.1em] mt-1 bg-black text-white px-2 py-0.5 inline-block">Tech & Automation Agency</p>
                         </div>
                     </div>
-                    <div class="text-right text-[9px] font-bold leading-relaxed">
+                    <div class="text-right text-[10px] font-bold leading-relaxed">
                         <p>hello@beuna.xyz</p>
                         <p>WA: +62 882-1046-4992</p>
                         <p class="text-gray-500 uppercase mt-1">Banda Aceh, Indonesia</p>
@@ -190,78 +208,76 @@
 
                 <div class="flex justify-between items-end mb-10 print-break-avoid">
                     <div class="max-w-[60%]">
-                        <p class="text-[10px] font-black uppercase text-gray-500 mb-1">Ditujukan Kepada:</p>
-                        <p class="text-xl font-black uppercase leading-tight border-b-2 border-black inline-block pb-1" id="a4ClientName">NAMA KLIEN</p>
+                        <p class="text-[11px] font-black uppercase text-gray-500 mb-1">Ditujukan Kepada:</p>
+                        <p class="text-2xl font-black uppercase leading-tight border-b-2 border-black inline-block pb-1" id="a4ClientName">NAMA KLIEN</p>
                     </div>
                     <div class="text-right">
-                        <h2 class="text-2xl font-black uppercase tracking-widest bg-[#fef08a] px-2 border-2 border-black inline-block" id="a4DocType">OFFER LETTER</h2>
-                        <p class="text-[10px] font-mono font-bold mt-2" id="a4DocNum">000/BEUNA/2026</p>
-                        <p class="text-[10px] font-bold text-gray-500 mt-1" id="a4Date">-</p>
+                        <h2 class="text-2xl font-black uppercase tracking-widest bg-[#fef08a] px-3 py-1 border-2 border-black inline-block" id="a4DocType">OFFER LETTER</h2>
+                        <p class="text-[11px] font-mono font-bold mt-3" id="a4DocNum">000/BEUNA/2026</p>
+                        <p class="text-[11px] font-bold text-gray-500 mt-1" id="a4Date">-</p>
                     </div>
                 </div>
 
-                <div class="flex-1 text-[13px] leading-relaxed">
+                <div class="mb-12">
                     
                     <div id="l-OFF" class="block">
                         <p class="mb-4 font-bold text-gray-800">Dengan hormat,</p>
                         <p class="mb-4">Melalui surat ini, kami Beuna Agency mengajukan penawaran kerjasama pengembangan teknis untuk <b><span id="a4offT" class="uppercase"></span></b> dengan rincian sebagai berikut:</p>
                         
-                        <div class="mb-6">
-                            <p class="text-[10px] font-black uppercase mb-2 border-b-2 border-black inline-block">Ruang Lingkup (Scope of Work):</p>
-                            <div class="bg-[#f4f4f0] border-[3px] border-black p-5 rounded-lg whitespace-pre-wrap font-bold text-[12px]" id="a4offS"></div>
+                        <div class="mb-8">
+                            <p class="text-[12px] font-black uppercase mb-3 border-b-2 border-black inline-block">Ruang Lingkup (Scope of Work):</p>
+                            <div class="bg-[#f4f4f0] border-[3px] border-black p-6 rounded-lg whitespace-pre-wrap font-bold text-[13px]" id="a4offS"></div>
                         </div>
 
-                        <table class="w-full mb-6 border-collapse print-break-avoid">
+                        <table class="w-full mb-6 print-break-avoid">
                             <tr class="border-b-[3px] border-black bg-gray-100">
-                                <td class="py-3 px-4 uppercase text-xs font-bold w-1/2 border-r-[3px] border-black">Estimasi Waktu Pengerjaan</td>
-                                <td class="py-3 px-4 text-right font-black" id="a4offD">-</td>
+                                <td class="py-4 px-4 uppercase text-sm font-bold w-1/2 border-r-[3px] border-black">Estimasi Waktu Pengerjaan</td>
+                                <td class="py-4 px-4 text-right font-black text-sm" id="a4offD">-</td>
                             </tr>
                             <tr class="border-b-[3px] border-black bg-[#bbf7d0]">
-                                <td class="py-4 px-4 uppercase text-sm font-black border-r-[3px] border-black">Total Investasi (Nett)</td>
-                                <td class="py-4 px-4 text-right font-black text-xl" id="a4offA">Rp 0</td>
+                                <td class="py-5 px-4 uppercase text-base font-black border-r-[3px] border-black">Total Investasi (Nett)</td>
+                                <td class="py-5 px-4 text-right font-black text-2xl" id="a4offA">Rp 0</td>
                             </tr>
                         </table>
-                        <p class="text-[10px] italic text-gray-600 font-bold">*Harga di atas sudah bersih (Nett) dan mencakup seluruh fitur yang tertulis pada ruang lingkup.</p>
+                        <p class="text-[11px] italic text-gray-600 font-bold">*Harga di atas sudah bersih (Nett) dan mencakup seluruh fitur yang tertulis pada ruang lingkup.</p>
                     </div>
 
                     <div id="l-INV" class="hidden">
-                        <div class="mb-6 print-break-avoid">
-                            <span class="bg-black text-white px-3 py-1 font-black uppercase text-[10px]">Perihal: <span id="a4invT" class="text-[#fef08a]"></span></span>
+                        <div class="mb-8 print-break-avoid">
+                            <span class="bg-black text-white px-4 py-2 font-black uppercase text-[12px]">Perihal: <span id="a4invT" class="text-[#fef08a]"></span></span>
                         </div>
                         
-                        <table class="w-full border-collapse border-[3px] border-black mb-8">
+                        <table class="w-full border-[3px] border-black mb-10">
                             <thead>
                                 <tr class="border-b-[3px] border-black bg-gray-100">
-                                    <th class="py-3 px-4 text-left font-black uppercase text-xs border-r-[3px] border-black">Deskripsi Layanan / Item</th>
-                                    <th class="py-3 px-4 text-right font-black uppercase text-xs w-1/3">Jumlah Harga</th>
+                                    <th class="py-4 px-4 text-left font-black uppercase text-xs border-r-[3px] border-black">Deskripsi Layanan / Item</th>
+                                    <th class="py-4 px-4 text-right font-black uppercase text-xs w-1/3">Jumlah Harga</th>
                                 </tr>
                             </thead>
-                            <tbody id="a4invBody" class="font-bold text-[12px]"></tbody>
+                            <tbody id="a4invBody" class="font-bold text-[13px]"></tbody>
                             <tfoot>
                                 <tr class="border-t-[3px] border-black bg-[#bfdbfe] print-break-avoid">
-                                    <td class="py-4 px-4 text-right font-black uppercase text-sm border-r-[3px] border-black">Grand Total (Nett)</td>
-                                    <td class="py-4 px-4 text-right font-black text-xl text-black" id="a4invTotal">Rp 0</td>
+                                    <td class="py-5 px-4 text-right font-black uppercase text-base border-r-[3px] border-black">Grand Total (Nett)</td>
+                                    <td class="py-5 px-4 text-right font-black text-2xl text-black" id="a4invTotal">Rp 0</td>
                                 </tr>
                             </tfoot>
                         </table>
 
-                        <div class="p-6 border-[3px] border-black bg-[#fef08a] print-break-avoid relative overflow-hidden">
-                            <div class="absolute -right-10 -top-10 text-[100px] text-yellow-500 opacity-20 transform rotate-12"><i class="ph-fill ph-bank"></i></div>
-                            
-                            <p class="text-[11px] font-black uppercase mb-4 border-b-2 border-black pb-1 inline-block relative z-10">Metode Pembayaran Transfer:</p>
+                        <div class="p-8 border-[3px] border-black bg-[#fef08a] print-break-avoid relative overflow-hidden">
+                            <p class="text-[12px] font-black uppercase mb-5 border-b-2 border-black pb-1 inline-block relative z-10">Metode Pembayaran Transfer:</p>
                             <div class="grid grid-cols-2 gap-8 relative z-10">
                                 <div>
-                                    <p class="text-[10px] font-black uppercase text-gray-700">Bank Seabank</p>
-                                    <p class="text-xl font-black tracking-widest mt-1">9012 5782 3879</p>
+                                    <p class="text-[11px] font-black uppercase text-gray-700">Bank Seabank</p>
+                                    <p class="text-2xl font-black tracking-widest mt-1">9012 5782 3879</p>
                                 </div>
                                 <div>
-                                    <p class="text-[10px] font-black uppercase text-gray-700">Bank Syariah Indonesia (BSI)</p>
-                                    <p class="text-xl font-black tracking-widest mt-1">7169 0309 06</p>
+                                    <p class="text-[11px] font-black uppercase text-gray-700">Bank Syariah Indonesia (BSI)</p>
+                                    <p class="text-2xl font-black tracking-widest mt-1">7169 0309 06</p>
                                 </div>
                             </div>
-                            <p class="text-[11px] font-black mt-3 uppercase bg-white border-2 border-black inline-block px-2 relative z-10">A.N Dimas Santosa</p>
+                            <p class="text-[12px] font-black mt-4 uppercase bg-white border-2 border-black inline-block px-3 py-1 relative z-10">A.N Dimas Santosa</p>
                             
-                            <div class="mt-5 pt-3 border-t-2 border-black border-dashed text-[10px] font-bold italic leading-relaxed relative z-10">
+                            <div class="mt-6 pt-4 border-t-2 border-black border-dashed text-[11px] font-bold italic leading-relaxed relative z-10">
                                 <p>1. Mohon kirimkan bukti transfer/resi melalui WhatsApp Admin.</p>
                                 <p>2. Batas waktu pelunasan maksimal 3 Hari Kerja setelah invoice ini diterbitkan.</p>
                             </div>
@@ -269,55 +285,55 @@
                     </div>
 
                     <div id="l-BAP" class="hidden">
-                        <p class="mb-4">Pada hari ini, dilampirkan laporan riwayat pengerjaan (*Developer Log*) untuk proyek <b class="uppercase" id="a4bapClient">-</b> dengan rincian sebagai berikut:</p>
+                        <p class="mb-6">Pada hari ini, dilampirkan laporan riwayat pengerjaan (*Developer Log*) untuk proyek <b class="uppercase" id="a4bapClient">-</b> dengan rincian sebagai berikut:</p>
                         
-                        <table class="w-full border-collapse text-[12px] border-[3px] border-black">
+                        <table class="w-full border-[3px] border-black">
                             <thead>
                                 <tr class="border-b-[3px] border-black bg-gray-100">
-                                    <th class="py-3 px-3 uppercase text-left border-r-2 border-black w-32">Waktu Eksekusi</th>
-                                    <th class="py-3 px-3 uppercase text-left border-r-2 border-black w-24">Kategori</th>
-                                    <th class="py-3 px-3 uppercase text-left border-r-2 border-black">Detail Pekerjaan / Bug Fix</th>
-                                    <th class="py-3 px-3 uppercase text-center w-24">Developer</th>
+                                    <th class="py-4 px-3 uppercase text-left border-r-2 border-black text-[11px] w-32">Waktu Eksekusi</th>
+                                    <th class="py-4 px-3 uppercase text-left border-r-2 border-black text-[11px] w-28">Kategori</th>
+                                    <th class="py-4 px-3 uppercase text-left border-r-2 border-black text-[11px]">Detail Pekerjaan / Bug Fix</th>
+                                    <th class="py-4 px-3 uppercase text-center text-[11px] w-24">Developer</th>
                                 </tr>
                             </thead>
                             <tbody id="a4bapBody" class="font-bold">
                                 </tbody>
                         </table>
-                        <p class="mt-4 text-[10px] font-bold italic text-gray-500">Sistem ini digenerate secara otomatis dari Database Beuna OS.</p>
+                        <p class="mt-5 text-[11px] font-bold italic text-gray-500 print-break-avoid">Sistem ini digenerate secara otomatis dari Database Beuna OS.</p>
                     </div>
 
                     <div id="l-BAST" class="hidden">
-                        <p class="mb-6 font-bold text-lg text-center bg-gray-100 p-4 border-2 border-black print-break-avoid">
+                        <p class="mb-8 font-bold text-xl text-center bg-gray-100 p-6 border-[3px] border-black print-break-avoid">
                             Pihak Beuna Agency telah <b>menyelesaikan 100%</b> pekerjaan dan menyerahkan sistem operasional kepada Pihak Klien.
                         </p>
-                        <table class="w-full border-collapse mb-8 border-[3px] border-black print-break-avoid">
+                        <table class="w-full mb-10 border-[3px] border-black print-break-avoid">
                             <tr class="border-b-[3px] border-black">
-                                <td class="py-4 px-4 font-black uppercase text-xs border-r-[3px] border-black bg-gray-50 w-1/3">Nama Proyek / Sistem</td>
-                                <td class="py-4 px-4 font-bold text-sm uppercase" id="a4bastT">-</td>
+                                <td class="py-5 px-5 font-black uppercase text-sm border-r-[3px] border-black bg-gray-50 w-1/3">Nama Proyek / Sistem</td>
+                                <td class="py-5 px-5 font-bold text-base uppercase" id="a4bastT">-</td>
                             </tr>
                             <tr class="border-b-[3px] border-black">
-                                <td class="py-4 px-4 font-black uppercase text-xs border-r-[3px] border-black bg-gray-50">Status Handover</td>
-                                <td class="py-4 px-4 font-black text-sm uppercase text-[#16a34a] bg-[#bbf7d0]">SELESAI & LIVE</td>
+                                <td class="py-5 px-5 font-black uppercase text-sm border-r-[3px] border-black bg-gray-50">Status Handover</td>
+                                <td class="py-5 px-5 font-black text-base uppercase text-[#16a34a] bg-[#bbf7d0]">SELESAI & LIVE</td>
                             </tr>
                             <tr>
-                                <td class="py-4 px-4 font-black uppercase text-xs border-r-[3px] border-black bg-gray-50">Masa Garansi Bug-Fix</td>
-                                <td class="py-4 px-4 font-bold text-sm" id="a4bastG">-</td>
+                                <td class="py-5 px-5 font-black uppercase text-sm border-r-[3px] border-black bg-gray-50">Masa Garansi Bug-Fix</td>
+                                <td class="py-5 px-5 font-bold text-base" id="a4bastG">-</td>
                             </tr>
                         </table>
-                        <p class="text-xs font-bold leading-relaxed print-break-avoid">Dengan ditandatanganinya dokumen ini, klien menyatakan bahwa sistem telah diuji coba (UAT) dan berjalan sesuai dengan kesepakatan fungsi pada Offer Letter awal. Request penambahan fitur baru setelah BAST ini akan dihitung sebagai project / *maintenance* terpisah.</p>
+                        <p class="text-sm font-bold leading-relaxed print-break-avoid text-justify">Dengan ditandatanganinya dokumen ini, klien menyatakan bahwa sistem telah diuji coba (UAT) dan berjalan sesuai dengan kesepakatan fungsi pada Offer Letter awal. Request penambahan fitur baru setelah BAST ini akan dihitung sebagai project / *maintenance* terpisah.</p>
                     </div>
                 </div>
 
-                <div class="mt-16 flex justify-between px-10 print-break-avoid pb-10">
-                    <div class="text-center w-48">
-                        <p class="text-[10px] font-black uppercase mb-20 text-gray-500">Pihak Klien,</p>
+                <div class="mt-auto pt-16 flex justify-between px-12 print-break-avoid">
+                    <div class="text-center w-56">
+                        <p class="text-[11px] font-black uppercase mb-24 text-gray-500">Pihak Klien,</p>
                         <div class="border-b-[3px] border-black w-full"></div>
-                        <p class="text-[10px] font-black mt-2 uppercase" id="a4SignClient">KLIEN</p>
+                        <p class="text-[12px] font-black mt-3 uppercase" id="a4SignClient">KLIEN</p>
                     </div>
-                    <div class="text-center w-48 relative">
-                        <p class="text-[10px] font-black uppercase mb-20 text-gray-500">Beuna Agency,</p>
+                    <div class="text-center w-56 relative">
+                        <p class="text-[11px] font-black uppercase mb-24 text-gray-500">Beuna Agency,</p>
                         <div class="border-b-[3px] border-black w-full"></div>
-                        <p class="text-[10px] font-black mt-2 uppercase" id="a4Signer">DIMAS SANTOSA</p>
+                        <p class="text-[12px] font-black mt-3 uppercase" id="a4Signer">DIMAS SANTOSA</p>
                     </div>
                 </div>
             </div>
@@ -389,7 +405,6 @@
                 document.getElementById(`l-${type}`).classList.toggle('hidden', type !== t);
             });
             
-            // Peringatan untuk BAP/BAST
             document.getElementById('bapWarning').classList.toggle('hidden', !(t === 'BAP' || t === 'BAST'));
             
             populateDatalist();
@@ -408,7 +423,7 @@
             document.getElementById('a4Signer').innerText = session.name.toUpperCase();
             
             const d = new Date();
-            document.getElementById('a4Date').innerText = "Tanggal Cetak: " + d.toLocaleDateString('id-ID', {day:'numeric', month:'long', year:'numeric'});
+            document.getElementById('a4Date').innerText = "Tanggal Terbit: " + d.toLocaleDateString('id-ID', {day:'numeric', month:'long', year:'numeric'});
             document.getElementById('a4DocNum').innerText = `${Math.floor(Math.random()*90+10)}/BEUNA/${activeType}/${rom[d.getMonth()]}/${d.getFullYear()}`;
 
             if(activeType === 'OFF') {
@@ -423,9 +438,9 @@
                 document.getElementById('a4invBody').innerHTML = invItems.map(i => { 
                     total += i.a; 
                     return `
-                    <tr class="border-b border-black print-break-avoid">
-                        <td class="py-3 px-4 border-r-[3px] border-black text-[13px]">${i.d}</td>
-                        <td class="py-3 px-4 text-right text-[13px]">${new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',minimumFractionDigits:0}).format(i.a)}</td>
+                    <tr class="border-b-[2px] border-black">
+                        <td class="py-4 px-4 border-r-[3px] border-black">${i.d}</td>
+                        <td class="py-4 px-4 text-right">${new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',minimumFractionDigits:0}).format(i.a)}</td>
                     </tr>`; 
                 }).join('');
                 document.getElementById('a4invTotal').innerText = new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',minimumFractionDigits:0}).format(total);
@@ -438,15 +453,15 @@
                     const pId = foundProj.PROJECT_ID || foundProj.PROJECT_NAME || foundProj.id;
                     const logs = devLogs.filter(log => String(log.PROJECT_ID) === String(pId));
                     document.getElementById('a4bapBody').innerHTML = logs.length ? logs.map(log => `
-                        <tr class="border-b-[2px] border-black print-break-avoid">
-                            <td class="py-3 px-3 border-r-2 border-black font-mono text-[10px] text-gray-700">${log.TANGGAL || log.STATUS || log.TIMESTAMP || '-'}</td>
-                            <td class="py-3 px-3 border-r-2 border-black text-[10px] uppercase font-black"><span class="bg-[#fef08a] border border-black px-1 rounded">${log.LOG_TYPE || '-'}</span></td>
-                            <td class="py-3 px-3 border-r-2 border-black text-[12px] leading-relaxed italic">${log.DESCRIPTION || '-'}</td>
-                            <td class="py-3 px-3 text-[10px] uppercase font-black text-center">${log.AUTHOR || '-'}</td>
+                        <tr class="border-b-[2px] border-black">
+                            <td class="py-3 px-3 border-r-2 border-black font-mono text-[11px] text-gray-700">${log.TANGGAL || log.STATUS || log.TIMESTAMP || '-'}</td>
+                            <td class="py-3 px-3 border-r-2 border-black text-[11px] uppercase font-black"><span class="bg-[#fef08a] border border-black px-2 py-1 rounded">${log.LOG_TYPE || '-'}</span></td>
+                            <td class="py-3 px-3 border-r-2 border-black text-[13px] leading-relaxed italic">${log.DESCRIPTION || '-'}</td>
+                            <td class="py-3 px-3 text-[11px] uppercase font-black text-center">${log.AUTHOR || '-'}</td>
                         </tr>
-                    `).join('') : '<tr><td colspan="4" class="py-10 text-center text-gray-500 font-bold uppercase text-[10px]">Belum ada log perbaikan / maintenance untuk klien ini di Database N8N.</td></tr>';
+                    `).join('') : '<tr><td colspan="4" class="py-12 text-center text-gray-500 font-bold uppercase text-[11px]">Belum ada log perbaikan / maintenance untuk klien ini.</td></tr>';
                 } else {
-                    document.getElementById('a4bapBody').innerHTML = '<tr><td colspan="4" class="py-10 text-center text-red-500 font-bold uppercase text-[10px] bg-red-50">Silakan pilih klien berstatus On Going dari dropdown di samping.</td></tr>';
+                    document.getElementById('a4bapBody').innerHTML = '<tr><td colspan="4" class="py-12 text-center text-red-500 font-bold uppercase text-[11px] bg-red-50">Pilih klien berstatus On Going dari daftar pencarian.</td></tr>';
                 }
 
             } else if(activeType === 'BAST') {
@@ -460,9 +475,9 @@
             const list = document.getElementById('invItemsList');
             list.innerHTML = invItems.map(i => `
                 <div class="flex gap-2 items-center bg-gray-50 p-2 rounded neo-border">
-                    <input type="text" value="${i.d}" onchange="updInv(${i.id},'d',this.value)" class="neo-input flex-1 text-[11px] py-1 border-2" placeholder="Nama item...">
-                    <input type="number" value="${i.a}" onchange="updInv(${i.id},'a',this.value)" class="neo-input w-28 text-[11px] py-1 border-2 text-right">
-                    <button onclick="rmInv(${i.id})" class="text-white bg-black font-black w-6 h-6 rounded hover:bg-red-500 transition-colors flex items-center justify-center"><i class="ph-bold ph-trash"></i></button>
+                    <input type="text" value="${i.d}" onchange="updInv(${i.id},'d',this.value)" class="neo-input flex-1 text-[11px] py-2 border-2" placeholder="Nama item...">
+                    <input type="number" value="${i.a}" onchange="updInv(${i.id},'a',this.value)" class="neo-input w-28 text-[11px] py-2 border-2 text-right">
+                    <button onclick="rmInv(${i.id})" class="text-white bg-black font-black w-8 h-8 rounded hover:bg-red-500 transition-colors flex items-center justify-center"><i class="ph-bold ph-trash text-lg"></i></button>
                 </div>
             `).join('');
         }
@@ -471,28 +486,6 @@
         function updInv(id, f, v) { const x = invItems.find(i=>i.id===id); x[f] = (f==='a')?Number(v):v; renderA4(); }
 
         function toggleLoader(s) { document.getElementById('loadingOverlay').classList.toggle('hidden', !s); }
-
-        function downloadPDF() {
-            toggleLoader(true);
-            // Memberi waktu loader muncul sebelum browser terkunci proses render
-            setTimeout(() => {
-                const element = document.getElementById('pdfArea');
-                const clientSafe = document.getElementById('a4ClientName').innerText.replace(/[^a-zA-Z0-9]/g, '_');
-                const filename = `BEUNA_${activeType}_${clientSafe}.pdf`;
-                
-                // Konfigurasi PDF Super Jernih & Mendukung Multipage
-                const opt = { 
-                    margin: [10, 0, 10, 0], // Margin atas, kanan, bawah, kiri
-                    filename: filename, 
-                    image: { type: 'jpeg', quality: 1.0 }, 
-                    html2canvas: { scale: 2, useCORS: true, letterRendering: true }, 
-                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-                    pagebreak: { mode: ['css', 'legacy'] } // Mematuhi page-break-inside avoid
-                };
-                
-                html2pdf().set(opt).from(element).save().then(() => toggleLoader(false));
-            }, 500);
-        }
 
         function logout() { localStorage.removeItem('beunaSession'); window.location.href = 'index.html'; }
     </script>
