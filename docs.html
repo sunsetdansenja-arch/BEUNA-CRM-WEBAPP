@@ -8,29 +8,17 @@
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Space+Grotesk:wght@400;700;900&display=swap" rel="stylesheet">
     
     <style>
+        /* GAYA NEO-BRUTALISM HANYA UNTUK DASHBOARD (UI) */
         body { font-family: 'Space Grotesk', sans-serif; background-color: #f4f4f0; color: #000; overflow-x: hidden; min-height: 100vh; }
         .neo-border { border: 3px solid #000; }
-        .neo-card { background-color: #fff; border: 3px solid #000; box-shadow: 6px 6px 0px 0px #000; border-radius: 8px; }
-        .neo-btn { border: 3px solid #000; box-shadow: 4px 4px 0px 0px #000; border-radius: 8px; font-weight: 700; cursor: pointer; transition: all 0.15s ease; display: inline-flex; align-items: center; justify-content: center; }
-        .neo-btn:hover { transform: translate(1px, 1px); box-shadow: 3px 3px 0px 0px #000; }
-        .neo-input { border: 3px solid #000; box-shadow: 2px 2px 0px 0px #000; border-radius: 6px; padding: 0.6rem 0.75rem; width: 100%; outline: none; transition: all 0.2s; font-weight: 600; font-size: 0.875rem; }
+        .neo-card { background-color: #fff; border: 3px solid #000; box-shadow: 4px 4px 0px 0px #000; border-radius: 8px; }
+        .neo-btn { border: 3px solid #000; box-shadow: 3px 3px 0px 0px #000; border-radius: 8px; font-weight: 700; cursor: pointer; transition: all 0.15s ease; display: inline-flex; align-items: center; justify-content: center; }
+        .neo-btn:hover { transform: translate(1px, 1px); box-shadow: 2px 2px 0px 0px #000; }
+        .neo-input { border: 3px solid #000; box-shadow: 2px 2px 0px 0px #000; border-radius: 6px; padding: 0.5rem 0.75rem; width: 100%; outline: none; font-weight: 600; font-size: 0.85rem; }
         .neo-input:focus { background-color: #fef08a; }
-        
-        /* KERTAS A4 PREVIEW (LAYAR) */
-        .a4-container { 
-            width: 210mm; 
-            min-height: 297mm; 
-            padding: 20mm; 
-            margin: 0 auto; 
-            background: white; 
-            border: 2px solid #000; 
-            box-shadow: 10px 10px 0px 0px rgba(0,0,0,0.15); 
-            box-sizing: border-box;
-            display: block;
-        }
         
         .custom-scroll::-webkit-scrollbar { width: 8px; }
         .custom-scroll::-webkit-scrollbar-track { background: #f4f4f0; }
@@ -38,40 +26,54 @@
         .loader { border-top-color: #000; animation: spinner 1.5s linear infinite; }
         @keyframes spinner { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
+        /* =========================================================
+           GAYA CORPORATE MINIMALIS UNTUK DOKUMEN CETAK (KERTAS A4)
+           ========================================================= */
+        .a4-container { 
+            width: 210mm; 
+            min-height: 297mm; 
+            padding: 20mm 20mm; /* Margin dalam kertas standar dokumen */
+            margin: 0 auto; 
+            background: white; 
+            border: 1px solid #ddd; /* Border tipis di layar */
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1); 
+            box-sizing: border-box;
+            display: block; /* PENTING: Jangan pakai flex agar tidak hancur saat print multipage */
+            font-family: 'Inter', sans-serif; /* Font Inter lebih rapi untuk dokumen ketimbang Space Grotesk */
+            color: #111;
+        }
+
+        .doc-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        .doc-table th { background-color: #f8fafc; text-transform: uppercase; font-size: 10px; padding: 10px; border: 1px solid #cbd5e1; text-align: left; font-weight: 700; color: #475569; }
+        .doc-table td { padding: 10px; border: 1px solid #cbd5e1; font-size: 11px; vertical-align: top; }
+        
+        .doc-header { border-bottom: 2px solid #000; padding-bottom: 15px; margin-bottom: 25px; }
+        .doc-title { font-family: 'Space Grotesk', sans-serif; font-size: 24px; font-weight: 900; text-transform: uppercase; letter-spacing: -0.5px; }
+
         /* ====== NATIVE PRINT ENGINE CSS ====== */
         @media print {
-            @page { 
-                size: A4 portrait; 
-                margin: 15mm; 
-            }
+            @page { size: A4 portrait; margin: 10mm; }
             body { background: white; margin: 0; padding: 0; }
             
-            /* Sembunyikan elemen UI Dashboard */
+            /* Matikan UI Dashboard */
             aside, #controlPanel, #topHeader, .hide-on-print { display: none !important; }
             
-            /* Maksimalkan area kertas */
-            main { padding: 0 !important; margin: 0 !important; background: white !important; display: block !important; overflow: visible !important; }
-            .a4-container { width: 100% !important; margin: 0 !important; padding: 0 !important; border: none !important; box-shadow: none !important; min-height: auto !important; }
+            /* Kertas mengambil alih seluruh layar */
+            main { background: white !important; display: block !important; padding: 0 !important; overflow: visible !important; }
+            .flex-1.overflow-y-auto { display: block !important; overflow: visible !important; } /* Reset wrapper */
             
-            /* Anti-Terpotong untuk Tabel Multipage & Kembalikan Garis Tebal */
-            table { page-break-inside: auto; width: 100%; border-collapse: collapse !important; border: 3px solid #000 !important; }
-            tr { page-break-inside: avoid; page-break-after: auto; border-bottom: 3px solid #000 !important; }
-            td, th { 
-                page-break-inside: avoid; 
-                border-right: 3px solid #000 !important; 
-                border-bottom: 3px solid #000 !important; 
-                padding: 12px !important; /* Spasi lebih lega saat dicetak */
-            }
+            .a4-container { width: 100% !important; margin: 0 !important; padding: 0 !important; border: none !important; box-shadow: none !important; }
             
-            /* Trik agar Header Tabel terulang otomatis di halaman ke-2, 3, dst */
+            /* Pengaman Tabel Multipage */
+            table { page-break-inside: auto; }
+            tr { page-break-inside: avoid; page-break-after: auto; }
             thead { display: table-header-group; }
             tfoot { display: table-footer-group; }
             
-            /* Jaga Tanda Tangan agar tidak terpotong ke halaman lain */
+            /* Pengaman Elemen agar tidak terpotong (Tanda tangan, dll) */
             .print-break-avoid { break-inside: avoid; page-break-inside: avoid; }
             
-            /* Paksa warna background ikut tercetak di PDF */
-            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; }
+            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
         }
     </style>
 </head>
@@ -100,45 +102,45 @@
         </div>
     </aside>
 
-    <main class="flex-1 overflow-hidden relative flex flex-col md:flex-row bg-[#f4f4f0]">
+    <main class="flex-1 overflow-hidden relative flex flex-col md:flex-row bg-[#e2e8f0]">
         
         <div id="loadingOverlay" class="absolute inset-0 bg-white/80 backdrop-blur-sm z-50 flex flex-col items-center justify-center hidden">
             <div class="loader ease-linear rounded-full border-4 border-t-4 border-black h-12 w-12 mb-4"></div>
-            <p class="text-sm font-black uppercase bg-[#bfdbfe] border-[3px] border-black text-black px-4 py-1">SINKRONISASI DATA...</p>
+            <p class="text-sm font-black uppercase bg-[#bfdbfe] border-2 border-black text-black px-4 py-1">SINKRONISASI DATA...</p>
         </div>
 
-        <div id="controlPanel" class="w-full md:w-[450px] bg-white neo-border border-t-0 border-b-0 border-l-0 h-full flex flex-col z-10">
-            <div class="p-6 border-b-[3px] border-black bg-[#bfdbfe]">
-                <h2 class="text-xl font-black uppercase italic">Document Builder</h2>
-                <p class="text-[11px] font-bold text-gray-700">Pilih jenis dokumen dan Klien untuk di-render.</p>
+        <div id="controlPanel" class="w-full md:w-[400px] bg-white neo-border border-t-0 border-b-0 border-l-0 h-full flex flex-col z-10">
+            <div class="p-5 border-b-[3px] border-black bg-black text-white">
+                <h2 class="text-lg font-black uppercase tracking-widest text-[#4ade80]">Docs Builder</h2>
+                <p class="text-[10px] font-bold text-gray-400 mt-1">Render dokumen clean & minimalis.</p>
             </div>
 
-            <div class="flex-1 overflow-y-auto p-6 space-y-6 custom-scroll">
+            <div class="flex-1 overflow-y-auto p-5 space-y-6 custom-scroll">
                 
                 <div class="grid grid-cols-4 gap-2">
-                    <button onclick="changeDocType('OFF')" id="btn-OFF" class="neo-btn bg-[#fef08a] py-2 text-[10px] font-black uppercase">Offer</button>
+                    <button onclick="changeDocType('OFF')" id="btn-OFF" class="neo-btn bg-[#fef08a] py-2 text-[10px] font-black uppercase shadow-[2px_2px_0_0_#000] translate-x-[1px] translate-y-[1px]">Offer</button>
                     <button onclick="changeDocType('INV')" id="btn-INV" class="neo-btn bg-white py-2 text-[10px] font-black uppercase">Invoice</button>
                     <button onclick="changeDocType('BAP')" id="btn-BAP" class="neo-btn bg-white py-2 text-[10px] font-black uppercase">BAP</button>
                     <button onclick="changeDocType('BAST')" id="btn-BAST" class="neo-btn bg-white py-2 text-[10px] font-black uppercase">BAST</button>
                 </div>
 
-                <div class="neo-card p-4 bg-gray-50">
-                    <label class="block text-[10px] font-black uppercase tracking-widest mb-2">Pencarian Klien</label>
-                    <input type="text" id="clientInput" list="projectList" oninput="renderA4()" placeholder="Ketik nama klien atau proyek..." class="neo-input">
+                <div class="bg-gray-50 border-2 border-black p-4 rounded-lg">
+                    <label class="block text-[10px] font-black uppercase tracking-widest mb-2">Cari Klien / Proyek</label>
+                    <input type="text" id="clientInput" list="projectList" oninput="renderA4()" placeholder="Ketik nama klien..." class="neo-input">
                     <datalist id="projectList"></datalist>
-                    <p id="bapWarning" class="hidden text-[9px] font-bold text-red-600 mt-2 italic">*Untuk BAP & BAST, wajib pilih Klien berstatus On Going.</p>
+                    <p id="bapWarning" class="hidden text-[9px] font-bold text-red-600 mt-2">*Wajib status On Going untuk BAP/BAST.</p>
                 </div>
 
-                <div id="forms-container" class="space-y-6">
+                <div id="forms-container" class="space-y-5">
                     
                     <div id="f-OFF" class="doc-form space-y-4">
                         <div><label class="block text-[10px] font-black uppercase mb-1">Judul Project</label><input type="text" id="offTitle" value="Pengembangan Sistem & Automasi" oninput="renderA4()" class="neo-input"></div>
                         <div><label class="block text-[10px] font-black uppercase mb-1">Scope Pekerjaan</label><textarea id="offScope" rows="4" oninput="renderA4()" class="neo-input text-xs leading-relaxed">1. Analisa Kebutuhan Sistem
-2. Setup N8N & Integrasi WhatsApp
+2. Setup Web & Integrasi
 3. UAT & Handover</textarea></div>
                         <div class="grid grid-cols-2 gap-3">
                             <div><label class="block text-[10px] font-black uppercase mb-1">Durasi</label><input type="text" id="offDur" value="14 Hari Kerja" oninput="renderA4()" class="neo-input"></div>
-                            <div><label class="block text-[10px] font-black uppercase mb-1">Investasi (Nett)</label><input type="number" id="offAmt" value="15000000" oninput="renderA4()" class="neo-input"></div>
+                            <div><label class="block text-[10px] font-black uppercase mb-1">Total Biaya</label><input type="number" id="offAmt" value="15000000" oninput="renderA4()" class="neo-input"></div>
                         </div>
                     </div>
 
@@ -147,33 +149,33 @@
                             <label class="block text-[10px] font-black uppercase mb-1">Perihal Tagihan</label>
                             <div class="flex gap-2">
                                 <input type="text" id="invTerm" placeholder="Misal: Tagihan DP 50%" oninput="renderA4()" class="neo-input flex-1 text-xs">
-                                <select onchange="applyTerminPreset(this.value)" class="neo-input w-24 text-[10px] bg-gray-100 px-1 cursor-pointer">
+                                <select onchange="applyTerminPreset(this.value)" class="neo-input w-20 text-[9px] px-1 cursor-pointer">
                                     <option value="">Preset</option>
-                                    <option value="Tagihan Termin 1 (DP 50%)">DP 50%</option>
+                                    <option value="Tagihan Termin 1 (DP 50%)">DP</option>
                                     <option value="Tagihan Pelunasan Proyek">Lunas</option>
                                     <option value="Monthly Maintenance Fee">Maint.</option>
                                 </select>
                             </div>
                         </div>
-                        <div class="neo-card p-4 bg-white">
-                            <div class="flex justify-between items-center mb-4 border-b-2 border-black pb-2">
-                                <span class="text-[11px] font-black uppercase">Item Tagihan</span>
-                                <button onclick="addInvItem()" class="neo-btn bg-[#bbf7d0] px-2 py-1 text-[9px] uppercase shadow-none">+ Tambah</button>
+                        <div class="border-2 border-black p-3 bg-white rounded-lg">
+                            <div class="flex justify-between items-center mb-3">
+                                <span class="text-[10px] font-black uppercase">Daftar Tagihan</span>
+                                <button onclick="addInvItem()" class="neo-btn bg-[#bbf7d0] px-2 py-1 text-[9px] uppercase shadow-[2px_2px_0_0_#000]">+ Item</button>
                             </div>
-                            <div id="invItemsList" class="space-y-3"></div>
+                            <div id="invItemsList" class="space-y-2"></div>
                         </div>
                     </div>
 
                     <div id="f-BAP" class="doc-form hidden">
-                        <div class="bg-[#bbf7d0] neo-border p-4 text-[11px] font-bold text-black leading-relaxed">
-                            <i class="ph-bold ph-magic-wand mr-1"></i> Data BAP di-generate otomatis. Ketik nama klien di atas, sistem akan menarik log teknis langsung dari database N8N.
+                        <div class="bg-blue-50 border border-blue-200 text-blue-800 p-3 rounded text-[10px] leading-relaxed">
+                            Log Developer ditarik otomatis. Pastikan Klien telah dipilih dari daftar pencarian.
                         </div>
                     </div>
 
                     <div id="f-BAST" class="doc-form hidden space-y-4">
-                        <div><label class="block text-[10px] font-black uppercase mb-1">Nama Project Final</label><input type="text" id="bastTitle" placeholder="Misal: Sistem Web App V1" oninput="renderA4()" class="neo-input text-xs"></div>
+                        <div><label class="block text-[10px] font-black uppercase mb-1">Sistem yang diserahkan</label><input type="text" id="bastTitle" placeholder="Sistem Web App V1" oninput="renderA4()" class="neo-input text-xs"></div>
                         <div>
-                            <label class="block text-[10px] font-black uppercase mb-1">Garansi Maintenance (Bug-Fix)</label>
+                            <label class="block text-[10px] font-black uppercase mb-1">Masa Garansi Bug-Fix</label>
                             <select id="bastGaransi" onchange="renderA4()" class="neo-input text-xs cursor-pointer">
                                 <option value="Tidak Ada">Tidak Ada</option>
                                 <option value="1 Bulan" selected>1 Bulan</option>
@@ -184,163 +186,152 @@
                     </div>
                 </div>
 
-                <div class="mt-8">
-                    <button onclick="window.print()" class="w-full neo-btn bg-black text-white py-4 text-sm uppercase font-black tracking-widest hover:bg-gray-800">
-                        <i class="ph-bold ph-printer mr-2 text-xl"></i> Cetak / Simpan PDF
+                <div class="mt-8 pt-4 border-t-2 border-black">
+                    <button onclick="window.print()" class="w-full neo-btn bg-[#4ade80] text-black py-3 text-xs uppercase font-black hover:bg-[#22c55e]">
+                        <i class="ph-bold ph-printer mr-2 text-lg"></i> Cetak / Save PDF
                     </button>
-                    <p class="text-center text-[9px] text-gray-500 font-bold mt-2">*Pastikan opsi 'Background graphics' dicentang di setelan Print browser Anda.</p>
+                    <p class="text-center text-[9px] text-gray-500 mt-2">*Gunakan opsi 'Save as PDF' pada browser.</p>
                 </div>
             </div>
         </div>
 
-        <div class="flex-1 overflow-y-auto p-4 md:p-10 custom-scroll bg-[#525659] pb-20">
-            <div id="pdfArea" class="a4-container text-black text-[14px] leading-relaxed">
+        <div class="flex-1 overflow-y-auto p-4 md:p-8 flex justify-center custom-scroll">
+            <div id="pdfArea" class="a4-container">
                 
-                <div class="flex justify-between border-b-[4px] border-black pb-6 mb-8 items-center print-break-avoid">
-                    <div class="flex items-center gap-5">
-                        <img src="https://raw.githubusercontent.com/sunsetdansenja-arch/beuna-agency/main/beuna%20logo%20v2.png" class="w-14 h-14 object-contain">
+                <div class="flex justify-between doc-header items-center print-break-avoid">
+                    <div class="flex items-center gap-4">
+                        <img src="https://raw.githubusercontent.com/sunsetdansenja-arch/beuna-agency/main/beuna%20logo%20v2.png" class="w-12 h-12 object-contain">
                         <div>
-                            <h1 class="text-3xl font-black tracking-tighter leading-none">BEUNA<span class="text-[#fca5a5]">.</span></h1>
-                            <p class="text-[9px] font-black uppercase tracking-[0.1em] mt-1 bg-black text-white px-2 py-0.5 inline-block">Tech & Automation Agency</p>
+                            <h1 class="doc-title">BEUNA<span class="text-red-500">.</span></h1>
+                            <p class="text-[9px] font-bold text-gray-500 uppercase tracking-widest">Tech & Automation Agency</p>
                         </div>
                     </div>
-                    <div class="text-right text-[10px] font-bold leading-relaxed">
-                        <p>hello@beuna.xyz</p>
-                        <p>WA: +62 882-1046-4992</p>
-                        <p class="text-gray-500 uppercase mt-1">Banda Aceh, Indonesia</p>
+                    <div class="text-right text-[9px] text-gray-600 leading-relaxed">
+                        <p class="font-bold text-black">hello@beuna.xyz | +62 882-1046-4992</p>
+                        <p>Banda Aceh, Indonesia</p>
                     </div>
                 </div>
 
                 <div class="flex justify-between items-end mb-10 print-break-avoid">
-                    <div class="max-w-[60%]">
-                        <p class="text-[11px] font-black uppercase text-gray-500 mb-1">Ditujukan Kepada:</p>
-                        <p class="text-2xl font-black uppercase leading-tight border-b-2 border-black inline-block pb-1" id="a4ClientName">NAMA KLIEN</p>
+                    <div>
+                        <p class="text-[10px] uppercase text-gray-500 font-bold mb-1">Ditujukan Kepada:</p>
+                        <p class="text-lg font-bold uppercase text-black" id="a4ClientName">NAMA KLIEN</p>
                     </div>
                     <div class="text-right">
-                        <h2 class="text-2xl font-black uppercase tracking-widest bg-[#fef08a] px-3 py-1 border-[3px] border-black inline-block" id="a4DocType">OFFER LETTER</h2>
-                        <p class="text-[11px] font-mono font-bold mt-3" id="a4DocNum">000/BEUNA/2026</p>
-                        <p class="text-[11px] font-bold text-gray-500 mt-1" id="a4Date">-</p>
+                        <h2 class="text-xl font-bold uppercase text-black border border-gray-300 px-3 py-1 bg-gray-50 rounded" id="a4DocType">OFFER LETTER</h2>
+                        <p class="text-[10px] font-mono text-gray-500 mt-2" id="a4DocNum">000/BEUNA/2026</p>
+                        <p class="text-[10px] text-gray-500 mt-1" id="a4Date">-</p>
                     </div>
                 </div>
 
-                <div class="mb-12">
+                <div class="mb-12 text-[12px] text-gray-800 leading-relaxed">
                     
                     <div id="l-OFF" class="block">
-                        <p class="mb-4 font-bold text-gray-800">Dengan hormat,</p>
-                        <p class="mb-4">Melalui surat ini, kami Beuna Agency mengajukan penawaran kerjasama pengembangan teknis untuk <b><span id="a4offT" class="uppercase"></span></b> dengan rincian sebagai berikut:</p>
+                        <p class="mb-3">Dengan hormat,</p>
+                        <p class="mb-6">Melalui surat ini, kami Beuna Agency mengajukan penawaran kerjasama pengembangan teknis untuk proyek <b class="text-black uppercase" id="a4offT"></b> dengan rincian sebagai berikut:</p>
                         
-                        <div class="mb-8">
-                            <p class="text-[12px] font-black uppercase mb-3 border-b-2 border-black inline-block">Ruang Lingkup (Scope of Work):</p>
-                            <div class="bg-[#f4f4f0] border-[3px] border-black p-6 rounded-lg whitespace-pre-wrap font-bold text-[13px]" id="a4offS"></div>
-                        </div>
+                        <p class="text-[11px] font-bold uppercase mb-2 text-gray-500">Ruang Lingkup (Scope of Work):</p>
+                        <div class="bg-gray-50 border border-gray-200 p-4 rounded mb-6 whitespace-pre-wrap text-[11px]" id="a4offS"></div>
 
-                        <table class="w-full mb-6 print-break-avoid border-[3px] border-black">
-                            <tr class="border-b-[3px] border-black bg-gray-100">
-                                <td class="py-4 px-4 uppercase text-sm font-bold w-1/2 border-r-[3px] border-black">Estimasi Waktu Pengerjaan</td>
-                                <td class="py-4 px-4 text-right font-black text-sm" id="a4offD">-</td>
+                        <table class="doc-table print-break-avoid">
+                            <tr>
+                                <td class="w-1/2 font-bold text-gray-600">Estimasi Waktu Pengerjaan</td>
+                                <td class="text-right font-bold text-black" id="a4offD">-</td>
                             </tr>
-                            <tr class="bg-[#bbf7d0]">
-                                <td class="py-5 px-4 uppercase text-base font-black border-r-[3px] border-black">Total Investasi (Nett)</td>
-                                <td class="py-5 px-4 text-right font-black text-2xl" id="a4offA">Rp 0</td>
+                            <tr class="bg-gray-50">
+                                <td class="font-bold text-gray-600 py-3">Total Investasi (Nett)</td>
+                                <td class="text-right font-bold text-black text-lg py-3" id="a4offA">Rp 0</td>
                             </tr>
                         </table>
-                        <p class="text-[11px] italic text-gray-600 font-bold">*Harga di atas sudah bersih (Nett) dan mencakup seluruh fitur yang tertulis pada ruang lingkup.</p>
+                        <p class="text-[10px] italic text-gray-500">*Harga di atas sudah bersih (Nett) dan mencakup seluruh fitur pada ruang lingkup.</p>
                     </div>
 
                     <div id="l-INV" class="hidden">
-                        <div class="mb-8 print-break-avoid">
-                            <span class="bg-black text-white px-4 py-2 font-black uppercase text-[12px]">Perihal: <span id="a4invT" class="text-[#fef08a]"></span></span>
-                        </div>
+                        <p class="mb-4 text-[12px] font-bold text-black border-l-2 border-black pl-3" id="a4invT"></p>
                         
-                        <table class="w-full border-[3px] border-black mb-10">
+                        <table class="doc-table mb-8">
                             <thead>
-                                <tr class="border-b-[3px] border-black bg-gray-100">
-                                    <th class="py-4 px-4 text-left font-black uppercase text-xs border-r-[3px] border-black">Deskripsi Layanan / Item</th>
-                                    <th class="py-4 px-4 text-right font-black uppercase text-xs w-1/3">Jumlah Harga</th>
+                                <tr>
+                                    <th>Deskripsi Layanan / Item</th>
+                                    <th class="w-1/3 text-right">Jumlah (IDR)</th>
                                 </tr>
                             </thead>
-                            <tbody id="a4invBody" class="font-bold text-[13px]"></tbody>
+                            <tbody id="a4invBody"></tbody>
                             <tfoot>
-                                <tr class="border-t-[3px] border-black bg-[#bfdbfe] print-break-avoid">
-                                    <td class="py-5 px-4 text-right font-black uppercase text-base border-r-[3px] border-black">Grand Total (Nett)</td>
-                                    <td class="py-5 px-4 text-right font-black text-2xl text-black" id="a4invTotal">Rp 0</td>
+                                <tr class="print-break-avoid">
+                                    <td class="text-right font-bold text-gray-600">Grand Total</td>
+                                    <td class="text-right font-bold text-black text-lg" id="a4invTotal">Rp 0</td>
                                 </tr>
                             </tfoot>
                         </table>
 
-                        <div class="p-8 border-[3px] border-black bg-[#fef08a] print-break-avoid relative overflow-hidden">
-                            <p class="text-[12px] font-black uppercase mb-5 border-b-2 border-black pb-1 inline-block relative z-10">Metode Pembayaran Transfer:</p>
-                            <div class="grid grid-cols-2 gap-8 relative z-10">
-                                <div>
-                                    <p class="text-[11px] font-black uppercase text-gray-700">Bank Seabank</p>
-                                    <p class="text-2xl font-black tracking-widest mt-1">9012 5782 3879</p>
-                                </div>
-                                <div>
-                                    <p class="text-[11px] font-black uppercase text-gray-700">Bank Syariah Indonesia (BSI)</p>
-                                    <p class="text-2xl font-black tracking-widest mt-1">7169 0309 06</p>
-                                </div>
+                        <div class="border border-gray-300 p-5 rounded-lg bg-gray-50 print-break-avoid w-2/3">
+                            <p class="text-[10px] font-bold uppercase text-gray-500 mb-3">Informasi Pembayaran Transfer:</p>
+                            <div class="mb-3">
+                                <p class="text-[10px] text-gray-500">Bank Seabank</p>
+                                <p class="text-sm font-bold tracking-wider text-black">9012 5782 3879</p>
                             </div>
-                            <p class="text-[12px] font-black mt-4 uppercase bg-white border-[3px] border-black inline-block px-3 py-1 relative z-10">A.N Dimas Santosa</p>
-                            
-                            <div class="mt-6 pt-4 border-t-[3px] border-black border-dashed text-[11px] font-bold italic leading-relaxed relative z-10">
-                                <p>1. Mohon kirimkan bukti transfer/resi melalui WhatsApp Admin.</p>
-                                <p>2. Batas waktu pelunasan maksimal 3 Hari Kerja setelah invoice ini diterbitkan.</p>
+                            <div class="mb-3">
+                                <p class="text-[10px] text-gray-500">Bank Syariah Indonesia (BSI)</p>
+                                <p class="text-sm font-bold tracking-wider text-black">7169 0309 06</p>
                             </div>
+                            <p class="text-[11px] font-bold text-black">A.N Dimas Santosa</p>
                         </div>
                     </div>
 
                     <div id="l-BAP" class="hidden">
-                        <p class="mb-6">Pada hari ini, dilampirkan laporan riwayat pengerjaan (*Developer Log*) untuk proyek <b class="uppercase" id="a4bapClient">-</b> dengan rincian sebagai berikut:</p>
+                        <p class="mb-4">Dilampirkan laporan riwayat pengerjaan (*Developer Log*) untuk sistem klien <b class="uppercase text-black" id="a4bapClient">-</b> dengan rincian berikut:</p>
                         
-                        <table class="w-full border-[3px] border-black">
+                        <table class="doc-table">
                             <thead>
-                                <tr class="border-b-[3px] border-black bg-gray-100">
-                                    <th class="py-4 px-3 uppercase text-left border-r-[3px] border-black text-[11px] w-32">Waktu Eksekusi</th>
-                                    <th class="py-4 px-3 uppercase text-left border-r-[3px] border-black text-[11px] w-28">Kategori</th>
-                                    <th class="py-4 px-3 uppercase text-left border-r-[3px] border-black text-[11px]">Detail Pekerjaan / Bug Fix</th>
-                                    <th class="py-4 px-3 uppercase text-center text-[11px] w-24">Developer</th>
+                                <tr>
+                                    <th class="w-28">Waktu / Tgl</th>
+                                    <th class="w-24">Kategori</th>
+                                    <th>Detail Perbaikan / Tugas</th>
+                                    <th class="w-24 text-center">Developer</th>
                                 </tr>
                             </thead>
-                            <tbody id="a4bapBody" class="font-bold">
+                            <tbody id="a4bapBody">
                                 </tbody>
                         </table>
-                        <p class="mt-5 text-[11px] font-bold italic text-gray-500 print-break-avoid">Sistem ini digenerate secara otomatis dari Database Beuna OS.</p>
                     </div>
 
                     <div id="l-BAST" class="hidden">
-                        <p class="mb-8 font-bold text-xl text-center bg-gray-100 p-6 border-[3px] border-black print-break-avoid">
-                            Pihak Beuna Agency telah <b>menyelesaikan 100%</b> pekerjaan dan menyerahkan sistem operasional kepada Pihak Klien.
-                        </p>
-                        <table class="w-full mb-10 border-[3px] border-black print-break-avoid">
-                            <tr class="border-b-[3px] border-black">
-                                <td class="py-5 px-5 font-black uppercase text-sm border-r-[3px] border-black bg-gray-50 w-1/3">Nama Proyek / Sistem</td>
-                                <td class="py-5 px-5 font-bold text-base uppercase" id="a4bastT">-</td>
-                            </tr>
-                            <tr class="border-b-[3px] border-black">
-                                <td class="py-5 px-5 font-black uppercase text-sm border-r-[3px] border-black bg-gray-50">Status Handover</td>
-                                <td class="py-5 px-5 font-black text-base uppercase text-[#16a34a] bg-[#bbf7d0]">SELESAI & LIVE</td>
+                        <div class="bg-gray-50 border border-gray-200 p-5 rounded text-center mb-8 print-break-avoid">
+                            <p class="text-[13px] text-gray-800">Pihak Beuna Agency telah <b class="text-black">menyelesaikan 100%</b> pekerjaan teknis dan menyerahkan operasional sistem kepada Pihak Klien.</p>
+                        </div>
+                        
+                        <table class="doc-table print-break-avoid">
+                            <tr>
+                                <td class="w-1/3 font-bold text-gray-600 bg-gray-50">Nama Sistem</td>
+                                <td class="font-bold text-black uppercase" id="a4bastT">-</td>
                             </tr>
                             <tr>
-                                <td class="py-5 px-5 font-black uppercase text-sm border-r-[3px] border-black bg-gray-50">Masa Garansi Bug-Fix</td>
-                                <td class="py-5 px-5 font-bold text-base" id="a4bastG">-</td>
+                                <td class="font-bold text-gray-600 bg-gray-50">Status Handover</td>
+                                <td class="font-bold text-[#16a34a]">SELESAI (LIVE)</td>
+                            </tr>
+                            <tr>
+                                <td class="font-bold text-gray-600 bg-gray-50">Masa Garansi Bug-Fix</td>
+                                <td class="font-bold text-black" id="a4bastG">-</td>
                             </tr>
                         </table>
-                        <p class="text-sm font-bold leading-relaxed print-break-avoid text-justify">Dengan ditandatanganinya dokumen ini, klien menyatakan bahwa sistem telah diuji coba (UAT) dan berjalan sesuai dengan kesepakatan fungsi pada Offer Letter awal. Request penambahan fitur baru setelah BAST ini akan dihitung sebagai project / *maintenance* terpisah.</p>
+                        <p class="text-[11px] text-gray-500 text-justify print-break-avoid">Dengan ditandatanganinya dokumen ini, klien menyatakan bahwa sistem telah diuji coba dan berfungsi dengan baik. Permintaan penambahan fitur baru di luar ruang lingkup awal akan dihitung sebagai layanan tambahan terpisah.</p>
                     </div>
                 </div>
 
-                <div class="mt-auto pt-16 flex justify-between px-12 print-break-avoid">
-                    <div class="text-center w-56">
-                        <p class="text-[11px] font-black uppercase mb-24 text-gray-500">Pihak Klien,</p>
-                        <div class="border-b-[3px] border-black w-full"></div>
-                        <p class="text-[12px] font-black mt-3 uppercase" id="a4SignClient">KLIEN</p>
+                <div class="mt-12 flex justify-between px-8 print-break-avoid">
+                    <div class="text-center w-40">
+                        <p class="text-[10px] uppercase mb-20 text-gray-600">Pihak Klien,</p>
+                        <div class="border-b border-black w-full"></div>
+                        <p class="text-[11px] font-bold mt-2 uppercase text-black" id="a4SignClient">KLIEN</p>
                     </div>
-                    <div class="text-center w-56 relative">
-                        <p class="text-[11px] font-black uppercase mb-24 text-gray-500">Beuna Agency,</p>
-                        <div class="border-b-[3px] border-black w-full"></div>
-                        <p class="text-[12px] font-black mt-3 uppercase" id="a4Signer">DIMAS SANTOSA</p>
+                    <div class="text-center w-40">
+                        <p class="text-[10px] uppercase mb-20 text-gray-600">Beuna Agency,</p>
+                        <div class="border-b border-black w-full"></div>
+                        <p class="text-[11px] font-bold mt-2 uppercase text-black" id="a4Signer">DIMAS SANTOSA</p>
                     </div>
                 </div>
+
             </div>
         </div>
     </main>
@@ -402,15 +393,15 @@
                 const btn = document.getElementById(`btn-${type}`);
                 if(btn) {
                     btn.style.backgroundColor = (type === t) ? '#fef08a' : '#fff';
-                    btn.style.boxShadow = (type === t) ? '2px 2px 0px 0px #000' : '4px 4px 0px 0px #000';
-                    btn.style.transform = (type === t) ? 'translate(2px, 2px)' : 'none';
+                    btn.style.boxShadow = (type === t) ? '2px 2px 0px 0px #000' : 'none';
+                    btn.style.transform = (type === t) ? 'translate(1px, 1px)' : 'none';
+                    btn.style.border = (type === t) ? '3px solid #000' : '1px solid #ccc';
                 }
                 document.getElementById(`f-${type}`).classList.toggle('hidden', type !== t);
                 document.getElementById(`l-${type}`).classList.toggle('hidden', type !== t);
             });
             
             document.getElementById('bapWarning').classList.toggle('hidden', !(t === 'BAP' || t === 'BAST'));
-            
             populateDatalist();
             renderA4();
         }
@@ -422,12 +413,12 @@
             document.getElementById('a4ClientName').innerText = clientName;
             document.getElementById('a4SignClient').innerText = clientName;
             
-            const titles = {'OFF':'OFFER LETTER', 'INV':'INVOICE', 'BAP':'BERITA ACARA (BAP)', 'BAST':'BERITA ACARA SERAH TERIMA'};
+            const titles = {'OFF':'OFFER LETTER', 'INV':'INVOICE', 'BAP':'BERITA ACARA (BAP)', 'BAST':'B.A.S.T'};
             document.getElementById('a4DocType').innerText = titles[activeType];
             document.getElementById('a4Signer').innerText = session.name.toUpperCase();
             
             const d = new Date();
-            document.getElementById('a4Date').innerText = "Tanggal Terbit: " + d.toLocaleDateString('id-ID', {day:'numeric', month:'long', year:'numeric'});
+            document.getElementById('a4Date').innerText = "Tgl: " + d.toLocaleDateString('id-ID', {day:'numeric', month:'short', year:'numeric'});
             document.getElementById('a4DocNum').innerText = `${Math.floor(Math.random()*90+10)}/BEUNA/${activeType}/${rom[d.getMonth()]}/${d.getFullYear()}`;
 
             if(activeType === 'OFF') {
@@ -437,15 +428,11 @@
                 document.getElementById('a4offA').innerText = new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',minimumFractionDigits:0}).format(document.getElementById('offAmt').value);
             
             } else if(activeType === 'INV') {
-                document.getElementById('a4invT').innerText = document.getElementById('invTerm').value || '-';
+                document.getElementById('a4invT').innerText = document.getElementById('invTerm').value || 'Tagihan';
                 let total = 0;
                 document.getElementById('a4invBody').innerHTML = invItems.map(i => { 
                     total += i.a; 
-                    return `
-                    <tr class="border-b-[3px] border-black">
-                        <td class="py-4 px-4 border-r-[3px] border-black">${i.d}</td>
-                        <td class="py-4 px-4 text-right">${new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',minimumFractionDigits:0}).format(i.a)}</td>
-                    </tr>`; 
+                    return `<tr class="print-break-avoid"><td class="text-black">${i.d}</td><td class="text-right text-black">${new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',minimumFractionDigits:0}).format(i.a)}</td></tr>`; 
                 }).join('');
                 document.getElementById('a4invTotal').innerText = new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',minimumFractionDigits:0}).format(total);
                 renderInvForm();
@@ -457,15 +444,15 @@
                     const pId = foundProj.PROJECT_ID || foundProj.PROJECT_NAME || foundProj.id;
                     const logs = devLogs.filter(log => String(log.PROJECT_ID) === String(pId));
                     document.getElementById('a4bapBody').innerHTML = logs.length ? logs.map(log => `
-                        <tr class="border-b-[3px] border-black">
-                            <td class="py-4 px-3 border-r-[3px] border-black font-mono text-[11px] text-gray-700">${log.TANGGAL || log.STATUS || log.TIMESTAMP || '-'}</td>
-                            <td class="py-4 px-3 border-r-[3px] border-black text-[11px] uppercase font-black"><span class="bg-[#fef08a] border-[2px] border-black px-2 py-1 rounded">${log.LOG_TYPE || '-'}</span></td>
-                            <td class="py-4 px-3 border-r-[3px] border-black text-[13px] leading-relaxed italic">${log.DESCRIPTION || '-'}</td>
-                            <td class="py-4 px-3 text-[11px] uppercase font-black text-center">${log.AUTHOR || '-'}</td>
+                        <tr>
+                            <td class="text-[10px] text-gray-500">${log.TANGGAL || log.STATUS || log.TIMESTAMP || '-'}</td>
+                            <td class="text-[10px] uppercase font-bold text-black">${log.LOG_TYPE || '-'}</td>
+                            <td class="text-[11px] leading-relaxed">${log.DESCRIPTION || '-'}</td>
+                            <td class="text-[10px] uppercase font-bold text-center text-gray-600">${log.AUTHOR || '-'}</td>
                         </tr>
-                    `).join('') : '<tr><td colspan="4" class="py-12 text-center text-gray-500 font-bold uppercase text-[11px]">Belum ada log perbaikan / maintenance untuk klien ini.</td></tr>';
+                    `).join('') : '<tr><td colspan="4" class="py-10 text-center text-gray-400 italic text-[11px]">Belum ada log perbaikan / maintenance.</td></tr>';
                 } else {
-                    document.getElementById('a4bapBody').innerHTML = '<tr><td colspan="4" class="py-12 text-center text-red-500 font-bold uppercase text-[11px] bg-red-50">Pilih klien berstatus On Going dari daftar pencarian.</td></tr>';
+                    document.getElementById('a4bapBody').innerHTML = '<tr><td colspan="4" class="py-10 text-center text-red-500 text-[11px]">Klien On Going belum dipilih.</td></tr>';
                 }
 
             } else if(activeType === 'BAST') {
@@ -477,10 +464,10 @@
         function renderInvForm() {
             const list = document.getElementById('invItemsList');
             list.innerHTML = invItems.map(i => `
-                <div class="flex gap-2 items-center bg-gray-50 p-2 rounded neo-border">
-                    <input type="text" value="${i.d}" onchange="updInv(${i.id},'d',this.value)" class="neo-input flex-1 text-[11px] py-2 border-[3px]" placeholder="Nama item...">
-                    <input type="number" value="${i.a}" onchange="updInv(${i.id},'a',this.value)" class="neo-input w-28 text-[11px] py-2 border-[3px] text-right">
-                    <button onclick="rmInv(${i.id})" class="text-white bg-black font-black w-8 h-8 rounded hover:bg-red-500 transition-colors flex items-center justify-center"><i class="ph-bold ph-trash text-lg"></i></button>
+                <div class="flex gap-2 items-center">
+                    <input type="text" value="${i.d}" onchange="updInv(${i.id},'d',this.value)" class="neo-input flex-1 text-[10px] py-1 border border-gray-400 shadow-none">
+                    <input type="number" value="${i.a}" onchange="updInv(${i.id},'a',this.value)" class="neo-input w-24 text-[10px] py-1 border border-gray-400 shadow-none text-right">
+                    <button onclick="rmInv(${i.id})" class="text-red-500 hover:bg-red-50 p-1 rounded font-bold">✕</button>
                 </div>
             `).join('');
         }
