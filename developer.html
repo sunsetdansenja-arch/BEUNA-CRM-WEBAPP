@@ -19,6 +19,17 @@
         .neo-btn:hover { transform: translate(2px, 2px); box-shadow: 2px 2px 0px 0px #000; }
         .neo-input { border: 3px solid #000; box-shadow: 2px 2px 0px 0px #000; border-radius: 6px; padding: 0.75rem 1rem; width: 100%; outline: none; font-weight: 600; background: white; cursor: pointer; }
         .neo-input:focus { background-color: #bbf7d0; }
+        
+        /* Kalender Neo-Brutalism Styling */
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            background-color: #4ade80;
+            padding: 5px;
+            cursor: pointer;
+            border: 2px solid #000;
+            border-radius: 4px;
+            box-shadow: 2px 2px 0px #000;
+        }
+        
         .custom-scroll::-webkit-scrollbar { width: 8px; }
         .custom-scroll::-webkit-scrollbar-track { background: #f4f4f0; border-left: 2px solid #000; }
         .custom-scroll::-webkit-scrollbar-thumb { background: #000; }
@@ -62,9 +73,9 @@
         </div>
 
         <div class="max-w-[1400px] mx-auto space-y-6">
-            <div class="neo-card bg-black text-white p-8 flex justify-between items-center bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCI+CjxyZWN0IHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgZmlsbD0iIzAwMCIvPgo8Y2lyY2xlIGN4PSIyIiBjeT0iMiIgcj0iMSIgZmlsbD0iIzIyMiIvPgo8L3N2Zz4=')]">
+            <div class="neo-card bg-black text-white p-8 flex justify-between items-center">
                 <div>
-                    <h1 class="text-3xl font-black uppercase tracking-tighter text-[#4ade80] mb-1">Developer Console</h1>
+                    <h1 class="text-3xl font-black uppercase text-[#4ade80] mb-1">Developer Console</h1>
                     <p class="text-xs font-mono text-gray-400">Push perbaikan. Generate log BAP otomatis.</p>
                 </div>
                 <div class="text-right hidden md:block">
@@ -80,15 +91,21 @@
                             <i class="ph-bold ph-plus-square"></i> Push Dev Log
                         </h2>
                         <form onsubmit="submitDevLog(event)" class="space-y-4">
+                            
+                            <div>
+                                <label class="block text-[10px] font-black uppercase mb-1">Tanggal Eksekusi</label>
+                                <input type="date" id="logDate" required class="neo-input font-mono text-sm tracking-widest uppercase">
+                            </div>
+
                             <div>
                                 <label class="block text-[10px] font-black uppercase mb-1">Pilih Proyek</label>
-                                <select id="logProject" required class="neo-input">
+                                <select id="logProject" required class="neo-input cursor-pointer">
                                     <option value="" disabled selected>Memuat data proyek...</option>
                                 </select>
                             </div>
                             <div>
                                 <label class="block text-[10px] font-black uppercase mb-1">Kategori Perbaikan</label>
-                                <select id="logCategory" required class="neo-input">
+                                <select id="logCategory" required class="neo-input cursor-pointer">
                                     <option value="Bug Fix">Bug Fix (Perbaikan Error)</option>
                                     <option value="Feature Update">Feature Update (Fitur Baru)</option>
                                     <option value="Database">Database (N8N/Backend)</option>
@@ -145,7 +162,6 @@
         if(!session) window.location.href = 'index.html';
         const role = session.role.toLowerCase();
         
-        // RBAC CHECK
         if(role === 'staff' || role === 'sales') {
             alert("Akses Ditolak: Halaman ini khusus Tim Developer & Manager.");
             window.location.href = 'crm.html';
@@ -159,24 +175,26 @@
         let ongoingProjects = [];
         let devLogs = [];
 
-        window.onload = () => { fetchDevData(); };
+        window.onload = () => { 
+            // Set Kalender ke hari ini secara otomatis
+            document.getElementById('logDate').valueAsDate = new Date();
+            fetchDevData(); 
+        };
 
         async function fetchDevData() {
             toggleLoader(true);
             try {
-                // Fetch 1: Ongoing Projects
+                // Fetch Ongoing Projects
                 try {
                     const resP = await fetch(WEBHOOK_URL, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ACTION:'get_on_going'}) });
                     const jsonP = await resP.json();
-                    
-                    // ANTI-GHOST DATA: Pastikan baris punya nama & berstatus development
                     ongoingProjects = jsonP.data ? jsonP.data.filter(p => 
                         ((p.STATUS || '').toLowerCase() === 'development' || (p.STATUS || '').toLowerCase() === 'maintenance') &&
                         (p.CLEINT_NAME || p.PROJECT_NAME)
                     ) : [];
                 } catch(e) { console.error("Gagal menarik data project", e); }
 
-                // Fetch 2: Dev Logs
+                // Fetch Dev Logs
                 try {
                     const resL = await fetch(WEBHOOK_URL, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ACTION:'get_dev_log'}) });
                     const jsonL = await resL.json();
@@ -199,12 +217,22 @@
                 project_id: document.getElementById('logProject').value,
                 category: document.getElementById('logCategory').value,
                 detail: document.getElementById('logDetail').value,
-                pic_dev: session.name
+                pic_dev: session.name,
+                
+                // MENGIRIM TANGGAL KE VARIABEL STATUS AGAR DITANGKAP N8N SESUAI REQUEST ANDA
+                status: document.getElementById('logDate').value,
+                
+                // Saya kirimkan juga di variabel tanggal untuk jaga-jaga
+                tanggal: document.getElementById('logDate').value 
             };
 
             try {
                 const res = await fetch(WEBHOOK_URL, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload) });
-                if(res.ok) { e.target.reset(); fetchDevData(); }
+                if(res.ok) { 
+                    // Jangan reset kalender ke kosong, cukup form teksnya saja
+                    document.getElementById('logDetail').value = "";
+                    fetchDevData(); 
+                }
             } catch(e) { alert("Gagal mengirim log ke server."); } 
             finally { btn.innerHTML = 'Push to N8N Database'; btn.disabled = false; }
         }
@@ -214,9 +242,12 @@
             if(ongoingProjects.length === 0) {
                 sel.innerHTML = '<option value="" disabled selected>-- Tidak ada proyek aktif --</option>';
             } else {
-                // Menggunakan PROJECT_NAME sebagai ID pemersatu
                 sel.innerHTML = '<option value="" disabled selected>-- Pilih Proyek --</option>' + 
-                    ongoingProjects.map(p => `<option value="${p.PROJECT_NAME || p.CLEINT_NAME}">${p.CLEINT_NAME || p.PROJECT_NAME}</option>`).join('');
+                    ongoingProjects.map(p => {
+                        const id = p.PROJECT_NAME || p.PROJECT_ID || p.id || p.CLEINT_NAME;
+                        const name = p.CLEINT_NAME || p.PROJECT_NAME;
+                        return `<option value="${id}">${name}</option>`;
+                    }).join('');
             }
 
             document.getElementById('statActive').innerText = ongoingProjects.length;
@@ -231,13 +262,15 @@
             `).join('');
 
             document.getElementById('logHistoryBody').innerHTML = devLogs.slice(0, 50).map(log => {
-                // Pencocokan History ke Ongoing Project
                 const proj = ongoingProjects.find(p => String(p.PROJECT_NAME || p.CLEINT_NAME) === String(log.PROJECT_ID));
                 const pName = proj ? (proj.CLEINT_NAME || proj.PROJECT_NAME) : (log.PROJECT_ID || 'Unknown ID');
                 
+                // Menampilkan Tanggal (Prioritaskan kolom TANGGAL / STATUS dari N8N, jika kosong pakai TIMESTAMP sistem)
+                const displayDate = log.TANGGAL || log.STATUS || log.TIMESTAMP || '-';
+                
                 return `
                 <tr class="border-b border-gray-200 hover:bg-gray-50">
-                    <td class="py-3 px-2 text-[10px] text-gray-500">${log.TIMESTAMP || '-'}</td>
+                    <td class="py-3 px-2 text-[10px] text-gray-500 font-bold">${displayDate}</td>
                     <td class="py-3 px-2 font-bold text-xs truncate max-w-[120px]" title="${pName}">${pName}</td>
                     <td class="py-3 px-2 text-[10px]"><span class="bg-black text-white px-2 py-0.5 rounded uppercase">${log.LOG_TYPE || '-'}</span></td>
                     <td class="py-3 px-2 text-xs font-bold">${log.AUTHOR || '-'}</td>
