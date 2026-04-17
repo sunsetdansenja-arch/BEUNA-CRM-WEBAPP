@@ -8,8 +8,7 @@
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;900&display=swap" rel="stylesheet">
     
     <style>
@@ -17,28 +16,18 @@
         .neo-border { border: 3px solid #000; }
         .neo-card { background-color: #fff; border: 3px solid #000; box-shadow: 6px 6px 0px 0px #000; border-radius: 8px; }
         .neo-btn { border: 3px solid #000; box-shadow: 4px 4px 0px 0px #000; border-radius: 8px; font-weight: 700; cursor: pointer; transition: all 0.15s ease; display: inline-flex; align-items: center; justify-content: center; }
-        .neo-btn:hover { transform: translate(2px, 2px); box-shadow: 2px 2px 0px 0px #000; }
-        .neo-input { border: 3px solid #000; box-shadow: 2px 2px 0px 0px #000; border-radius: 6px; padding: 0.75rem 1rem; width: 100%; outline: none; font-weight: 600; background: white; cursor: pointer; }
-        .neo-input:focus { background-color: #bfdbfe; }
+        .neo-btn:hover { transform: translate(1px, 1px); box-shadow: 2px 2px 0px 0px #000; }
+        .neo-input { border: 3px solid #000; box-shadow: 2px 2px 0px 0px #000; border-radius: 6px; padding: 0.5rem 0.75rem; width: 100%; outline: none; transition: all 0.2s; font-weight: 600; font-size: 0.875rem; }
+        .neo-input:focus { background-color: #fef08a; }
+        .a4-container { width: 210mm; min-height: 297mm; padding: 15mm 20mm; margin: 0 auto; background: white; border: 1px solid #ddd; box-shadow: 0 0 20px rgba(0,0,0,0.1); transform-origin: top center; position: relative; }
         .custom-scroll::-webkit-scrollbar { width: 8px; }
-        .custom-scroll::-webkit-scrollbar-track { background: #f4f4f0; border-left: 2px solid #000; }
+        .custom-scroll::-webkit-scrollbar-track { background: #f4f4f0; }
         .custom-scroll::-webkit-scrollbar-thumb { background: #000; }
         .loader { border-top-color: #000; animation: spinner 1.5s linear infinite; }
         @keyframes spinner { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        
-        /* PRINT STYLES - HANYA MENCETAK KERTAS BAP */
-        @media print {
-            body { background: white; }
-            aside, #controlPanel, #topHeader, #printBtn { display: none !important; }
-            main { padding: 0 !important; margin: 0 !important; overflow: visible !important; background: white !important; }
-            #printableBAP { padding: 0 !important; max-width: 100% !important; margin: 0 !important; box-shadow: none !important; border: none !important; }
-            table { border-collapse: collapse; width: 100%; }
-            th, td { border: 1px solid #000 !important; padding: 10px; font-size: 13px; }
-            .print-break { page-break-inside: avoid; }
-        }
     </style>
 </head>
-<body class="antialiased flex h-screen overflow-hidden selection:bg-[#bfdbfe] selection:text-black">
+<body class="antialiased flex h-screen overflow-hidden">
 
     <aside class="w-20 md:w-64 bg-white neo-border border-l-0 border-t-0 border-b-0 flex flex-col z-20">
         <div class="p-6 flex items-center gap-3 border-b-[3px] border-black">
@@ -49,7 +38,7 @@
             <a href="crm.html" id="nav-crm" class="w-full neo-btn bg-white px-4 py-3 text-sm flex gap-3 text-black hover:bg-gray-100">
                 <i class="ph-bold ph-funnel text-xl"></i> <span class="hidden md:block">CRM Hub</span>
             </a>
-            <a href="docs.html" id="nav-docs" class="w-full neo-btn bg-[#bfdbfe] px-4 py-3 text-sm flex gap-3 text-black">
+            <a href="docs.html" id="nav-docs" class="w-full neo-btn bg-[#fef08a] px-4 py-3 text-sm flex gap-3 text-black">
                 <i class="ph-bold ph-files text-xl"></i> <span class="hidden md:block">Docs Center</span>
             </a>
             <a href="developer.html" id="nav-dev" class="w-full neo-btn bg-white px-4 py-3 text-sm flex gap-3 text-black hover:bg-[#bbf7d0]">
@@ -57,106 +46,205 @@
             </a>
         </nav>
         <div class="p-4 bg-[#f4f4f0] border-t-[3px] border-black">
-            <div class="mb-4 hidden md:block">
-                <p class="text-[10px] font-black uppercase text-gray-500">Logged in as:</p>
-                <p class="text-sm font-black truncate" id="userName">User</p>
-            </div>
             <button onclick="logout()" class="w-full neo-btn bg-[#fca5a5] text-black px-4 py-3 text-xs flex gap-2">
-                <i class="ph-bold ph-power text-lg"></i> <span class="hidden md:block">System Logout</span>
+                <i class="ph-bold ph-power text-lg"></i> <span class="hidden md:block">Logout</span>
             </button>
         </div>
     </aside>
 
-    <main class="flex-1 overflow-y-auto relative custom-scroll p-6 md:p-10">
-        <div id="loadingOverlay" class="absolute inset-0 bg-[#f4f4f0]/90 backdrop-blur-sm z-50 flex flex-col items-center justify-center hidden">
-            <div class="loader ease-linear rounded-full border-4 border-t-4 border-black h-16 w-16 mb-4"></div>
-            <p class="text-sm font-black uppercase tracking-widest bg-[#bfdbfe] border-[3px] border-black px-4 py-1">MENYUSUN DOKUMEN...</p>
+    <main class="flex-1 overflow-hidden relative flex flex-col md:flex-row bg-[#f4f4f0]">
+        
+        <div id="loadingOverlay" class="absolute inset-0 bg-white/80 backdrop-blur-sm z-50 flex flex-col items-center justify-center hidden">
+            <div class="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-12 w-12 mb-4"></div>
+            <p class="text-sm font-black uppercase bg-black text-white px-4 py-1">MENYUSUN DOKUMEN...</p>
         </div>
 
-        <div class="max-w-[1000px] mx-auto space-y-6">
-            
-            <div id="topHeader" class="neo-card bg-black text-white p-8">
-                <h1 class="text-3xl font-black uppercase tracking-tighter text-[#bfdbfe] mb-1">Document Center</h1>
-                <p class="text-xs text-gray-400">Generate Berita Acara Pekerjaan (BAP) otomatis dari log Developer.</p>
+        <div class="w-full md:w-[400px] bg-white neo-border border-t-0 border-b-0 border-l-0 h-full flex flex-col">
+            <div class="p-6 border-b-[3px] border-black bg-[#bfdbfe]">
+                <h2 class="text-xl font-black uppercase italic">Document Builder</h2>
+                <p class="text-xs font-bold text-gray-700">Pilih Klien dan tipe dokumen yang dicetak.</p>
             </div>
 
-            <div id="controlPanel" class="neo-card bg-white p-6 md:p-8 flex flex-col md:flex-row gap-4 items-end bg-[#fef08a]">
-                <div class="flex-1 w-full">
-                    <label class="block text-xs font-black uppercase mb-2"><i class="ph-bold ph-rocket-launch"></i> Pilih Klien (Hanya Proyek Aktif)</label>
-                    <select id="bapProject" class="neo-input">
-                        <option value="" disabled selected>Memuat data proyek aktif...</option>
-                    </select>
-                </div>
-                <div class="w-full md:w-48">
-                    <label class="block text-xs font-black uppercase mb-2">Tanggal BAP</label>
-                    <input type="date" id="bapDate" class="neo-input">
-                </div>
-                <button onclick="generateBAP()" class="w-full md:w-auto neo-btn bg-black text-white px-8 py-3 text-sm tracking-widest uppercase hover:bg-gray-800 h-[46px]">
-                    GENERATE
-                </button>
-            </div>
-
-            <div id="printableBAP" class="hidden neo-card bg-white p-10 md:p-16 min-h-[800px] relative mt-10">
-                <button onclick="window.print()" class="absolute top-6 right-6 neo-btn bg-[#bfdbfe] px-4 py-2 text-xs uppercase" id="printBtn">
-                    <i class="ph-bold ph-printer mr-2 text-lg"></i> Cetak / PDF
-                </button>
-
-                <div class="flex items-center justify-between border-b-[4px] border-black pb-6 mb-8 mt-8 md:mt-0">
-                    <div class="flex items-center gap-4">
-                        <img src="https://raw.githubusercontent.com/sunsetdansenja-arch/beuna-agency/main/beuna%20logo%20v2.png" alt="Beuna" class="w-16 h-16 object-contain">
-                        <div>
-                            <h2 class="text-3xl font-black uppercase tracking-tighter leading-none">BEUNA AGENCY</h2>
-                            <p class="text-xs font-bold uppercase tracking-widest text-gray-600 mt-1">Tech & Automation Solutions</p>
-                        </div>
-                    </div>
+            <div class="flex-1 overflow-y-auto p-6 space-y-6 custom-scroll">
+                
+                <div class="grid grid-cols-4 gap-2">
+                    <button onclick="changeDocType('OFF')" id="btn-OFF" class="neo-btn bg-[#fef08a] py-2 text-[10px] font-black uppercase">Offer</button>
+                    <button onclick="changeDocType('INV')" id="btn-INV" class="neo-btn bg-white py-2 text-[10px] font-black uppercase">Inv</button>
+                    <button onclick="changeDocType('BAP')" id="btn-BAP" class="neo-btn bg-white py-2 text-[10px] font-black uppercase">BAP</button>
+                    <button onclick="changeDocType('BAST')" id="btn-BAST" class="neo-btn bg-white py-2 text-[10px] font-black uppercase">BAST</button>
                 </div>
 
-                <div class="text-center mb-10">
-                    <h3 class="text-2xl font-black uppercase underline underline-offset-8">BERITA ACARA PEKERJAAN (BAP)</h3>
-                    <p class="text-sm font-bold mt-4" id="renderDate">Tanggal: -</p>
+                <div class="neo-card p-4 bg-gray-50">
+                    <label class="block text-[10px] font-black uppercase tracking-widest mb-2">Nama Klien / Proyek</label>
+                    <input type="text" id="clientInput" list="projectList" oninput="renderA4()" placeholder="Ketik atau pilih klien..." class="neo-input">
+                    <datalist id="projectList"></datalist>
                 </div>
 
-                <div class="mb-8">
-                    <p class="text-sm mb-4">Pada hari ini, telah diserahkan laporan pekerjaan / <i>maintenance</i> sistem dengan rincian proyek sebagai berikut:</p>
-                    <table class="w-full text-sm font-bold mb-4 !border-none">
-                        <tr class="!border-none"><td class="w-40 py-1 uppercase text-gray-600 text-xs !border-none">Nama Klien / Usaha</td><td class="w-4 text-center !border-none">:</td><td class="uppercase text-lg !border-none" id="renderClient">-</td></tr>
-                        <tr class="!border-none"><td class="py-1 uppercase text-gray-600 text-xs !border-none">Jenis Proyek</td><td class="text-center !border-none">:</td><td class="!border-none" id="renderType">-</td></tr>
-                        <tr class="!border-none"><td class="py-1 uppercase text-gray-600 text-xs !border-none">Status Dokumen</td><td class="text-center !border-none">:</td><td class="!border-none">LAPORAN PENYELESAIAN TUGAS (LOG)</td></tr>
-                    </table>
-                </div>
-
-                <div class="mb-10">
-                    <p class="text-sm font-bold uppercase mb-2 border-b-2 border-black inline-block">Rincian Eksekusi Teknis (Dev Log):</p>
-                    <table class="w-full text-left border-collapse mt-2 border-[3px] border-black">
-                        <thead>
-                            <tr class="bg-gray-100 border-b-[3px] border-black">
-                                <th class="py-3 px-3 border-r-[3px] border-black text-xs uppercase w-12 text-center">No</th>
-                                <th class="py-3 px-3 border-r-[3px] border-black text-xs uppercase w-32">Waktu</th>
-                                <th class="py-3 px-3 border-r-[3px] border-black text-xs uppercase w-32">Kategori</th>
-                                <th class="py-3 px-3 border-r-[3px] border-black text-xs uppercase">Deskripsi Pekerjaan</th>
-                                <th class="py-3 px-3 text-xs uppercase w-24">Teknisi</th>
-                            </tr>
-                        </thead>
-                        <tbody id="renderLogsBody">
-                            </tbody>
-                    </table>
-                </div>
-
-                <div class="print-break mt-12">
-                    <p class="text-sm mb-16 leading-relaxed">Demikian Berita Acara Pekerjaan ini dibuat dengan sebenar-benarnya untuk dapat dipergunakan sebagaimana mestinya. Seluruh pekerjaan yang tertera di atas telah diuji dan berfungsi dengan baik pada sistem klien.</p>
+                <div id="forms-container" class="space-y-6">
                     
-                    <div class="flex justify-between px-10">
-                        <div class="text-center w-48">
-                            <p class="text-xs font-bold uppercase text-gray-500 mb-20">Pihak Klien</p>
-                            <p class="font-black uppercase border-b-2 border-black inline-block w-full pb-1" id="renderSignClient">Nama Klien</p>
+                    <div id="f-OFF" class="doc-form space-y-4">
+                        <div><label class="block text-[10px] font-black uppercase mb-1">Judul Project</label><input type="text" id="offTitle" value="Pengembangan Sistem & Automasi" oninput="renderA4()" class="neo-input"></div>
+                        <div><label class="block text-[10px] font-black uppercase mb-1">Scope Pekerjaan</label><textarea id="offScope" rows="4" oninput="renderA4()" class="neo-input text-xs">1. Analisa Sistem\n2. Integrasi Workflow N8N</textarea></div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div><label class="block text-[10px] font-black uppercase mb-1">Durasi</label><input type="text" id="offDur" value="14 Hari Kerja" oninput="renderA4()" class="neo-input"></div>
+                            <div><label class="block text-[10px] font-black uppercase mb-1">Investasi</label><input type="number" id="offAmt" value="15000000" oninput="renderA4()" class="neo-input"></div>
                         </div>
-                        <div class="text-center w-48">
-                            <p class="text-xs font-bold uppercase text-gray-500 mb-20">Beuna Agency</p>
-                            <p class="font-black uppercase border-b-2 border-black inline-block w-full pb-1" id="renderSignAgency">Developer / PM</p>
+                    </div>
+
+                    <div id="f-INV" class="doc-form hidden space-y-4">
+                        <div class="flex flex-col gap-1">
+                            <label class="block text-[10px] font-black uppercase mb-1">Termin / Perihal</label>
+                            <div class="flex gap-2">
+                                <input type="text" id="invTerm" placeholder="Isi perihal tagihan..." oninput="renderA4()" class="neo-input flex-1 text-xs">
+                                <select onchange="applyTerminPreset(this.value)" class="neo-input w-24 text-[10px] bg-gray-100 px-1">
+                                    <option value="">Preset</option>
+                                    <option value="Tagihan Termin 1 (DP 50%)">DP 50%</option>
+                                    <option value="Pelunasan Proyek (100%)">Lunas</option>
+                                    <option value="Monthly Maintenance Fee">Maint.</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="neo-card p-3 bg-white">
+                            <div class="flex justify-between items-center mb-3">
+                                <span class="text-[10px] font-black uppercase">Item Tagihan</span>
+                                <button onclick="addInvItem()" class="neo-btn bg-[#bbf7d0] px-2 py-1 text-[9px] uppercase shadow-none">+ Item</button>
+                            </div>
+                            <div id="invItemsList" class="space-y-2"></div>
+                        </div>
+                    </div>
+
+                    <div id="f-BAP" class="doc-form hidden">
+                        <div class="bg-[#bfdbfe] neo-border p-4 text-xs font-bold text-black leading-tight italic">
+                            Pastikan Anda mengetik/memilih Klien yang berstatus ON GOING. Sistem akan menarik log otomatis dari N8N.
+                        </div>
+                    </div>
+
+                    <div id="f-BAST" class="doc-form hidden space-y-4">
+                        <div><label class="block text-[10px] font-black uppercase mb-1">Nama Project Selesai</label><input type="text" id="bastTitle" placeholder="Misal: Web Profile" oninput="renderA4()" class="neo-input text-xs"></div>
+                        <div>
+                            <label class="block text-[10px] font-black uppercase mb-1">Masa Garansi</label>
+                            <select id="bastGaransi" onchange="renderA4()" class="neo-input text-xs">
+                                <option>1 Bulan</option>
+                                <option>3 Bulan</option>
+                                <option>6 Bulan</option>
+                            </select>
                         </div>
                     </div>
                 </div>
 
+                <button onclick="downloadPDF()" class="w-full neo-btn bg-black text-white py-4 text-sm uppercase tracking-widest hover:bg-gray-800">
+                    <i class="ph-bold ph-download-simple mr-2 text-lg"></i> Download PDF
+                </button>
+            </div>
+        </div>
+
+        <div class="flex-1 overflow-y-auto p-10 flex justify-center custom-scroll bg-[#525659] pb-20">
+            <div id="pdfArea" class="a4-container flex flex-col text-black">
+                
+                <div class="flex justify-between border-b-[4px] border-black pb-6 mb-8 items-start">
+                    <div class="flex items-center gap-5">
+                        <img src="https://raw.githubusercontent.com/sunsetdansenja-arch/beuna-agency/main/beuna%20logo%20v2.png" class="w-16 h-16 object-contain">
+                        <div>
+                            <h1 class="text-3xl font-black tracking-tighter leading-none">BEUNA<span class="text-red-600">.</span></h1>
+                            <p class="text-[8px] font-black uppercase tracking-[0.1em] mt-2 bg-black text-white px-2 py-0.5 inline-block">System Analyst & Automation Hub</p>
+                        </div>
+                    </div>
+                    <div class="text-right text-[9px] font-bold leading-snug">
+                        <p>beunadigital@gmail.com | system.beuna.xyz</p>
+                        <p>WhatsApp: +62 882-1046-4992</p>
+                        <p class="mt-1 text-gray-700 uppercase">Jl. Merak Sani, Gampong Baro, Banda Aceh</p>
+                    </div>
+                </div>
+
+                <div class="flex justify-between items-start mb-10">
+                    <div class="max-w-[50%]">
+                        <p class="text-[10px] font-black uppercase text-gray-400 mb-1">Ditujukan Kepada:</p>
+                        <p class="text-lg font-black uppercase leading-tight" id="a4ClientName">NAMA KLIEN</p>
+                    </div>
+                    <div class="text-right">
+                        <h2 class="text-2xl font-black uppercase tracking-widest" id="a4DocType">OFFER LETTER</h2>
+                        <p class="text-[10px] font-mono font-bold mt-1" id="a4DocNum">000/BEUNA/2026</p>
+                        <p class="text-[10px] font-bold text-gray-500 mt-1" id="a4Date">-</p>
+                    </div>
+                </div>
+
+                <div class="flex-1 text-[13px] leading-relaxed">
+                    
+                    <div id="l-OFF" class="block">
+                        <p class="mb-4">Dengan hormat, Kami menyampaikan penawaran kerjasama teknis untuk <b><span id="a4offT"></span></b>:</p>
+                        <div class="bg-[#f4f4f0] border-2 border-black p-5 rounded-lg mb-6 whitespace-pre-wrap font-bold italic" id="a4offS"></div>
+                        <table class="w-full mb-6 border-collapse">
+                            <tr class="border-b-2 border-black"><td class="py-2 uppercase text-xs w-1/2">Estimasi Durasi</td><td class="py-2 text-right font-black" id="a4offD">-</td></tr>
+                            <tr class="border-b-2 border-black"><td class="py-2 uppercase text-xs">Investasi (Nett)</td><td class="py-2 text-right font-black text-lg" id="a4offA">Rp 0</td></tr>
+                        </table>
+                    </div>
+
+                    <div id="l-INV" class="hidden">
+                        <div class="mb-6"><span class="bg-[#fef08a] border-2 border-black text-black px-3 py-1 font-black uppercase text-[10px] shadow-[2px_2px_0_0_#000]">Perihal: <span id="a4invT"></span></span></div>
+                        <table class="w-full border-collapse">
+                            <thead>
+                                <tr class="border-b-[3px] border-black bg-[#bfdbfe]">
+                                    <th class="py-3 text-left px-4 font-black uppercase text-xs">Deskripsi Layanan</th>
+                                    <th class="py-3 text-right px-4 font-black uppercase text-xs w-1/3">Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody id="a4invBody" class="font-bold"></tbody>
+                            <tfoot>
+                                <tr class="border-t-[3px] border-black">
+                                    <td class="py-5 text-right pr-4 font-black uppercase text-sm">Total (Nett)</td>
+                                    <td class="py-5 text-right px-4 font-black text-xl text-[#16a34a]" id="a4invTotal">Rp 0</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+
+                        <div class="mt-8 p-5 border-[3px] border-black bg-[#fef08a] shadow-[4px_4px_0_0_#000]">
+                            <p class="text-[10px] font-black uppercase mb-4 border-b-2 border-black pb-1 inline-block">Pembayaran Transfer Bank:</p>
+                            <div class="grid grid-cols-2 gap-6">
+                                <div><p class="text-[10px] font-black uppercase text-gray-700">Seabank</p><p class="text-lg font-black tracking-widest mt-1">9012 5782 3879</p></div>
+                                <div><p class="text-[10px] font-black uppercase text-gray-700">BSI</p><p class="text-lg font-black tracking-widest mt-1">7169 0309 06</p></div>
+                            </div>
+                            <p class="text-[10px] font-bold mt-2 uppercase">A.N Dimas Santosa</p>
+                            <div class="mt-4 pt-3 border-t-2 border-black border-dashed text-[9px] font-bold italic leading-tight">
+                                <p>1. Mohon kirimkan bukti resi via WA.</p><p>2. Pelunasan maksimal H+3 setelah invoice diterbitkan.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="l-BAP" class="hidden">
+                        <p class="mb-6">Rincian pekerjaan teknis yang telah diselesaikan (*Dev Log*):</p>
+                        <table class="w-full border-collapse text-[11px]">
+                            <thead>
+                                <tr class="border-b-[2px] border-black bg-gray-100">
+                                    <th class="py-2 px-2 uppercase text-left">Tgl/Waktu</th>
+                                    <th class="py-2 px-2 uppercase text-left">Kategori</th>
+                                    <th class="py-2 px-2 uppercase text-left">Detail Pekerjaan</th>
+                                </tr>
+                            </thead>
+                            <tbody id="a4bapBody" class="font-bold"></tbody>
+                        </table>
+                    </div>
+
+                    <div id="l-BAST" class="hidden">
+                        <p class="mb-6">Proyek pengembangan <b><span id="a4bastT"></span></b> telah selesai 100% dan diserahterimakan operasionalnya.</p>
+                        <table class="w-full border-collapse mb-8">
+                            <tr class="border-b-2 border-black"><td class="py-3 font-bold uppercase text-xs">Status Proyek</td><td class="py-3 text-right font-black text-[#16a34a]">SELESAI (LIVE)</td></tr>
+                            <tr class="border-b-2 border-black"><td class="py-3 font-bold uppercase text-xs">Masa Garansi Bug-Fix</td><td class="py-3 text-right font-black" id="a4bastG">-</td></tr>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="mt-16 flex justify-between px-10">
+                    <div class="text-center w-40">
+                        <p class="text-[9px] font-black uppercase mb-16">Pihak Klien,</p>
+                        <div class="border-b-[2px] border-black w-full"></div>
+                    </div>
+                    <div class="text-center w-40 relative">
+                        <p class="text-[9px] font-black uppercase mb-2">Beuna Agency,</p>
+                        <div class="h-14 flex items-center justify-center opacity-10 italic font-black text-[10px] border-2 border-dashed border-gray-400 mb-1">[Signature]</div>
+                        <div class="border-b-[2px] border-black w-full"></div>
+                        <p class="text-[10px] font-black mt-2 uppercase" id="a4Signer">DIMAS SANTOSA</p>
+                    </div>
+                </div>
             </div>
         </div>
     </main>
@@ -165,111 +253,151 @@
         const WEBHOOK_URL = 'https://n8n-mzbmiib3etk4.kangkung.sumopod.my.id/webhook/beuna-crm-api';
         let session = JSON.parse(localStorage.getItem('beunaSession'));
         
+        // RBAC Check
         if(!session) window.location.href = 'index.html';
         const userRole = session.role.toLowerCase();
-        
-        window.onload = () => {
-            document.getElementById('userName').innerText = session.name;
-            document.getElementById('bapDate').valueAsDate = new Date(); 
-            
-            // RBAC: Sembunyikan Dev Engine dari Staff
-            if(userRole === 'staff' || userRole === 'sales') {
-                const navDev = document.getElementById('nav-dev');
-                if(navDev) navDev.style.display = 'none';
-            }
-            // RBAC: Tendang Developer kembali ke Dev Engine (Dia tidak boleh akses kontrak/docs)
-            if(userRole === 'developer') {
-                window.location.href = 'developer.html';
-            }
+        if(userRole === 'staff' || userRole === 'sales') {
+            const navDev = document.getElementById('nav-dev'); if(navDev) navDev.style.display = 'none';
+        }
+        if(userRole === 'developer') { window.location.href = 'developer.html'; }
 
-            fetchBAPData();
-        };
+        let leads = [], ongoing = [], devLogs = [];
+        let activeType = 'OFF';
+        let invItems = [{id: Date.now(), d: "Layanan Pembuatan Sistem", a: 5000000}];
+        const rom = ['I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII'];
 
-        let ongoingProjects = [];
-        let devLogs = [];
+        window.onload = () => { fetchAllData(); };
 
-        async function fetchBAPData() {
+        async function fetchAllData() {
             toggleLoader(true);
             try {
-                // 1. Tarik On Going Projects (Filter baris kosong)
+                // Fetch Leads
                 try {
-                    const resP = await fetch(WEBHOOK_URL, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ACTION:'get_on_going'}) });
-                    const jsonP = await resP.json();
-                    ongoingProjects = jsonP.data ? jsonP.data.filter(p => p.CLEINT_NAME || p.PROJECT_NAME) : [];
-                } catch(e) { console.error(e); }
+                    const resL = await fetch(WEBHOOK_URL, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ACTION:'get_leads'}) });
+                    leads = (await resL.json()).data || [];
+                } catch(e) {}
 
-                // 2. Tarik Dev Logs
+                // Fetch On Going (Filter Ghost Rows)
                 try {
-                    const resL = await fetch(WEBHOOK_URL, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ACTION:'get_dev_log'}) });
-                    const jsonL = await resL.json();
-                    devLogs = jsonL.data || [];
-                } catch(e) { console.error(e); }
+                    const resO = await fetch(WEBHOOK_URL, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ACTION:'get_on_going'}) });
+                    const jsonO = await resO.json();
+                    ongoing = jsonO.data ? jsonO.data.filter(p => p.CLEINT_NAME || p.PROJECT_NAME) : [];
+                } catch(e) {}
 
+                // Fetch Dev Logs
+                try {
+                    const resD = await fetch(WEBHOOK_URL, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ACTION:'get_dev_log'}) });
+                    devLogs = (await resD.json()).data || [];
+                } catch(e) {}
+
+                populateDatalist();
             } finally { 
-                renderDropdown();
                 toggleLoader(false); 
+                renderA4(); 
             }
         }
 
-        function renderDropdown() {
-            const sel = document.getElementById('bapProject');
-            if(ongoingProjects.length === 0) {
-                sel.innerHTML = '<option value="" disabled selected>-- Belum ada proyek berjalan --</option>';
-            } else {
-                sel.innerHTML = '<option value="" disabled selected>-- Pilih Klien / Proyek --</option>' + 
-                    ongoingProjects.map(p => {
-                        const id = p.PROJECT_NAME || p.PROJECT_ID || p.id;
-                        const name = p.CLEINT_NAME || p.PROJECT_NAME;
-                        return `<option value="${id}">${name}</option>`;
-                    }).join('');
+        function populateDatalist() {
+            const list = document.getElementById('projectList');
+            // Jika OFF/INV bisa dari leads, BAP/BAST wajib dari ongoing
+            const source = (activeType === 'OFF' || activeType === 'INV') ? [...leads, ...ongoing] : ongoing;
+            
+            // Buat array unik agar tidak dobel nama
+            const uniqueNames = [...new Set(source.map(item => item.NAMA_USAHA || item.CLEINT_NAME || item.PROJECT_NAME).filter(Boolean))];
+            list.innerHTML = uniqueNames.map(name => `<option value="${name}">`).join('');
+        }
+
+        function changeDocType(t) {
+            activeType = t;
+            ['OFF','INV','BAP','BAST'].forEach(type => {
+                document.getElementById(`btn-${type}`).style.backgroundColor = (type === t) ? '#fef08a' : '#fff';
+                document.getElementById(`f-${type}`).classList.toggle('hidden', type !== t);
+                document.getElementById(`l-${type}`).classList.toggle('hidden', type !== t);
+            });
+            populateDatalist();
+            renderA4();
+        }
+
+        function applyTerminPreset(val) { if(val) { document.getElementById('invTerm').value = val; renderA4(); } }
+
+        function renderA4() {
+            const clientName = document.getElementById('clientInput').value || "NAMA KLIEN";
+            document.getElementById('a4ClientName').innerText = clientName;
+            document.getElementById('a4DocType').innerText = {'OFF':'OFFER LETTER','INV':'INVOICE','BAP':'BERITA ACARA (BAP)','BAST':'B.A.S.T'}[activeType];
+            document.getElementById('a4Signer').innerText = session.name.toUpperCase();
+            
+            const d = new Date();
+            document.getElementById('a4Date').innerText = "Tanggal: " + d.toLocaleDateString('id-ID', {day:'numeric', month:'long', year:'numeric'});
+            document.getElementById('a4DocNum').innerText = `${Math.floor(Math.random()*90+10)}/BEUNA/${activeType}/${rom[d.getMonth()]}/${d.getFullYear()}`;
+
+            if(activeType === 'OFF') {
+                document.getElementById('a4offT').innerText = document.getElementById('offTitle').value;
+                document.getElementById('a4offS').innerText = document.getElementById('offScope').value;
+                document.getElementById('a4offD').innerText = document.getElementById('offDur').value;
+                document.getElementById('a4offA').innerText = new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',minimumFractionDigits:0}).format(document.getElementById('offAmt').value);
+            
+            } else if(activeType === 'INV') {
+                document.getElementById('a4invT').innerText = document.getElementById('invTerm').value || '-';
+                let total = 0;
+                document.getElementById('a4invBody').innerHTML = invItems.map(i => { 
+                    total += i.a; 
+                    return `<tr class="border-b border-gray-200"><td class="py-3 px-4">${i.d}</td><td class="py-3 px-4 text-right">${new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',minimumFractionDigits:0}).format(i.a)}</td></tr>`; 
+                }).join('');
+                document.getElementById('a4invTotal').innerText = new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',minimumFractionDigits:0}).format(total);
+                renderInvForm();
+            
+            } else if(activeType === 'BAP') {
+                // Tarik Dev Log yang PROJECT_ID-nya cocok dengan Nama Klien atau ID Klien
+                const foundProj = ongoing.find(x => x.CLEINT_NAME === clientName || x.PROJECT_NAME === clientName);
+                if(foundProj) {
+                    const pId = foundProj.PROJECT_ID || foundProj.PROJECT_NAME || foundProj.id;
+                    const logs = devLogs.filter(log => String(log.PROJECT_ID) === String(pId));
+                    document.getElementById('a4bapBody').innerHTML = logs.length ? logs.map(log => `
+                        <tr class="border-b border-gray-200">
+                            <td class="py-2 px-2 text-[10px]">${log.TANGGAL || log.STATUS || log.TIMESTAMP || '-'}</td>
+                            <td class="py-2 px-2 text-[10px] uppercase font-black"><span class="bg-black text-white px-1 rounded">${log.LOG_TYPE || '-'}</span></td>
+                            <td class="py-2 px-2 text-[11px] italic">${log.DESCRIPTION || '-'}</td>
+                        </tr>
+                    `).join('') : '<tr><td colspan="3" class="py-6 text-center text-gray-400 italic">Belum ada log perbaikan.</td></tr>';
+                } else {
+                    document.getElementById('a4bapBody').innerHTML = '<tr><td colspan="3" class="py-6 text-center text-gray-400 italic">Pilih klien valid dari dropdown.</td></tr>';
+                }
+
+            } else if(activeType === 'BAST') {
+                document.getElementById('a4bastT').innerText = document.getElementById('bastTitle').value || "Sistem IT";
+                document.getElementById('a4bastG').innerText = document.getElementById('bastGaransi').value;
             }
         }
 
-        function generateBAP() {
-            const selectedId = document.getElementById('bapProject').value;
-            if(!selectedId) { alert("Silakan pilih proyek terlebih dahulu!"); return; }
-
-            // Cari detail project
-            const project = ongoingProjects.find(p => String(p.PROJECT_NAME || p.PROJECT_ID || p.id) === String(selectedId));
-            if(!project) return;
-
-            // Filter log khusus untuk project ini berdasarkan ID
-            const projectLogs = devLogs.filter(log => String(log.PROJECT_ID) === String(selectedId));
-
-            // Format Tanggal
-            const dateInput = document.getElementById('bapDate').value;
-            const dateObj = new Date(dateInput);
-            const formattedDate = dateObj.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-
-            // Suntik Data ke Kertas BAP
-            document.getElementById('renderDate').innerText = `Tanggal: ${formattedDate}`;
-            document.getElementById('renderClient').innerText = project.CLEINT_NAME || project.PROJECT_NAME;
-            document.getElementById('renderType').innerText = project.PROJECT_TYPE || 'Sistem IT';
-            document.getElementById('renderSignClient').innerText = project.CLEINT_NAME || project.PROJECT_NAME;
-            document.getElementById('renderSignAgency').innerText = session.name;
-
-            // Render Tabel Log
-            const tbody = document.getElementById('renderLogsBody');
-            if(projectLogs.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="py-10 text-center font-bold text-gray-400 uppercase text-xs">Sistem tidak menemukan log teknis untuk proyek ini di database.</td></tr>`;
-            } else {
-                tbody.innerHTML = projectLogs.map((log, index) => `
-                    <tr class="border-b-[3px] border-black">
-                        <td class="py-3 px-3 border-r-[3px] border-black text-center font-black">${index + 1}</td>
-                        <td class="py-3 px-3 border-r-[3px] border-black text-xs font-bold text-gray-700">${log.TIMESTAMP || '-'}</td>
-                        <td class="py-3 px-3 border-r-[3px] border-black text-xs font-black uppercase">${log.LOG_TYPE || '-'}</td>
-                        <td class="py-3 px-3 border-r-[3px] border-black text-xs font-bold leading-relaxed italic">${log.DESCRIPTION || '-'}</td>
-                        <td class="py-3 px-3 text-xs font-black uppercase text-center">${log.AUTHOR || '-'}</td>
-                    </tr>
-                `).join('');
-            }
-
-            // Tampilkan Kertas BAP
-            document.getElementById('printableBAP').classList.remove('hidden');
-            setTimeout(() => { document.getElementById('printableBAP').scrollIntoView({ behavior: 'smooth' }); }, 150);
+        // FUNGSI INVOICE ITEMS
+        function renderInvForm() {
+            const list = document.getElementById('invItemsList');
+            list.innerHTML = invItems.map(i => `<div class="flex gap-1 mb-1"><input type="text" value="${i.d}" onchange="updInv(${i.id},'d',this.value)" class="neo-input flex-1 text-[10px] py-1"><input type="number" value="${i.a}" onchange="updInv(${i.id},'a',this.value)" class="neo-input w-24 text-[10px] py-1"><button onclick="rmInv(${i.id})" class="text-red-500 font-black px-2 hover:bg-red-100 rounded">×</button></div>`).join('');
         }
+        function addInvItem() { invItems.push({id:Date.now(), d:"Layanan Baru", a:0}); document.getElementById('invItemsList').innerHTML=""; renderA4(); }
+        function rmInv(id) { if(invItems.length>1) invItems = invItems.filter(i=>i.id!==id); document.getElementById('invItemsList').innerHTML=""; renderA4(); }
+        function updInv(id, f, v) { const x = invItems.find(i=>i.id===id); x[f] = (f==='a')?Number(v):v; renderA4(); }
 
         function toggleLoader(s) { document.getElementById('loadingOverlay').classList.toggle('hidden', !s); }
+
+        function downloadPDF() {
+            toggleLoader(true);
+            setTimeout(() => {
+                const element = document.getElementById('pdfArea');
+                const clientSafe = document.getElementById('a4ClientName').innerText.replace(/[^a-zA-Z0-9]/g, '_');
+                const filename = `BEUNA_${activeType}_${clientSafe}.pdf`;
+                
+                const opt = { 
+                    margin: 0, 
+                    filename: filename, 
+                    image: { type: 'jpeg', quality: 1.0 }, 
+                    html2canvas: { scale: 2, useCORS: true }, 
+                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } 
+                };
+                html2pdf().set(opt).from(element).save().then(() => toggleLoader(false));
+            }, 500);
+        }
+
         function logout() { localStorage.removeItem('beunaSession'); window.location.href = 'index.html'; }
     </script>
 </body>
