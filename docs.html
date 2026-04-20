@@ -350,15 +350,22 @@
                 </div>
 
                 <div class="mt-12 flex justify-between px-8 print-break-avoid shrink-0">
-                    <div class="text-center w-40" id="signClientBlock">
+                    <div class="text-center w-40 relative z-10" id="signClientBlock">
                         <p class="text-[10px] uppercase mb-20 text-gray-600">Pihak Klien,</p>
                         <div class="border-b border-black w-full"></div>
                         <p class="text-[11px] font-bold mt-2 uppercase text-black" id="a4SignClient">KLIEN</p>
                     </div>
-                    <div class="text-center w-40 ml-auto">
-                        <p class="text-[10px] uppercase mb-20 text-gray-600">Beuna Agency,</p>
-                        <div class="border-b border-black w-full"></div>
-                        <p class="text-[11px] font-bold mt-2 uppercase text-black" id="a4Signer">DIMAS SANTOSA</p>
+                    
+                    <div class="text-center w-40 ml-auto relative">
+                        <p class="text-[10px] uppercase text-gray-600 mb-2 relative z-20">Beuna Agency,</p>
+                        
+                        <img src="LINK_GAMBAR_TTD_ANDA_DISINI" 
+                             class="w-36 h-auto mx-auto my-1 object-contain mix-blend-multiply relative z-0" 
+                             crossorigin="anonymous" 
+                             alt="Signature">
+                        
+                        <div class="border-b border-black w-full relative z-20"></div>
+                        <p class="text-[11px] font-bold mt-2 uppercase text-black relative z-20" id="a4Signer">DIMAS SANTOSA</p>
                     </div>
                 </div>
 
@@ -382,7 +389,6 @@
         let invItems = [{id: Date.now(), d: "Layanan Pengembangan Sistem IT", a: 5000000}];
         const rom = ['I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII'];
 
-        // FUNGSI TERBILANG UNTUK KWITANSI
         function ejaAngka(nilai) {
             let val = Math.abs(nilai);
             let huruf = ["", "Satu", "Dua", "Tiga", "Empat", "Lima", "Enam", "Tujuh", "Delapan", "Sembilan", "Sepuluh", "Sebelas"];
@@ -428,7 +434,7 @@
                 populateDatalist();
             } finally { 
                 toggleLoader(false); 
-                updateTerbilang(); // Inisialisasi Terbilang awal
+                updateTerbilang(); 
                 renderA4(); 
             }
         }
@@ -457,8 +463,6 @@
             });
             
             document.getElementById('bapWarning').classList.toggle('hidden', !(t === 'BAP' || t === 'BAST'));
-            
-            // Sembunyikan tanda tangan klien jika Kwitansi
             document.getElementById('signClientBlock').style.display = (t === 'REC') ? 'none' : 'block';
 
             populateDatalist();
@@ -491,7 +495,7 @@
                 let total = 0;
                 document.getElementById('a4invBody').innerHTML = invItems.map(i => { 
                     total += i.a; 
-                    return `<tr class="print-break-avoid"><td class="text-black">${i.d}</td><td class="text-right text-black">${new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',minimumFractionDigits:0}).format(i.a)}</td></tr>`; 
+                    return `<tr><td class="text-black">${i.d}</td><td class="text-right text-black">${new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',minimumFractionDigits:0}).format(i.a)}</td></tr>`; 
                 }).join('');
                 document.getElementById('a4invTotal').innerText = new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',minimumFractionDigits:0}).format(total);
                 renderInvForm();
