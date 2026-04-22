@@ -41,11 +41,9 @@
             <button onclick="switchManagerialView('add')" id="nav-add" class="w-full neo-btn bg-white px-4 py-3 text-sm flex gap-3 text-black hover:bg-gray-100">
                 <i class="ph-bold ph-plus-circle text-xl"></i> <span class="hidden md:block">Input Manual</span>
             </button>
-            
             <a href="bulk.html" class="w-full neo-btn bg-[#bfdbfe] px-4 py-3 text-sm flex gap-3 text-black hover:bg-blue-300">
                 <i class="ph-bold ph-database text-xl"></i> <span class="hidden md:block">Bulk Import</span>
             </a>
-
             <a href="docs.html" id="nav-docs" class="w-full neo-btn bg-white px-4 py-3 text-sm flex gap-3 text-black hover:bg-gray-100">
                 <i class="ph-bold ph-files text-xl"></i> <span class="hidden md:block">Docs Center</span>
             </a>
@@ -65,6 +63,40 @@
         <div id="loadingOverlay" class="absolute inset-0 bg-[#f4f4f0]/80 backdrop-blur-sm z-50 flex flex-col items-center justify-center hidden">
             <div class="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-12 w-12 mb-4"></div>
             <p class="text-sm font-black uppercase tracking-widest bg-black text-white px-4 py-1" id="loadingText">SYNCING DATA...</p>
+        </div>
+
+        <div id="modalDetail" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[70] flex items-center justify-center hidden p-4">
+            <div class="neo-card bg-white w-full max-w-lg flex flex-col max-h-[90vh]">
+                <div class="p-5 border-b-[3px] border-black flex justify-between items-center bg-[#fef08a]">
+                    <h3 class="text-xl font-black text-black leading-none uppercase flex items-center gap-2"><i class="ph-bold ph-address-book text-2xl"></i> Detail Prospek</h3>
+                    <button onclick="closeDetailModal()" class="text-black hover:text-red-500 font-black"><i class="ph-bold ph-x text-2xl"></i></button>
+                </div>
+                <div class="p-6 overflow-y-auto custom-scroll bg-gray-50 space-y-4 text-black">
+                    <div>
+                        <p class="text-[10px] font-bold text-gray-500 uppercase">Nama Usaha</p>
+                        <p class="font-black text-xl uppercase leading-tight mt-1" id="detName">-</p>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 border-t-2 border-black border-dashed pt-4">
+                        <div><p class="text-[10px] font-bold text-gray-500 uppercase">Kategori / Industri</p><p class="font-bold text-sm bg-white border-2 border-black px-2 py-1 mt-1 inline-block" id="detInd">-</p></div>
+                        <div><p class="text-[10px] font-bold text-gray-500 uppercase">Rating Maps</p><p class="font-bold text-sm mt-1"><span id="detRate" class="font-black text-lg">-</span> ⭐ (<span id="detRev">-</span> Rev)</p></div>
+                    </div>
+                    <div class="border-t-2 border-black border-dashed pt-4">
+                        <p class="text-[10px] font-bold text-gray-500 uppercase">Alamat Lengkap</p>
+                        <p class="font-bold text-sm mt-1 leading-relaxed" id="detLoc">-</p>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 border-t-2 border-black border-dashed pt-4">
+                        <div><p class="text-[10px] font-bold text-gray-500 uppercase">Nomor WA</p><p class="font-mono font-bold text-sm mt-1" id="detPhone">-</p></div>
+                        <div class="overflow-hidden"><p class="text-[10px] font-bold text-gray-500 uppercase">Email</p><p class="font-bold text-sm mt-1 truncate" id="detEmail">-</p></div>
+                    </div>
+                    <div class="border-t-2 border-black border-dashed pt-4 overflow-hidden">
+                        <p class="text-[10px] font-bold text-gray-500 uppercase">Website / Sosmed</p>
+                        <a href="#" target="_blank" class="font-bold text-sm text-blue-600 hover:text-blue-800 underline mt-1 block truncate" id="detWeb">-</a>
+                    </div>
+                </div>
+                <div class="p-5 border-t-[3px] border-black bg-white flex gap-3">
+                    <button id="btnWADetail" class="flex-1 neo-btn bg-[#bbf7d0] text-black py-3 uppercase font-black text-xs tracking-widest"><i class="ph-bold ph-whatsapp-logo mr-2 text-lg"></i> Hubungi WA</button>
+                </div>
+            </div>
         </div>
 
         <div id="modalWon" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-[60] flex items-center justify-center hidden p-4">
@@ -217,7 +249,6 @@
             document.getElementById('profileName').innerText = session.name;
             document.getElementById('profileRole').innerText = session.role;
             
-            // Hide Dev Engine from Staff/Sales
             if(userRole === 'staff' || userRole === 'sales') {
                 const navDev = document.getElementById('nav-dev');
                 if(navDev) navDev.style.display = 'none';
@@ -251,6 +282,10 @@
                         industri: item.INDUSTRI || '', 
                         daerah: item.DAERAH || '', 
                         phone: item.NOMOR_WA || '',
+                        email: item.EMAIL || '-',
+                        website: item.WEBSITE || item.SOSMED || '-',
+                        rating: item.RATING || '-',
+                        reviews: item.JUMLAH_REVIEW || '-',
                         pic: item.INPUT || null, 
                         status: (item.STATUS || 'new').toLowerCase() === 'new lead' ? 'new' : (item.STATUS || 'new').toLowerCase()
                     }));
@@ -288,6 +323,46 @@
                 fetchActivities();
             } catch(e) {}
         }
+
+        // ==========================================
+        // FUNGSI MODAL DETAIL LEAD (BARU)
+        // ==========================================
+        function openDetailModal(id) {
+            const l = leads.find(x => String(x.id) === String(id));
+            if(!l) return;
+            
+            document.getElementById('detName').innerText = l.name;
+            document.getElementById('detInd').innerText = l.industri;
+            document.getElementById('detLoc').innerText = l.daerah;
+            document.getElementById('detPhone').innerText = l.phone || '-';
+            document.getElementById('detEmail').innerText = l.email;
+            document.getElementById('detRate').innerText = l.rating;
+            document.getElementById('detRev').innerText = l.reviews;
+            
+            const webEl = document.getElementById('detWeb');
+            webEl.innerText = l.website;
+            if(l.website !== '-' && l.website.startsWith('http')) {
+                webEl.href = l.website;
+            } else {
+                webEl.removeAttribute('href');
+            }
+            
+            const btnWA = document.getElementById('btnWADetail');
+            if(l.phone && l.phone !== '-') {
+                btnWA.onclick = () => window.open(`https://wa.me/${l.phone.replace(/[^0-9]/g, '')}?text=Halo%20${l.name},%20kami%20dari%20Beuna%20Agency...`, '_blank');
+                btnWA.classList.remove('opacity-50', 'cursor-not-allowed');
+            } else {
+                btnWA.onclick = null;
+                btnWA.classList.add('opacity-50', 'cursor-not-allowed');
+            }
+            
+            document.getElementById('modalDetail').classList.remove('hidden');
+        }
+
+        function closeDetailModal() {
+            document.getElementById('modalDetail').classList.add('hidden');
+        }
+        // ==========================================
 
         async function submitNewLead(e) {
             e.preventDefault();
@@ -397,6 +472,10 @@
                                 <h4 class="font-black text-lg uppercase truncate" title="${l.name}">${l.name}</h4>
                                 <div class="mt-2 mb-3">${picBadge}</div>
                                 <p class="text-[10px] font-bold text-black opacity-70 uppercase leading-tight">${l.industri} <br> ${l.daerah}</p>
+                                
+                                <button onclick="openDetailModal('${l.id}')" class="mt-4 w-full neo-btn bg-white py-2 text-[10px] font-black uppercase border-[2px] hover:bg-gray-100 shadow-[2px_2px_0_0_#000]">
+                                    <i class="ph-bold ph-magnifying-glass mr-1 text-sm"></i> Cek Detail
+                                </button>
                             </div>
                             ${act}
                         </div>`;
@@ -410,7 +489,7 @@
             
             try { 
                 await fetch(WEBHOOK_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ ACTION: 'update_lead_status', lead_id: id, new_status: 'reached', pic: session.name }) });
-                if(l.phone) window.open(`https://wa.me/${l.phone.replace(/[^0-9]/g, '')}?text=Halo%20${l.name},%20saya%20${session.name}%20dari%20Beuna%20Agency...`, '_blank');
+                if(l.phone) window.open(`https://wa.me/${l.phone.replace(/[^0-9]/g, '')}?text=Halo%20${l.name},%20kami%20dari%20Beuna%20Agency...`, '_blank');
             } catch(e) {}
         }
 
