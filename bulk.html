@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Beuna OS - Bulk Import Leads</title>
+    <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/sunsetdansenja-arch/beuna-agency/main/beuna%20logo%20v2.png">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Space Grotesk', sans-serif; background-color: #f4f4f0; color: #000; overflow-x: hidden; min-height: 100vh; }
+        .neo-border { border: 3px solid #000; }
+        .neo-card { background-color: #fff; border: 3px solid #000; box-shadow: 6px 6px 0px 0px #000; border-radius: 8px; }
+        .neo-btn { border: 3px solid #000; box-shadow: 4px 4px 0px 0px #000; border-radius: 8px; font-weight: 700; cursor: pointer; transition: all 0.15s; display: inline-flex; align-items: center; justify-content: center; }
+        .neo-btn:hover { transform: translate(1px, 1px); box-shadow: 3px 3px 0px 0px #000; }
+        .custom-scroll::-webkit-scrollbar { width: 8px; }
+        .custom-scroll::-webkit-scrollbar-track { background: #f4f4f0; border-left: 2px solid #000; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #000; }
+        .loader { border-top-color: #000; animation: spinner 1.5s linear infinite; }
+        @keyframes spinner { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="antialiased flex h-screen overflow-hidden selection:bg-[#bfdbfe] selection:text-black">
+
+    <aside class="w-20 md:w-64 bg-white neo-border border-l-0 border-t-0 border-b-0 flex flex-col z-20">
+        <div class="p-6 flex items-center gap-3 border-b-[3px] border-black">
+            <img src="https://raw.githubusercontent.com/sunsetdansenja-arch/beuna-agency/main/beuna%20logo%20v2.png" class="w-10 h-10 object-contain">
+            <span class="font-black hidden md:block text-2xl uppercase">Beuna.</span>
+        </div>
+        <nav class="flex-1 p-4 space-y-4 mt-2">
+            <a href="crm.html" class="w-full neo-btn bg-white px-4 py-3 text-sm flex gap-3 text-black hover:bg-gray-100">
+                <i class="ph-bold ph-funnel text-xl"></i> <span class="hidden md:block">CRM Hub</span>
+            </a>
+            <a href="bulk.html" class="w-full neo-btn bg-[#bfdbfe] px-4 py-3 text-sm flex gap-3 text-black">
+                <i class="ph-bold ph-database text-xl"></i> <span class="hidden md:block">Bulk Import</span>
+            </a>
+            <a href="docs.html" class="w-full neo-btn bg-white px-4 py-3 text-sm flex gap-3 text-black hover:bg-gray-100">
+                <i class="ph-bold ph-files text-xl"></i> <span class="hidden md:block">Docs Center</span>
+            </a>
+            <a href="developer.html" id="nav-dev" class="w-full neo-btn bg-white px-4 py-3 text-sm flex gap-3 text-black hover:bg-[#bbf7d0]">
+                <i class="ph-bold ph-terminal-window text-xl"></i> <span class="hidden md:block">Dev Engine</span>
+            </a>
+        </nav>
+        <div class="p-4 bg-[#f4f4f0] border-t-[3px] border-black">
+            <button onclick="logout()" class="w-full neo-btn bg-[#fca5a5] text-black px-4 py-3 text-xs flex gap-2">
+                <i class="ph-bold ph-power text-lg"></i> <span class="hidden md:block">System Logout</span>
+            </button>
+        </div>
+    </aside>
+
+    <main class="flex-1 overflow-y-auto relative custom-scroll p-6 md:p-10">
+        
+        <div id="loadingOverlay" class="absolute inset-0 bg-[#f4f4f0]/90 backdrop-blur-sm z-50 flex flex-col items-center justify-center hidden">
+            <div class="loader ease-linear rounded-full border-4 border-t-4 border-black h-16 w-16 mb-4"></div>
+            <p class="text-sm font-black uppercase tracking-widest bg-[#bbf7d0] border-[3px] border-black px-4 py-1" id="loadingText">MENYUNTIKKAN DATA KE N8N...</p>
+        </div>
+
+        <div class="max-w-[1000px] mx-auto space-y-6">
+            
+            <div class="neo-card bg-black text-white p-8 flex justify-between items-center">
+                <div>
+                    <h1 class="text-3xl font-black uppercase tracking-tighter text-[#bfdbfe] mb-1">Bulk Import Leads</h1>
+                    <p class="text-xs text-gray-400">Ekstrak file CSV dari Scraper Google Maps ke Database N8N.</p>
+                </div>
+                <i class="ph-bold ph-file-csv text-5xl text-[#bfdbfe] hidden md:block"></i>
+            </div>
+
+            <div class="neo-card bg-white p-8 text-center">
+                <div class="border-[3px] border-dashed border-black bg-[#f8fafc] p-12 rounded-lg cursor-pointer hover:bg-[#fef08a] transition-colors relative group">
+                    <input type="file" id="csvFileInput" accept=".csv" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                    <div class="group-hover:scale-110 transition-transform">
+                        <i class="ph-fill ph-cloud-arrow-up text-6xl mb-4 text-black"></i>
+                        <p class="text-xl font-black uppercase" id="csvFileName">Klik atau Tarik File CSV Kesini</p>
+                        <p class="text-xs font-bold text-gray-500 mt-2">Sistem otomatis mendeteksi kolom: Title, Type, Phone, dll.</p>
+                    </div>
+                </div>
+                
+                <button onclick="processCSV()" id="btnProcessCsv" class="w-full neo-btn bg-[#bbf7d0] text-black py-4 mt-6 uppercase font-black tracking-widest text-lg hidden">
+                    <i class="ph-bold ph-rocket-launch mr-2 text-xl"></i> Sync <span id="dataCount">0</span> Data ke N8N
+                </button>
+            </div>
+
+            <div id="previewArea" class="neo-card bg-white p-6 hidden">
+                <h3 class="text-sm font-black uppercase tracking-widest mb-4 border-b-[3px] border-black pb-2 flex items-center gap-2">
+                    <i class="ph-bold ph-eye"></i> Preview Pemetaan Data (5 Teratas)
+                </h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse text-xs">
+                        <thead>
+                            <tr class="bg-gray-100 border-b-[3px] border-black">
+                                <th class="py-2 px-2 uppercase font-black border-r-2 border-black w-10">No</th>
+                                <th class="py-2 px-2 uppercase font-black border-r-2 border-black">Nama Usaha</th>
+                                <th class="py-2 px-2 uppercase font-black border-r-2 border-black">Industri</th>
+                                <th class="py-2 px-2 uppercase font-black border-r-2 border-black">Nomor WA</th>
+                                <th class="py-2 px-2 uppercase font-black">Daerah</th>
+                            </tr>
+                        </thead>
+                        <tbody id="previewBody">
+                            </tbody>
+                    </table>
+                </div>
+                <p class="text-[10px] font-bold italic text-gray-500 mt-3">*Sistem akan secara otomatis membersihkan baris yang kosong atau tidak memiliki Nama Usaha.</p>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        const WEBHOOK_URL = 'https://n8n-mzbmiib3etk4.kangkung.sumopod.my.id/webhook/beuna-crm-api';
+        let session = JSON.parse(localStorage.getItem('beunaSession'));
+        
+        if(!session) window.location.href = 'index.html';
+        
+        // RBAC: Sembunyikan Dev Engine dari Staff
+        if(session.role.toLowerCase() === 'staff' || session.role.toLowerCase() === 'sales') {
+            const navDev = document.getElementById('nav-dev'); if(navDev) navDev.style.display = 'none';
+        }
+        if(session.role.toLowerCase() === 'developer') window.location.href = 'developer.html';
+
+        let mappedLeads = []; // Tempat menyimpan data yang siap dikirim
+
+        // MENDENGARKAN INPUT FILE
+        document.getElementById('csvFileInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if(file) {
+                document.getElementById('csvFileName').innerText = file.name;
+                parseAndPreview(file);
+            }
+        });
+
+        function parseAndPreview(file) {
+            Papa.parse(file, {
+                header: true,
+                skipEmptyLines: true,
+                complete: function(results) {
+                    const data = results.data;
+                    if(data.length === 0) { 
+                        alert("File CSV kosong atau format salah!"); 
+                        return; 
+                    }
+
+                    // Auto-Mapping dari Header CSV Scraper Google Maps
+                    mappedLeads = data.map(row => ({
+                        nama_usaha: row.Title || row.Name || '',
+                        industri: row.Type || row.Category || 'Uncategorized',
+                        daerah: row.Address || '',
+                        nomor_wa: row.Phone || '',
+                        website: row.Website || row.URL || '',
+                        jumlah_review: row.Reviews || '',
+                        rating: row.Rating || '',
+                        input_by: session.name,
+                        new_status: 'new'
+                    })).filter(lead => lead.nama_usaha.trim() !== ''); // Hapus baris kosong
+
+                    if(mappedLeads.length === 0) {
+                        alert("Tidak ada data valid yang bisa diekstrak. Pastikan CSV memiliki kolom 'Title'.");
+                        return;
+                    }
+
+                    // Tampilkan Preview
+                    document.getElementById('previewArea').classList.remove('hidden');
+                    document.getElementById('btnProcessCsv').classList.remove('hidden');
+                    document.getElementById('dataCount').innerText = mappedLeads.length;
+
+                    // Render 5 Data Teratas di Tabel
+                    const previewHtml = mappedLeads.slice(0, 5).map((l, index) => `
+                        <tr class="border-b-2 border-gray-200 hover:bg-gray-50">
+                            <td class="py-2 px-2 border-r-2 border-black font-black">${index + 1}</td>
+                            <td class="py-2 px-2 border-r-2 border-black font-bold uppercase truncate max-w-[150px]">${l.nama_usaha}</td>
+                            <td class="py-2 px-2 border-r-2 border-black text-[10px]"><span class="bg-[#fef08a] px-1 border border-black">${l.industri}</span></td>
+                            <td class="py-2 px-2 border-r-2 border-black font-mono text-[11px]">${l.nomor_wa || '-'}</td>
+                            <td class="py-2 px-2 text-[10px] truncate max-w-[200px]">${l.daerah}</td>
+                        </tr>
+                    `).join('');
+                    
+                    document.getElementById('previewBody').innerHTML = previewHtml;
+                },
+                error: function(err) {
+                    alert("Gagal membaca file CSV.");
+                    console.error(err);
+                }
+            });
+        }
+
+        async function processCSV() {
+            if (mappedLeads.length === 0) return;
+
+            toggleLoader(true, `MENGIRIM ${mappedLeads.length} DATA KE N8N...`);
+
+            try {
+                const payload = {
+                    ACTION: 'import_bulk_leads',
+                    pic: session.name,
+                    data: mappedLeads
+                };
+
+                const res = await fetch(WEBHOOK_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if(res.ok) {
+                    toggleLoader(true, "BERHASIL! KEMBALI KE CRM HUB...");
+                    // Opsional: Catat Activity Log
+                    try { await fetch(WEBHOOK_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ ACTION: 'log_activity', time: new Date().toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'}), user_name: session.name, action_text: `Berhasil Bulk Import ${mappedLeads.length} prospek baru.` }) }); } catch(e) {}
+                    
+                    setTimeout(() => { window.location.href = 'crm.html'; }, 1500);
+                } else {
+                    alert("Gagal sinkronisasi dengan N8N. Pastikan backend sudah dibuat.");
+                    toggleLoader(false);
+                }
+            } catch (error) {
+                console.error(error);
+                alert("Terjadi kesalahan jaringan saat mengirim ke N8N.");
+                toggleLoader(false);
+            }
+        }
+
+        function toggleLoader(s, text = "") { 
+            if(text) document.getElementById('loadingText').innerText = text;
+            document.getElementById('loadingOverlay').classList.toggle('hidden', !s); 
+        }
+
+        function logout() { localStorage.removeItem('beunaSession'); window.location.href = 'index.html'; }
+    </script>
+</body>
+</html>
