@@ -80,7 +80,24 @@
                         <p class="text-xs font-mono font-bold mt-1 text-gray-600" id="waRecipientPhone">-</p>
                     </div>
                     <div>
-                        <p class="text-[10px] font-bold text-gray-500 uppercase mb-2">Edit Template Pesan</p>
+                        <div class="flex justify-between items-end mb-2">
+                            <p class="text-[10px] font-bold text-gray-500 uppercase">Pilih Template Pendekatan</p>
+                            <span class="text-[9px] bg-black text-white px-2 py-0.5 rounded">Website Service</span>
+                        </div>
+                        <select id="waTemplateSelect" class="neo-input mb-4 cursor-pointer text-sm" onchange="applyWATemplate()">
+                            <option value="1">1 - Kasual & Friendly (F&B / Retail)</option>
+                            <option value="2">2 - Profesional (B2B / Klinik / Corporate)</option>
+                            <option value="3">3 - Pain Point (Repot Balas Chat/Katalog)</option>
+                            <option value="4">4 - Edukatif (Pancingan Free Draft)</option>
+                            <option value="5">5 - Strategi FOMO (Kompetisi Digital)</option>
+                            <option value="6">6 - Fokus SEO (Agar Muncul di Google)</option>
+                            <option value="7">7 - Showcase Portofolio (Jasa / WO / Interior)</option>
+                            <option value="8">8 - Fokus Ekspansi (Franchise / Investor)</option>
+                            <option value="9">9 - Promo Diskon Spesial (Hard Sell Halus)</option>
+                            <option value="10">10 - Short & To The Point (Tanpa Basa Basi)</option>
+                        </select>
+
+                        <p class="text-[10px] font-bold text-gray-500 uppercase mb-2">Preview & Edit Pesan</p>
                         <textarea id="waMessageText" rows="6" class="neo-input text-sm leading-relaxed" placeholder="Ketik pesan Anda di sini..."></textarea>
                     </div>
                 </div>
@@ -271,6 +288,31 @@
         const stageTitles = { 'new': 'Fresh Leads', 'reached': 'Reached Out', 'meeting': 'Meeting', 'nego': 'Nego & Offer', 'won': 'Closed Won', 'nurture': 'Nurture (KIV)', 'lost': 'Closed Lost' };
         const stageColors = { 'new': '#fecaca', 'reached': '#bfdbfe', 'meeting': '#e9d5ff', 'nego': '#fef08a', 'won': '#bbf7d0', 'nurture': '#fed7aa', 'lost': '#fca5a5' };
 
+        // ==================================================
+        // DATABASE 10 TEMPLATE WAHA DENGAN SOFT BRIDGE
+        // ==================================================
+        const waTemplates = {
+            '1': "Halo Tim [NAMA_KLIEN], salam kenal! 👋\n\nSaya [NAMA_SAYA] dari Beuna Agency. Kami perhatiin [NAMA_KLIEN] lagi rame-ramenya nih. Biar makin pro dan gampang dicari pelanggan di Google, kami punya layanan pembuatan website profil & katalog digital buat bisnis [INDUSTRI].\n\nKalau tim [NAMA_KLIEN] tertarik untuk kita bantu buatkan websitenya, biar kami aturkan call atau meeting untuk diskusi.",
+            
+            '2': "Selamat Pagi/Siang Tim [NAMA_KLIEN].\n\nPerkenalkan saya [NAMA_SAYA] dari Beuna Agency. Kami berfokus membantu perusahaan di sektor [INDUSTRI] untuk membangun kredibilitas dan trust publik melalui pembuatan website profesional.\n\nKalau tim [NAMA_KLIEN] tertarik untuk kita bantu bangun website ofisialnya, biar kami aturkan jadwal call atau meeting untuk diskusi.",
+            
+            '3': "Halo [NAMA_KLIEN], perkenalkan saya [NAMA_SAYA] dari Beuna Agency.\n\nSering repot ngejelasin detail produk & harga ke tiap pelanggan yang chat? Kami bisa bantu buatkan website e-katalog profesional khusus untuk [INDUSTRI] agar semua info terpusat dan rapi.\n\nKalau tim [NAMA_KLIEN] tertarik untuk kita bantu buatkan websitenya, biar kami aturkan call atau meeting untuk diskusi.",
+            
+            '4': "Halo Tim [NAMA_KLIEN]!\n\nSaya [NAMA_SAYA] mewakili Beuna Agency. Spesial minggu ini, kami sedang membagikan *Free Draft Desain Website* tanpa komitmen khusus untuk pelaku bisnis [INDUSTRI] yang ingin go-digital.\n\nKalau tim [NAMA_KLIEN] tertarik untuk melihat preview desainnya, biar kami aturkan call atau meeting untuk diskusi detailnya.",
+            
+            '5': "Halo Tim [NAMA_KLIEN], saya [NAMA_SAYA] dari Beuna Agency.\n\nSaat ini tren pencarian online untuk layanan [INDUSTRI] sedang tinggi-tingginya. Sayang sekali jika calon pelanggan beralih ke kompetitor karena [NAMA_KLIEN] belum memiliki website resmi.\n\nKalau tim [NAMA_KLIEN] tertarik untuk kita bantu buatkan websitenya, biar kami aturkan call atau meeting untuk diskusi.",
+            
+            '6': "Halo [NAMA_KLIEN], salam kenal. Saya [NAMA_SAYA] dari Beuna Agency.\n\nKami melihat [NAMA_KLIEN] punya layanan yang bagus, tapi belum optimal muncul di pencarian Google. Kami menyediakan jasa pembuatan website yang sudah teroptimasi SEO lokal khusus untuk [INDUSTRI].\n\nKalau tim [NAMA_KLIEN] tertarik untuk kita bantu tingkatkan performa digitalnya, biar kami aturkan call atau meeting untuk diskusi.",
+            
+            '7': "Selamat siang Tim [NAMA_KLIEN]. Saya [NAMA_SAYA] dari Beuna Agency.\n\nBisnis [INDUSTRI] seperti yang Anda jalankan sangat membutuhkan showcase visual yang memukau. Kami bisa bantu buatkan website galeri portofolio eksklusif agar calon klien makin yakin dengan karya Anda.\n\nKalau tim [NAMA_KLIEN] tertarik untuk kita bantu buatkan websitenya, biar kami aturkan call atau meeting untuk diskusi.",
+            
+            '8': "Halo [NAMA_KLIEN], perkenalkan saya [NAMA_SAYA] dari Beuna Agency.\n\nMelihat perkembangan bisnis Anda yang sangat pesat, ini adalah momen yang tepat untuk memiliki website Company Profile resmi untuk menarik investor atau rencana ekspansi.\n\nKalau tim [NAMA_KLIEN] tertarik untuk kita bantu siapkan websitenya, biar kami aturkan call atau meeting untuk diskusi.",
+            
+            '9': "Halo Tim [NAMA_KLIEN], salam kenal! Saya [NAMA_SAYA] dari Beuna Agency.\n\nKhusus bulan ini, kami sedang mengadakan program subsidi pembuatan website profesional untuk bisnis [INDUSTRI] lokal dengan potongan hingga 30%.\n\nKarena slotnya terbatas, kalau tim [NAMA_KLIEN] tertarik untuk kita bantu buatkan websitenya, biar kami aturkan call atau meeting untuk diskusi.",
+            
+            '10': "Halo Tim [NAMA_KLIEN], saya [NAMA_SAYA] dari Beuna Agency.\n\nKami adalah IT Agency yang mengkhususkan diri membantu bisnis [INDUSTRI] memiliki website profesional dengan harga terjangkau dan pengerjaan cepat.\n\nKalau tim [NAMA_KLIEN] tertarik untuk kita bantu buatkan websitenya, biar kami aturkan call atau meeting untuk diskusi."
+        };
+
         async function fetchLeads() {
             toggleLoader(true, "SYNCING DATA...");
             try {
@@ -354,8 +396,20 @@
         }
 
         // ==================================================
-        // LOGIKA WA REACH OUT BARU (MODAL -> N8N WAHA)
+        // LOGIKA WA REACH OUT TEMPLATE ENGINE
         // ==================================================
+        function applyWATemplate() {
+            if(!pendingWALead) return;
+            const val = document.getElementById('waTemplateSelect').value;
+            let text = waTemplates[val];
+            
+            text = text.replace(/\[NAMA_KLIEN\]/g, pendingWALead.name);
+            text = text.replace(/\[NAMA_SAYA\]/g, session.name);
+            text = text.replace(/\[INDUSTRI\]/g, pendingWALead.industri || 'Anda');
+            
+            document.getElementById('waMessageText').value = text;
+        }
+
         async function claimLead(id) {
             let l = leads.find(x => String(x.id) === String(id)); if(!l) return; 
             
@@ -364,16 +418,13 @@
                 return;
             }
 
-            // 1. Klaim lead di frontend
             l.pic = session.name; l.status = 'reached'; 
             filterRoom(); renderHub();
             
-            // 2. Update status ke Database N8N (background)
             try { 
                 fetch(WEBHOOK_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ ACTION: 'update_lead_status', lead_id: id, new_status: 'reached', pic: session.name }) });
             } catch(e) {}
 
-            // 3. Buka Modal WA
             openWAModal(l);
         }
 
@@ -382,8 +433,8 @@
             document.getElementById('waRecipientName').innerText = lead.name;
             document.getElementById('waRecipientPhone').innerText = lead.phone;
             
-            const template = `Halo Tim ${lead.name},\n\nPerkenalkan saya ${session.name} dari Beuna Agency. Kami sangat tertarik dengan potensi bisnis Anda.\n\nApakah ada waktu luang minggu ini untuk berdiskusi singkat terkait peluang automasi operasional di ${lead.name}?\n\nTerima kasih!`;
-            document.getElementById('waMessageText').value = template;
+            document.getElementById('waTemplateSelect').value = '1';
+            applyWATemplate();
             
             document.getElementById('modalWA').classList.remove('hidden');
         }
@@ -401,7 +452,6 @@
             btn.disabled = true;
 
             try {
-                // Mengirim payload ke jalur baru N8N (send_wa_message)
                 const res = await fetch(WEBHOOK_URL, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
@@ -414,9 +464,8 @@
                 });
 
                 if(res.ok) {
-                    logActivity(`Kirim pesan WA Reach Out otomatis ke ${pendingWALead.name}`);
+                    logActivity(`Kirim penawaran Website (WAHA) ke ${pendingWALead.name}`);
                     closeWAModal();
-                    // Alert kecil sebagai konfirmasi
                     const originalText = document.getElementById('roomTitle').innerText;
                     document.getElementById('roomTitle').innerText = "PESAN TERKIRIM!";
                     setTimeout(() => { document.getElementById('roomTitle').innerText = originalText; }, 2000);
@@ -430,7 +479,6 @@
                 btn.disabled = false;
             }
         }
-        // ==================================================
 
         function handleStatusChange(id, stat) {
             if(stat === 'won') { pendingWonId = String(id); document.getElementById('wonClientName').innerText = leads.find(x => String(x.id) === pendingWonId).name; document.getElementById('modalWon').classList.remove('hidden'); }
