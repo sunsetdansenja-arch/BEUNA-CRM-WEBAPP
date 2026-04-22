@@ -24,6 +24,15 @@
         .custom-scroll::-webkit-scrollbar-thumb { background: #000; }
         .loader { border-top-color: #000; animation: spinner 1.5s linear infinite; }
         @keyframes spinner { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        /* Animasi Pesawat Kertas Terbang */
+        @keyframes flyAway {
+            0% { transform: translate(0, 0) scale(1); opacity: 1; }
+            50% { transform: translate(50px, -50px) scale(1.2); opacity: 0.5; }
+            100% { transform: translate(100px, -100px) scale(0.5); opacity: 0; }
+        }
+        .animate-fly { animation: flyAway 0.8s ease-in-out forwards; }
+        
         .status-select { appearance: none; background: transparent; border: none; font-size: 0.75rem; font-weight: 900; text-transform: uppercase; outline: none; width: 100%; cursor: pointer; }
     </style>
 </head>
@@ -66,7 +75,15 @@
         </div>
 
         <div id="modalWA" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[70] flex items-center justify-center hidden p-4">
-            <div class="neo-card bg-white w-full max-w-lg flex flex-col">
+            <div class="neo-card bg-white w-full max-w-lg flex flex-col relative overflow-hidden" id="modalWABody">
+                
+                <div id="waSuccessAnim" class="absolute inset-0 bg-[#bbf7d0] z-50 flex flex-col items-center justify-center hidden">
+                    <i class="ph-fill ph-paper-plane-tilt text-6xl text-black mb-4" id="iconPlane"></i>
+                    <i class="ph-bold ph-check-circle text-6xl text-black hidden" id="iconCheck"></i>
+                    <h2 class="text-3xl font-black uppercase mt-2">Terkirim!</h2>
+                    <p class="text-sm font-bold text-gray-700">Prospek dipindahkan ke "Reached".</p>
+                </div>
+
                 <div class="p-5 border-b-[3px] border-black flex justify-between items-center bg-[#bbf7d0]">
                     <h3 class="text-xl font-black text-black leading-none uppercase flex items-center gap-2">
                         <i class="ph-bold ph-whatsapp-logo text-2xl"></i> WA Reach Out
@@ -96,7 +113,6 @@
                             <option value="9">9 - Promo Diskon Spesial (Hard Sell Halus)</option>
                             <option value="10">10 - Short & To The Point (Tanpa Basa Basi)</option>
                         </select>
-
                         <p class="text-[10px] font-bold text-gray-500 uppercase mb-2">Preview & Edit Pesan</p>
                         <textarea id="waMessageText" rows="6" class="neo-input text-sm leading-relaxed" placeholder="Ketik pesan Anda di sini..."></textarea>
                     </div>
@@ -205,12 +221,16 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-2 gap-5">
-                <div onclick="openRoom('nurture')" class="neo-card bg-white p-4 flex justify-between cursor-pointer hover:bg-gray-50">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                <div onclick="openRoom('nurture')" class="neo-card bg-white p-4 flex justify-between cursor-pointer hover:bg-gray-50 border-b-[4px] border-[#fed7aa]">
                     <div class="flex items-center gap-3"><div class="w-10 h-10 bg-[#fed7aa] neo-border rounded-full flex items-center justify-center"><i class="ph-bold ph-clock-snooze text-xl"></i></div><h4 class="text-xs font-black uppercase tracking-widest">Nurture</h4></div>
                     <p class="text-2xl font-black" id="count-nurture">0</p>
                 </div>
-                <div onclick="openRoom('lost')" class="neo-card bg-white p-4 flex justify-between cursor-pointer hover:bg-gray-50">
+                <div onclick="openRoom('no_contact')" class="neo-card bg-white p-4 flex justify-between cursor-pointer hover:bg-gray-50 border-b-[4px] border-[#cbd5e1]">
+                    <div class="flex items-center gap-3"><div class="w-10 h-10 bg-[#cbd5e1] neo-border rounded-full flex items-center justify-center"><i class="ph-bold ph-phone-slash text-xl"></i></div><h4 class="text-xs font-black uppercase tracking-widest">No Contact</h4></div>
+                    <p class="text-2xl font-black" id="count-no_contact">0</p>
+                </div>
+                <div onclick="openRoom('lost')" class="neo-card bg-white p-4 flex justify-between cursor-pointer hover:bg-gray-50 border-b-[4px] border-[#fca5a5]">
                     <div class="flex items-center gap-3"><div class="w-10 h-10 bg-[#fca5a5] neo-border rounded-full flex items-center justify-center"><i class="ph-bold ph-x-circle text-xl"></i></div><h4 class="text-xs font-black uppercase tracking-widest">Lost</h4></div>
                     <p class="text-2xl font-black" id="count-lost">0</p>
                 </div>
@@ -285,31 +305,19 @@
         };
 
         let viewMode = 'personal'; let leads = []; let activities = []; let activeRoom = ''; let pendingWonId = null; let pendingWALead = null;
-        const stageTitles = { 'new': 'Fresh Leads', 'reached': 'Reached Out', 'meeting': 'Meeting', 'nego': 'Nego & Offer', 'won': 'Closed Won', 'nurture': 'Nurture (KIV)', 'lost': 'Closed Lost' };
-        const stageColors = { 'new': '#fecaca', 'reached': '#bfdbfe', 'meeting': '#e9d5ff', 'nego': '#fef08a', 'won': '#bbf7d0', 'nurture': '#fed7aa', 'lost': '#fca5a5' };
+        const stageTitles = { 'new': 'Fresh Leads', 'reached': 'Reached Out', 'meeting': 'Meeting', 'nego': 'Nego & Offer', 'won': 'Closed Won', 'nurture': 'Nurture (KIV)', 'lost': 'Closed Lost', 'no_contact': 'Dead Number / No Contact' };
+        const stageColors = { 'new': '#fecaca', 'reached': '#bfdbfe', 'meeting': '#e9d5ff', 'nego': '#fef08a', 'won': '#bbf7d0', 'nurture': '#fed7aa', 'lost': '#fca5a5', 'no_contact': '#cbd5e1' };
 
-        // ==================================================
-        // DATABASE 10 TEMPLATE WAHA DENGAN SOFT BRIDGE
-        // ==================================================
         const waTemplates = {
             '1': "Halo Tim [NAMA_KLIEN], salam kenal! 👋\n\nSaya [NAMA_SAYA] dari Beuna Agency. Kami perhatiin [NAMA_KLIEN] lagi rame-ramenya nih. Biar makin pro dan gampang dicari pelanggan di Google, kami punya layanan pembuatan website profil & katalog digital buat bisnis [INDUSTRI].\n\nKalau tim [NAMA_KLIEN] tertarik untuk kita bantu buatkan websitenya, biar kami aturkan call atau meeting untuk diskusi.",
-            
             '2': "Selamat Pagi/Siang Tim [NAMA_KLIEN].\n\nPerkenalkan saya [NAMA_SAYA] dari Beuna Agency. Kami berfokus membantu perusahaan di sektor [INDUSTRI] untuk membangun kredibilitas dan trust publik melalui pembuatan website profesional.\n\nKalau tim [NAMA_KLIEN] tertarik untuk kita bantu bangun website ofisialnya, biar kami aturkan jadwal call atau meeting untuk diskusi.",
-            
             '3': "Halo [NAMA_KLIEN], perkenalkan saya [NAMA_SAYA] dari Beuna Agency.\n\nSering repot ngejelasin detail produk & harga ke tiap pelanggan yang chat? Kami bisa bantu buatkan website e-katalog profesional khusus untuk [INDUSTRI] agar semua info terpusat dan rapi.\n\nKalau tim [NAMA_KLIEN] tertarik untuk kita bantu buatkan websitenya, biar kami aturkan call atau meeting untuk diskusi.",
-            
             '4': "Halo Tim [NAMA_KLIEN]!\n\nSaya [NAMA_SAYA] mewakili Beuna Agency. Spesial minggu ini, kami sedang membagikan *Free Draft Desain Website* tanpa komitmen khusus untuk pelaku bisnis [INDUSTRI] yang ingin go-digital.\n\nKalau tim [NAMA_KLIEN] tertarik untuk melihat preview desainnya, biar kami aturkan call atau meeting untuk diskusi detailnya.",
-            
             '5': "Halo Tim [NAMA_KLIEN], saya [NAMA_SAYA] dari Beuna Agency.\n\nSaat ini tren pencarian online untuk layanan [INDUSTRI] sedang tinggi-tingginya. Sayang sekali jika calon pelanggan beralih ke kompetitor karena [NAMA_KLIEN] belum memiliki website resmi.\n\nKalau tim [NAMA_KLIEN] tertarik untuk kita bantu buatkan websitenya, biar kami aturkan call atau meeting untuk diskusi.",
-            
             '6': "Halo [NAMA_KLIEN], salam kenal. Saya [NAMA_SAYA] dari Beuna Agency.\n\nKami melihat [NAMA_KLIEN] punya layanan yang bagus, tapi belum optimal muncul di pencarian Google. Kami menyediakan jasa pembuatan website yang sudah teroptimasi SEO lokal khusus untuk [INDUSTRI].\n\nKalau tim [NAMA_KLIEN] tertarik untuk kita bantu tingkatkan performa digitalnya, biar kami aturkan call atau meeting untuk diskusi.",
-            
             '7': "Selamat siang Tim [NAMA_KLIEN]. Saya [NAMA_SAYA] dari Beuna Agency.\n\nBisnis [INDUSTRI] seperti yang Anda jalankan sangat membutuhkan showcase visual yang memukau. Kami bisa bantu buatkan website galeri portofolio eksklusif agar calon klien makin yakin dengan karya Anda.\n\nKalau tim [NAMA_KLIEN] tertarik untuk kita bantu buatkan websitenya, biar kami aturkan call atau meeting untuk diskusi.",
-            
             '8': "Halo [NAMA_KLIEN], perkenalkan saya [NAMA_SAYA] dari Beuna Agency.\n\nMelihat perkembangan bisnis Anda yang sangat pesat, ini adalah momen yang tepat untuk memiliki website Company Profile resmi untuk menarik investor atau rencana ekspansi.\n\nKalau tim [NAMA_KLIEN] tertarik untuk kita bantu siapkan websitenya, biar kami aturkan call atau meeting untuk diskusi.",
-            
             '9': "Halo Tim [NAMA_KLIEN], salam kenal! Saya [NAMA_SAYA] dari Beuna Agency.\n\nKhusus bulan ini, kami sedang mengadakan program subsidi pembuatan website profesional untuk bisnis [INDUSTRI] lokal dengan potongan hingga 30%.\n\nKarena slotnya terbatas, kalau tim [NAMA_KLIEN] tertarik untuk kita bantu buatkan websitenya, biar kami aturkan call atau meeting untuk diskusi.",
-            
             '10': "Halo Tim [NAMA_KLIEN], saya [NAMA_SAYA] dari Beuna Agency.\n\nKami adalah IT Agency yang mengkhususkan diri membantu bisnis [INDUSTRI] memiliki website profesional dengan harga terjangkau dan pengerjaan cepat.\n\nKalau tim [NAMA_KLIEN] tertarik untuk kita bantu buatkan websitenya, biar kami aturkan call atau meeting untuk diskusi."
         };
 
@@ -372,7 +380,11 @@
             let filtered = viewMode === 'team' ? leads : leads.filter(l => l.pic === session.name || l.status === 'new');
             document.getElementById('profileWins').innerText = leads.filter(l => l.pic === session.name && l.status === 'won').length;
             document.getElementById('profileActive').innerText = leads.filter(l => l.pic === session.name && ['reached','meeting','nego'].includes(l.status)).length;
-            ['new','reached','meeting','nego','won','nurture','lost'].forEach(s => { document.getElementById(`count-${s}`).innerText = filtered.filter(l => l.status === s).length; });
+            
+            ['new','reached','meeting','nego','won','nurture','no_contact','lost'].forEach(s => { 
+                const countEl = document.getElementById(`count-${s}`);
+                if(countEl) countEl.innerText = filtered.filter(l => l.status === s).length; 
+            });
             document.getElementById('hub-stat-total').innerText = leads.length;
             const wins = leads.filter(l => l.status === 'won').length; const losts = leads.filter(l => l.status === 'lost').length;
             document.getElementById('hub-stat-win').innerText = ((wins + losts) > 0 ? Math.round((wins / (wins + losts)) * 100) : 0) + '%';
@@ -388,43 +400,42 @@
             let source = (viewMode === 'team' ? leads : leads.filter(l => l.pic === session.name || l.status === 'new')).filter(l => l.status === activeRoom && l.name.toLowerCase().includes(q));
             document.getElementById('roomGrid').innerHTML = source.map(l => {
                 const picBadge = l.pic ? `<span class="bg-black text-white px-2 py-0.5 text-[10px] uppercase border border-black">${l.pic}</span>` : `<span class="bg-gray-200 px-2 py-0.5 text-[10px] uppercase border border-black text-gray-400">Unassigned</span>`;
+                
                 let act = l.status === 'new' 
                     ? `<button onclick="claimLead('${l.id}')" class="w-full neo-btn bg-[#bbf7d0] py-3 mt-4 text-xs font-black uppercase"><i class="ph-bold ph-whatsapp-logo mr-1 text-base"></i> Ambil & Reach Out</button>` 
-                    : `<div class="flex gap-2 mt-4 pt-4 border-t-[3px] border-black"><div class="neo-border bg-white rounded-lg flex-1 relative"><select onchange="handleStatusChange('${l.id}', this.value)" class="status-select w-full h-full px-2" ${(viewMode === 'personal' && l.pic !== session.name) ? 'disabled opacity-50' : ''}><option value="reached" ${l.status==='reached'?'selected':''}>Reached</option><option value="meeting" ${l.status==='meeting'?'selected':''}>Meeting</option><option value="nego" ${l.status==='nego'?'selected':''}>Nego</option><option value="won" ${l.status==='won'?'selected':''}>Won</option><option value="nurture" ${l.status==='nurture'?'selected':''}>Nurture</option><option value="lost" ${l.status==='lost'?'selected':''}>Lost</option></select></div><button onclick="deleteLead('${l.id}')" class="neo-btn bg-[#fca5a5] p-2 hover:bg-red-500"><i class="ph-bold ph-trash text-lg"></i></button></div>`;
+                    : `<div class="flex gap-2 mt-4 pt-4 border-t-[3px] border-black">
+                        <div class="neo-border bg-white rounded-lg flex-1 relative">
+                            <select onchange="handleStatusChange('${l.id}', this.value)" class="status-select w-full h-full px-2" ${(viewMode === 'personal' && l.pic !== session.name) ? 'disabled opacity-50' : ''}>
+                                <option value="new" ${l.status==='new'?'selected':''}>⟲ Revert to Fresh</option>
+                                <option disabled>──────────</option>
+                                <option value="reached" ${l.status==='reached'?'selected':''}>Reached</option>
+                                <option value="meeting" ${l.status==='meeting'?'selected':''}>Meeting</option>
+                                <option value="nego" ${l.status==='nego'?'selected':''}>Nego</option>
+                                <option value="won" ${l.status==='won'?'selected':''}>Won</option>
+                                <option value="nurture" ${l.status==='nurture'?'selected':''}>Nurture</option>
+                                <option value="no_contact" ${l.status==='no_contact'?'selected':''}>No Contact</option>
+                                <option value="lost" ${l.status==='lost'?'selected':''}>Lost</option>
+                            </select>
+                        </div>
+                        <button onclick="deleteLead('${l.id}')" class="neo-btn bg-[#fca5a5] p-2 hover:bg-red-500"><i class="ph-bold ph-trash text-lg"></i></button>
+                       </div>`;
                 return `<div class="neo-card p-6 flex flex-col justify-between" style="background-color: ${stageColors[l.status]};"><div><h4 class="font-black text-lg uppercase truncate" title="${l.name}">${l.name}</h4><div class="mt-2 mb-3">${picBadge}</div><p class="text-[10px] font-bold text-black opacity-70 uppercase leading-tight">${l.industri} <br> ${l.daerah}</p><button onclick="openDetailModal('${l.id}')" class="mt-4 w-full neo-btn bg-white py-2 text-[10px] font-black uppercase border-[2px] hover:bg-gray-100 shadow-[2px_2px_0_0_#000]"><i class="ph-bold ph-magnifying-glass mr-1 text-sm"></i> Cek Detail</button></div>${act}</div>`;
             }).join('');
         }
 
-        // ==================================================
-        // LOGIKA WA REACH OUT TEMPLATE ENGINE
-        // ==================================================
         function applyWATemplate() {
             if(!pendingWALead) return;
             const val = document.getElementById('waTemplateSelect').value;
             let text = waTemplates[val];
-            
             text = text.replace(/\[NAMA_KLIEN\]/g, pendingWALead.name);
             text = text.replace(/\[NAMA_SAYA\]/g, session.name);
             text = text.replace(/\[INDUSTRI\]/g, pendingWALead.industri || 'Anda');
-            
             document.getElementById('waMessageText').value = text;
         }
 
         async function claimLead(id) {
             let l = leads.find(x => String(x.id) === String(id)); if(!l) return; 
-            
-            if(!l.phone || l.phone === '-') {
-                alert("Prospek ini tidak memiliki nomor WA yang terdaftar.");
-                return;
-            }
-
-            l.pic = session.name; l.status = 'reached'; 
-            filterRoom(); renderHub();
-            
-            try { 
-                fetch(WEBHOOK_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ ACTION: 'update_lead_status', lead_id: id, new_status: 'reached', pic: session.name }) });
-            } catch(e) {}
-
+            if(!l.phone || l.phone === '-') { alert("Prospek ini tidak memiliki nomor WA yang terdaftar."); return; }
             openWAModal(l);
         }
 
@@ -432,9 +443,12 @@
             pendingWALead = lead;
             document.getElementById('waRecipientName').innerText = lead.name;
             document.getElementById('waRecipientPhone').innerText = lead.phone;
-            
             document.getElementById('waTemplateSelect').value = '1';
             applyWATemplate();
+            
+            document.getElementById('waSuccessAnim').classList.add('hidden');
+            document.getElementById('iconPlane').classList.remove('animate-fly');
+            document.getElementById('iconCheck').classList.add('hidden');
             
             document.getElementById('modalWA').classList.remove('hidden');
         }
@@ -453,22 +467,34 @@
 
             try {
                 const res = await fetch(WEBHOOK_URL, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        ACTION: 'send_wa_message',
-                        phone: pendingWALead.phone,
-                        message: msg,
-                        pic: session.name
-                    })
+                    method: 'POST', headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ ACTION: 'send_wa_message', phone: pendingWALead.phone, message: msg, pic: session.name })
                 });
 
                 if(res.ok) {
                     logActivity(`Kirim penawaran Website (WAHA) ke ${pendingWALead.name}`);
-                    closeWAModal();
-                    const originalText = document.getElementById('roomTitle').innerText;
-                    document.getElementById('roomTitle').innerText = "PESAN TERKIRIM!";
-                    setTimeout(() => { document.getElementById('roomTitle').innerText = originalText; }, 2000);
+                    
+                    pendingWALead.pic = session.name; 
+                    pendingWALead.status = 'reached'; 
+                    try { fetch(WEBHOOK_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ ACTION: 'update_lead_status', lead_id: pendingWALead.id, new_status: 'reached', pic: session.name }) }); } catch(e) {}
+                    
+                    filterRoom(); renderHub();
+
+                    const animScreen = document.getElementById('waSuccessAnim');
+                    const plane = document.getElementById('iconPlane');
+                    const check = document.getElementById('iconCheck');
+                    
+                    animScreen.classList.remove('hidden');
+                    plane.classList.add('animate-fly');
+                    
+                    setTimeout(() => {
+                        plane.style.display = 'none';
+                        check.classList.remove('hidden');
+                        check.classList.add('animate-bounce');
+                    }, 800);
+
+                    setTimeout(() => { closeWAModal(); }, 2500);
+
                 } else {
                     alert('Gagal mengirim pesan WAHA. Cek backend Anda.');
                 }
@@ -477,6 +503,7 @@
             } finally {
                 btn.innerHTML = '<i class="ph-bold ph-paper-plane-tilt mr-2 text-lg"></i> Kirim via WAHA'; 
                 btn.disabled = false;
+                setTimeout(() => { document.getElementById('iconPlane').style.display = 'block'; }, 3000);
             }
         }
 
@@ -487,11 +514,30 @@
         function cancelWon() { document.getElementById('modalWon').classList.add('hidden'); pendingWonId = null; filterRoom(); }
         function confirmWon(type) { let pt = type === 'Custom' ? document.getElementById('customWonType').value : type; document.getElementById('modalWon').classList.add('hidden'); updateStatusPayload(pendingWonId, 'won', null, null, pt); pendingWonId = null; }
 
+        // =========================================================================
+        // LOGIKA UPDATE STATUS (DENGAN PENANGANAN REVERT KE FRESH)
+        // =========================================================================
         async function updateStatusPayload(id, stat, r = null, f = null, pt = null) {
             let l = leads.find(x => String(x.id) === String(id)); if(!l) return;
             if(stat === 'lost') { r = prompt("Alasan Lost?"); if(!r) { filterRoom(); return; } } else if(stat === 'nurture') { f = prompt("Estimasi Follow-up?"); }
-            l.status = stat; l.pic = session.name; filterRoom(); renderHub(); logActivity(`memindahkan status ${l.name} ke ${stat.toUpperCase()}`);
-            try { const payload = { ACTION: 'update_lead_status', lead_id: id, new_status: stat, pic: session.name, reason: r, followup: f, project_type: pt, nama_usaha: l.name }; await fetch(WEBHOOK_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) }); } catch(e) {} finally { fetchLeads(); }
+            
+            // JIKA STATUS DIKEMBALIKAN KE NEW, KOSONGKAN NAMA PIC AGAR MASUK KOLAM PUBLIK
+            let targetPic = session.name;
+            if (stat === 'new') {
+                targetPic = '';
+            }
+
+            l.status = stat; 
+            l.pic = targetPic; 
+            filterRoom(); renderHub(); 
+            
+            let logMsg = stat === 'new' ? `mengembalikan prospek ${l.name} ke FRESH LEADS` : `memindahkan status ${l.name} ke ${stat.toUpperCase()}`;
+            logActivity(logMsg);
+            
+            try { 
+                const payload = { ACTION: 'update_lead_status', lead_id: id, new_status: stat, pic: targetPic, reason: r, followup: f, project_type: pt, nama_usaha: l.name }; 
+                await fetch(WEBHOOK_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) }); 
+            } catch(e) {} finally { fetchLeads(); }
         }
 
         async function deleteLead(id) {
