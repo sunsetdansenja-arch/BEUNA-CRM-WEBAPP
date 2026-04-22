@@ -7,9 +7,6 @@
     <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/sunsetdansenja-arch/beuna-agency/main/beuna%20logo%20v2.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-    
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;900&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Space Grotesk', sans-serif; background-color: #f4f4f0; color: #000; overflow-x: hidden; min-height: 100vh; }
@@ -40,13 +37,8 @@
                 <i class="ph-bold ph-funnel text-xl"></i> <span class="hidden md:block">CRM Hub</span>
             </button>
             <button onclick="switchManagerialView('add')" id="nav-add" class="w-full neo-btn bg-white px-4 py-3 text-sm flex gap-3 text-black hover:bg-gray-100">
-                <i class="ph-bold ph-plus-circle text-xl"></i> <span class="hidden md:block">Input Manual</span>
+                <i class="ph-bold ph-plus-circle text-xl"></i> <span class="hidden md:block">Fresh Lead</span>
             </button>
-            
-            <button onclick="openImportModal()" id="nav-import" class="w-full neo-btn bg-[#bfdbfe] px-4 py-3 text-sm flex gap-3 text-black hover:bg-blue-300">
-                <i class="ph-bold ph-file-csv text-xl"></i> <span class="hidden md:block">Import CSV</span>
-            </button>
-
             <a href="docs.html" id="nav-docs" class="w-full neo-btn bg-white px-4 py-3 text-sm flex gap-3 text-black hover:bg-gray-100">
                 <i class="ph-bold ph-files text-xl"></i> <span class="hidden md:block">Docs Center</span>
             </a>
@@ -62,31 +54,9 @@
     </aside>
 
     <main class="flex-1 overflow-y-auto relative custom-scroll bg-[#f4f4f0]">
-        
         <div id="loadingOverlay" class="absolute inset-0 bg-[#f4f4f0]/80 backdrop-blur-sm z-50 flex flex-col items-center justify-center hidden">
             <div class="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-12 w-12 mb-4"></div>
-            <p class="text-sm font-black uppercase tracking-widest bg-black text-white px-4 py-1" id="loadingText">SYNCING DATA...</p>
-        </div>
-
-        <div id="modalImport" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[70] flex items-center justify-center hidden">
-            <div class="neo-card bg-white p-8 w-full max-w-md">
-                <div class="w-16 h-16 bg-[#bfdbfe] neo-border rounded-full flex items-center justify-center mx-auto mb-4 neo-shadow-sm">
-                    <i class="ph-bold ph-database text-3xl text-black"></i>
-                </div>
-                <h3 class="text-2xl font-black text-center text-black mb-1 uppercase">Bulk Import Leads</h3>
-                <p class="text-xs font-bold text-gray-500 text-center mb-6">Upload file CSV dari Google Maps Scraper Anda.</p>
-                
-                <div class="border-2 border-dashed border-black bg-gray-50 p-8 text-center rounded-lg cursor-pointer hover:bg-[#fef08a] transition-colors relative">
-                    <input type="file" id="csvFileInput" accept=".csv" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
-                    <i class="ph-bold ph-upload-simple text-4xl mb-2 text-black"></i>
-                    <p class="text-sm font-black uppercase" id="csvFileName">Pilih / Tarik File CSV</p>
-                </div>
-
-                <button onclick="processCSV()" id="btnProcessCsv" class="w-full neo-btn bg-black text-[#4ade80] py-4 mt-6 uppercase tracking-widest text-sm">
-                    Upload & Sync ke N8N
-                </button>
-                <button onclick="closeImportModal()" class="w-full mt-4 text-xs font-black text-gray-400 hover:text-red-500 uppercase underline">Batal</button>
-            </div>
+            <p class="text-sm font-black uppercase tracking-widest bg-black text-white px-4 py-1">SYNCING DATA...</p>
         </div>
 
         <div id="modalWon" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-[60] flex items-center justify-center hidden">
@@ -202,7 +172,7 @@
 
         <div id="view-add" class="hidden p-6 md:p-10 max-w-[900px] mx-auto">
             <div class="neo-card bg-[#bbf7d0] p-8 md:p-12 mt-6">
-                <h2 class="text-4xl font-black mb-2 uppercase italic">Input Lead Manual</h2>
+                <h2 class="text-4xl font-black mb-2 uppercase italic">Input Lead Baru</h2>
                 <form onsubmit="submitNewLead(event)" class="space-y-6 mt-8">
                     <div class="neo-card bg-white p-6">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
@@ -216,10 +186,10 @@
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div><label class="block text-[10px] font-bold uppercase">WA</label><input type="text" id="addWA" class="neo-input py-2"></div>
                             <div><label class="block text-[10px] font-bold uppercase">Email</label><input type="email" id="addEmail" class="neo-input py-2"></div>
-                            <div><label class="block text-[10px] font-bold uppercase">Sosmed / Website</label><input type="text" id="addSosmed" class="neo-input py-2"></div>
+                            <div><label class="block text-[10px] font-bold uppercase">Sosmed</label><input type="text" id="addSosmed" class="neo-input py-2"></div>
                         </div>
                     </div>
-                    <button type="submit" id="btnSubmitLead" class="w-full neo-btn bg-black text-[#4ade80] text-lg py-4 mt-6 uppercase tracking-widest">SIMPAN PROSPEK</button>
+                    <button type="submit" id="btnSubmitLead" class="w-full neo-btn bg-black text-white text-lg py-4 mt-6">SIMPAN PROSPEK</button>
                 </form>
             </div>
         </div>
@@ -230,6 +200,7 @@
         const WEBHOOK_URL = 'https://n8n-mzbmiib3etk4.kangkung.sumopod.my.id/webhook/beuna-crm-api';
         let session = JSON.parse(localStorage.getItem('beunaSession'));
         
+        // RBAC CHECK
         if(!session) window.location.href = 'index.html';
         const userRole = session.role.toLowerCase();
         
@@ -238,10 +209,15 @@
             document.getElementById('profileName').innerText = session.name;
             document.getElementById('profileRole').innerText = session.role;
             
+            // SECURITY GUARD: Sembunyikan Dev Engine dari Staff
             if(userRole === 'staff' || userRole === 'sales') {
-                const navDev = document.getElementById('nav-dev'); if(navDev) navDev.style.display = 'none';
+                const navDev = document.getElementById('nav-dev');
+                if(navDev) navDev.style.display = 'none';
             }
-            if(userRole === 'developer') { window.location.href = 'developer.html'; }
+            // SECURITY GUARD: Tendang Developer kembali ke Dev Engine
+            if(userRole === 'developer') {
+                window.location.href = 'developer.html';
+            }
 
             fetchLeads();
             fetchActivities();
@@ -256,107 +232,8 @@
         const stageTitles = { 'new': 'Fresh Leads', 'reached': 'Reached Out', 'meeting': 'Meeting', 'nego': 'Nego & Offer', 'won': 'Closed Won', 'nurture': 'Nurture (KIV)', 'lost': 'Closed Lost' };
         const stageColors = { 'new': '#fecaca', 'reached': '#bfdbfe', 'meeting': '#e9d5ff', 'nego': '#fef08a', 'won': '#bbf7d0', 'nurture': '#fed7aa', 'lost': '#fca5a5' };
 
-        // ==========================================
-        // LOGIKA BULK IMPORT CSV MENGGUNAKAN PAPAPARSE
-        // ==========================================
-        
-        document.getElementById('csvFileInput').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if(file) document.getElementById('csvFileName').innerText = file.name;
-        });
-
-        function openImportModal() { document.getElementById('modalImport').classList.remove('hidden'); }
-        function closeImportModal() { 
-            document.getElementById('modalImport').classList.add('hidden'); 
-            document.getElementById('csvFileInput').value = '';
-            document.getElementById('csvFileName').innerText = 'Pilih / Tarik File CSV';
-            document.getElementById('btnProcessCsv').innerHTML = 'Upload & Sync ke N8N';
-            document.getElementById('btnProcessCsv').disabled = false;
-        }
-
-        function processCSV() {
-            const fileInput = document.getElementById('csvFileInput');
-            const file = fileInput.files[0];
-            
-            if (!file) { alert("Pilih file CSV Google Maps Anda terlebih dahulu!"); return; }
-
-            const btn = document.getElementById('btnProcessCsv');
-            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin mr-2"></i> MEMBACA CSV...';
-            btn.disabled = true;
-
-            // PapaParse membaca CSV lokal
-            Papa.parse(file, {
-                header: true,
-                skipEmptyLines: true,
-                complete: async function(results) {
-                    const data = results.data;
-                    if(data.length === 0) { alert("File CSV kosong atau format salah!"); closeImportModal(); return; }
-
-                    // Mapping Kolom dari CSV Scraper ke format Database N8N
-                    const mappedLeads = data.map(row => ({
-                        nama_usaha: row.Title || '',
-                        industri: row.Type || 'Uncategorized',
-                        daerah: row.Address || '',
-                        nomor_wa: row.Phone || '',
-                        website: row.Website || row.URL || '',
-                        jumlah_review: row.Reviews || '',
-                        rating: row.Rating || '',
-                        input_by: session.name,
-                        new_status: 'new'
-                    })).filter(lead => lead.nama_usaha.trim() !== ''); // Abaikan baris yang tidak ada namanya
-
-                    if(mappedLeads.length === 0) {
-                        alert("Tidak ada data valid yang bisa diekstrak dari CSV.");
-                        closeImportModal(); return;
-                    }
-
-                    // Ubah tombol jadi loading N8N
-                    btn.innerHTML = `<i class="ph-bold ph-spinner animate-spin mr-2"></i> MENGIRIM ${mappedLeads.length} DATA KE N8N...`;
-
-                    try {
-                        const payload = {
-                            ACTION: 'import_bulk_leads',
-                            pic: session.name,
-                            data: mappedLeads
-                        };
-
-                        // Tembak Ratusan Data ke N8N
-                        const res = await fetch(WEBHOOK_URL, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(payload)
-                        });
-
-                        if(res.ok) {
-                            logActivity(`Berhasil Bulk Import ${mappedLeads.length} prospek baru.`);
-                            alert(`BINGO! ${mappedLeads.length} prospek berhasil disuntikkan ke sistem.`);
-                            closeImportModal();
-                            
-                            // Munculkan layar loading utama agar user tahu data sedang disync
-                            toggleLoader(true, "MENGAMBIL DATA TERBARU...");
-                            setTimeout(() => { fetchLeads(); }, 1500); // Jeda dikit agar N8N selesai insert
-                        } else {
-                            alert("Gagal sinkronisasi dengan N8N. Pastikan backend sudah di-update.");
-                            btn.innerHTML = 'Upload & Sync ke N8N'; btn.disabled = false;
-                        }
-                    } catch (error) {
-                        console.error(error);
-                        alert("Terjadi kesalahan jaringan saat mengirim ke N8N.");
-                        btn.innerHTML = 'Upload & Sync ke N8N'; btn.disabled = false;
-                    }
-                },
-                error: function(err) {
-                    alert("Error saat membaca file CSV.");
-                    console.error(err);
-                    btn.innerHTML = 'Upload & Sync ke N8N'; btn.disabled = false;
-                }
-            });
-        }
-        // ==========================================
-
-
         async function fetchLeads() {
-            toggleLoader(true, "SYNCING DATA...");
+            toggleLoader(true);
             try {
                 const res = await fetch(WEBHOOK_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ACTION: 'get_leads' }) });
                 const json = await res.json();
@@ -396,20 +273,17 @@
             const payload = { ACTION: 'create_lead', input_by: session.name, nama_usaha: document.getElementById('addNama').value, industri: document.getElementById('addIndustri').value, daerah: document.getElementById('addDaerah').value, nomor_wa: document.getElementById('addWA').value, email: document.getElementById('addEmail').value, sosmed: document.getElementById('addSosmed').value, new_status: 'new' };
             try {
                 const res = await fetch(WEBHOOK_URL, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload) });
-                if(res.ok) { e.target.reset(); logActivity(`tambah lead manual: ${payload.nama_usaha}`); switchManagerialView('hub'); fetchLeads(); }
+                if(res.ok) { e.target.reset(); logActivity(`tambah lead: ${payload.nama_usaha}`); switchManagerialView('hub'); fetchLeads(); }
             } catch(e) {} finally { btn.innerHTML = 'SIMPAN PROSPEK'; btn.disabled = false; }
         }
 
-        function toggleLoader(s, text = "SYNCING DATA...") { 
-            document.getElementById('loadingText').innerText = text;
-            document.getElementById('loadingOverlay').classList.toggle('hidden', !s); 
-        }
+        function toggleLoader(s) { document.getElementById('loadingOverlay').classList.toggle('hidden', !s); }
 
         function switchManagerialView(viewId) {
             ['view-hub', 'view-room', 'view-add'].forEach(id => document.getElementById(id).classList.add('hidden'));
             document.getElementById(`view-${viewId}`).classList.remove('hidden');
             const bgActive = "w-full neo-btn bg-[#fef08a] px-4 py-3 text-sm flex gap-3 text-black";
-            const bgInactive = "w-full neo-btn bg-white px-4 py-3 text-sm flex gap-3 text-black hover:bg-gray-100";
+            const bgInactive = "w-full neo-btn bg-white px-4 py-3 text-sm flex gap-3 text-black hover:bg-gray-50";
             document.getElementById('nav-hub').className = (viewId === 'hub' || viewId === 'room') ? bgActive : bgInactive;
             document.getElementById('nav-add').className = (viewId === 'add') ? bgActive : bgInactive;
         }
@@ -461,11 +335,23 @@
         function cancelWon() { document.getElementById('modalWon').classList.add('hidden'); pendingWonId = null; filterRoom(); }
         function confirmWon(type) { let pt = type === 'Custom' ? document.getElementById('customWonType').value : type; document.getElementById('modalWon').classList.add('hidden'); updateStatusPayload(pendingWonId, 'won', null, null, pt); pendingWonId = null; }
 
+        // PAYLOAD SUPER AMAN (Mencegah Ghost Data)
         async function updateStatusPayload(id, stat, r = null, f = null, pt = null) {
             let l = leads.find(x => String(x.id) === String(id)); if(!l) return;
             if(stat === 'lost') { r = prompt("Alasan Lost?"); if(!r) return; } else if(stat === 'nurture') { f = prompt("Estimasi Follow-up?"); }
             l.status = stat; l.pic = session.name; filterRoom(); renderHub(); logActivity(`memindahkan status ${l.name} ke ${stat.toUpperCase()}`);
-            try { await fetch(WEBHOOK_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ ACTION: 'update_lead_status', lead_id: id, new_status: stat, pic: session.name, reason: r, followup: f, project_type: pt, nama_usaha: l.name }) }); 
+            try { 
+                const payload = { 
+                    ACTION: 'update_lead_status', 
+                    lead_id: id, 
+                    new_status: stat, 
+                    pic: session.name, 
+                    reason: r, 
+                    followup: f, 
+                    project_type: pt, 
+                    nama_usaha: l.name // <-- KUNCI AGAR ONGOING PROJECT ADA NAMANYA
+                };
+                await fetch(WEBHOOK_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) }); 
             } catch(e) {} finally { fetchLeads(); }
         }
 
