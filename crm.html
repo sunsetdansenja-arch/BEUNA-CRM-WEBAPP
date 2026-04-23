@@ -321,6 +321,14 @@
             '10': "Halo Tim [NAMA_KLIEN], saya [NAMA_SAYA] dari Beuna Agency.\n\nKami adalah IT Agency yang mengkhususkan diri membantu bisnis [INDUSTRI] memiliki website profesional dengan harga terjangkau dan pengerjaan cepat.\n\nKalau tim [NAMA_KLIEN] tertarik untuk kita bantu buatkan websitenya, biar kami aturkan call atau meeting untuk diskusi."
         };
 
+        // FUNGSI ALIAS SENDER NAME
+        function getSenderName() {
+            let n = session.name.toLowerCase();
+            if (n === 'bintol') return 'Bintang Aqila';
+            if (n === 'kitol') return 'Kiki';
+            return session.name;
+        }
+
         async function fetchLeads() {
             toggleLoader(true, "SYNCING DATA...");
             try {
@@ -349,6 +357,24 @@
         async function logActivity(text) {
             const time = new Date().toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'});
             try { await fetch(WEBHOOK_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ ACTION: 'log_activity', time, user_name: session.name, action_text: text }) }); fetchActivities(); } catch(e) {}
+        }
+
+        async function submitNewLead(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btnSubmitLead'); btn.innerHTML = 'MENGIRIM...'; btn.disabled = true;
+            
+            let rawWA = document.getElementById('addWA').value;
+            let safeWA = String(rawWA).replace(/[^0-9]/g, '');
+            if (safeWA.startsWith('0')) { safeWA = '62' + safeWA.substring(1); }
+
+            const payload = { 
+                ACTION: 'create_lead', input_by: session.name, nama_usaha: document.getElementById('addNama').value, industri: document.getElementById('addIndustri').value, 
+                daerah: document.getElementById('addDaerah').value, nomor_wa: safeWA, email: document.getElementById('addEmail').value, sosmed: document.getElementById('addSosmed').value, new_status: 'new' 
+            };
+            try {
+                const res = await fetch(WEBHOOK_URL, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+                if(res.ok) { e.target.reset(); logActivity(`tambah lead manual: ${payload.nama_usaha}`); switchManagerialView('hub'); fetchLeads(); }
+            } catch(e) {} finally { btn.innerHTML = 'SIMPAN PROSPEK'; btn.disabled = false; }
         }
 
         function openDetailModal(id) {
@@ -395,14 +421,24 @@
         function openRoom(s) { activeRoom = s; switchManagerialView('room'); document.getElementById('roomTitle').innerText = stageTitles[s]; document.getElementById('roomTitle').style.borderBottom = `8px solid ${stageColors[s]}`; filterRoom(); }
         function closeRoom() { switchManagerialView('hub'); }
 
+        // FUNGSI TANDAI NO CONTACT INSTAN
+        function markNoContact(id) {
+            if(!confirm("Yakin ingin menandai prospek ini sebagai No Contact? (Tidak ada nomor WA / Nomor mati)")) return;
+            updateStatusPayload(id, 'no_contact', 'Otomatis: Ditandai tidak ada kontak WA');
+        }
+
         function filterRoom() {
             const q = document.getElementById('localSearch').value.toLowerCase();
             let source = (viewMode === 'team' ? leads : leads.filter(l => l.pic === session.name || l.status === 'new')).filter(l => l.status === activeRoom && l.name.toLowerCase().includes(q));
             document.getElementById('roomGrid').innerHTML = source.map(l => {
                 const picBadge = l.pic ? `<span class="bg-black text-white px-2 py-0.5 text-[10px] uppercase border border-black">${l.pic}</span>` : `<span class="bg-gray-200 px-2 py-0.5 text-[10px] uppercase border border-black text-gray-400">Unassigned</span>`;
                 
+                // [BARU] Tombol No Contact di kolom Fresh (new)
                 let act = l.status === 'new' 
-                    ? `<button onclick="claimLead('${l.id}')" class="w-full neo-btn bg-[#bbf7d0] py-3 mt-4 text-xs font-black uppercase"><i class="ph-bold ph-whatsapp-logo mr-1 text-base"></i> Ambil & Reach Out</button>` 
+                    ? `<div class="flex gap-2 mt-4 pt-4 border-t-[3px] border-black">
+                        <button onclick="claimLead('${l.id}')" class="flex-1 neo-btn bg-[#bbf7d0] py-2 text-[10px] font-black uppercase"><i class="ph-bold ph-whatsapp-logo mr-1 text-sm"></i> Ambil & Reach Out</button>
+                        <button onclick="markNoContact('${l.id}')" class="neo-btn bg-[#cbd5e1] px-3 py-2 hover:bg-gray-400" title="Tandai No Contact"><i class="ph-bold ph-phone-slash text-base"></i></button>
+                       </div>` 
                     : `<div class="flex gap-2 mt-4 pt-4 border-t-[3px] border-black">
                         <div class="neo-border bg-white rounded-lg flex-1 relative">
                             <select onchange="handleStatusChange('${l.id}', this.value)" class="status-select w-full h-full px-2" ${(viewMode === 'personal' && l.pic !== session.name) ? 'disabled opacity-50' : ''}>
@@ -427,15 +463,20 @@
             if(!pendingWALead) return;
             const val = document.getElementById('waTemplateSelect').value;
             let text = waTemplates[val];
+            
             text = text.replace(/\[NAMA_KLIEN\]/g, pendingWALead.name);
-            text = text.replace(/\[NAMA_SAYA\]/g, session.name);
+            text = text.replace(/\[NAMA_SAYA\]/g, getSenderName()); // Menggunakan alias nama
             text = text.replace(/\[INDUSTRI\]/g, pendingWALead.industri || 'Anda');
+            
             document.getElementById('waMessageText').value = text;
         }
 
         async function claimLead(id) {
             let l = leads.find(x => String(x.id) === String(id)); if(!l) return; 
-            if(!l.phone || l.phone === '-') { alert("Prospek ini tidak memiliki nomor WA yang terdaftar."); return; }
+            if(!l.phone || l.phone === '-') { 
+                alert("Prospek ini tidak memiliki nomor WA. Silakan gunakan tombol No Contact (logo coret telpon)."); 
+                return; 
+            }
             openWAModal(l);
         }
 
@@ -460,6 +501,10 @@
 
         async function sendWA() {
             if(!pendingWALead) return;
+            
+            let safePhone = String(pendingWALead.phone).replace(/[^0-9]/g, '');
+            if (safePhone.startsWith('0')) { safePhone = '62' + safePhone.substring(1); }
+
             const msg = document.getElementById('waMessageText').value;
             const btn = document.getElementById('btnSendWA');
             btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin mr-2 text-lg"></i> MENGIRIM...'; 
@@ -468,7 +513,7 @@
             try {
                 const res = await fetch(WEBHOOK_URL, {
                     method: 'POST', headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ ACTION: 'send_wa_message', phone: pendingWALead.phone, message: msg, pic: session.name })
+                    body: JSON.stringify({ ACTION: 'send_wa_message', phone: safePhone, message: msg, pic: session.name })
                 });
 
                 if(res.ok) {
@@ -514,30 +559,19 @@
         function cancelWon() { document.getElementById('modalWon').classList.add('hidden'); pendingWonId = null; filterRoom(); }
         function confirmWon(type) { let pt = type === 'Custom' ? document.getElementById('customWonType').value : type; document.getElementById('modalWon').classList.add('hidden'); updateStatusPayload(pendingWonId, 'won', null, null, pt); pendingWonId = null; }
 
-        // =========================================================================
-        // LOGIKA UPDATE STATUS (DENGAN PENANGANAN REVERT KE FRESH)
-        // =========================================================================
         async function updateStatusPayload(id, stat, r = null, f = null, pt = null) {
             let l = leads.find(x => String(x.id) === String(id)); if(!l) return;
             if(stat === 'lost') { r = prompt("Alasan Lost?"); if(!r) { filterRoom(); return; } } else if(stat === 'nurture') { f = prompt("Estimasi Follow-up?"); }
             
-            // JIKA STATUS DIKEMBALIKAN KE NEW, KOSONGKAN NAMA PIC AGAR MASUK KOLAM PUBLIK
             let targetPic = session.name;
-            if (stat === 'new') {
-                targetPic = '';
-            }
+            if (stat === 'new') { targetPic = ''; } // Revert ke Fresh melepas kepemilikan
 
-            l.status = stat; 
-            l.pic = targetPic; 
-            filterRoom(); renderHub(); 
+            l.status = stat; l.pic = targetPic; filterRoom(); renderHub(); 
             
             let logMsg = stat === 'new' ? `mengembalikan prospek ${l.name} ke FRESH LEADS` : `memindahkan status ${l.name} ke ${stat.toUpperCase()}`;
             logActivity(logMsg);
             
-            try { 
-                const payload = { ACTION: 'update_lead_status', lead_id: id, new_status: stat, pic: targetPic, reason: r, followup: f, project_type: pt, nama_usaha: l.name }; 
-                await fetch(WEBHOOK_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) }); 
-            } catch(e) {} finally { fetchLeads(); }
+            try { const payload = { ACTION: 'update_lead_status', lead_id: id, new_status: stat, pic: targetPic, reason: r, followup: f, project_type: pt, nama_usaha: l.name }; await fetch(WEBHOOK_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) }); } catch(e) {} finally { fetchLeads(); }
         }
 
         async function deleteLead(id) {
