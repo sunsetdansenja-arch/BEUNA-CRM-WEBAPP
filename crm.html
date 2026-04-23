@@ -80,8 +80,8 @@
                 <div id="waSuccessAnim" class="absolute inset-0 bg-[#bbf7d0] z-50 flex flex-col items-center justify-center hidden">
                     <i class="ph-fill ph-paper-plane-tilt text-6xl text-black mb-4" id="iconPlane"></i>
                     <i class="ph-bold ph-check-circle text-6xl text-black hidden" id="iconCheck"></i>
-                    <h2 class="text-3xl font-black uppercase mt-2">Terkirim!</h2>
-                    <p class="text-sm font-bold text-gray-700">Prospek dipindahkan ke "Reached".</p>
+                    <h2 class="text-3xl font-black uppercase mt-2" id="waAnimTitle">Terkirim!</h2>
+                    <p class="text-sm font-bold text-gray-700">Prospek otomatis dipindahkan ke "Reached".</p>
                 </div>
 
                 <div class="p-5 border-b-[3px] border-black flex justify-between items-center bg-[#bbf7d0]">
@@ -117,9 +117,13 @@
                         <textarea id="waMessageText" rows="6" class="neo-input text-sm leading-relaxed" placeholder="Ketik pesan Anda di sini..."></textarea>
                     </div>
                 </div>
-                <div class="p-5 border-t-[3px] border-black bg-white">
-                    <button onclick="sendWA()" id="btnSendWA" class="w-full neo-btn bg-black text-white hover:bg-gray-800 py-3 uppercase font-black text-sm tracking-widest">
-                        <i class="ph-bold ph-paper-plane-tilt mr-2 text-lg"></i> Kirim via WAHA
+                
+                <div class="p-5 border-t-[3px] border-black bg-white flex gap-3">
+                    <button onclick="sendWAManual()" id="btnSendWAManual" class="flex-1 neo-btn bg-white hover:bg-gray-100 text-black py-3 uppercase font-black text-[10px] md:text-xs tracking-widest border-[3px]">
+                        <i class="ph-bold ph-arrow-square-out mr-1 text-base"></i> WA Link (Manual)
+                    </button>
+                    <button onclick="sendWAHA()" id="btnSendWAHA" class="flex-1 neo-btn bg-black text-white hover:bg-gray-800 py-3 uppercase font-black text-[10px] md:text-xs tracking-widest">
+                        <i class="ph-bold ph-robot mr-1 text-base"></i> WAHA (Auto)
                     </button>
                 </div>
             </div>
@@ -321,7 +325,6 @@
             '10': "Halo Tim [NAMA_KLIEN], saya [NAMA_SAYA] dari Beuna Agency.\n\nKami adalah IT Agency yang mengkhususkan diri membantu bisnis [INDUSTRI] memiliki website profesional dengan harga terjangkau dan pengerjaan cepat.\n\nKalau tim [NAMA_KLIEN] tertarik untuk kita bantu buatkan websitenya, biar kami aturkan call atau meeting untuk diskusi."
         };
 
-        // FUNGSI ALIAS SENDER NAME
         function getSenderName() {
             let n = session.name.toLowerCase();
             if (n === 'bintol') return 'Bintang Aqila';
@@ -421,7 +424,6 @@
         function openRoom(s) { activeRoom = s; switchManagerialView('room'); document.getElementById('roomTitle').innerText = stageTitles[s]; document.getElementById('roomTitle').style.borderBottom = `8px solid ${stageColors[s]}`; filterRoom(); }
         function closeRoom() { switchManagerialView('hub'); }
 
-        // FUNGSI TANDAI NO CONTACT INSTAN
         function markNoContact(id) {
             if(!confirm("Yakin ingin menandai prospek ini sebagai No Contact? (Tidak ada nomor WA / Nomor mati)")) return;
             updateStatusPayload(id, 'no_contact', 'Otomatis: Ditandai tidak ada kontak WA');
@@ -433,7 +435,6 @@
             document.getElementById('roomGrid').innerHTML = source.map(l => {
                 const picBadge = l.pic ? `<span class="bg-black text-white px-2 py-0.5 text-[10px] uppercase border border-black">${l.pic}</span>` : `<span class="bg-gray-200 px-2 py-0.5 text-[10px] uppercase border border-black text-gray-400">Unassigned</span>`;
                 
-                // [BARU] Tombol No Contact di kolom Fresh (new)
                 let act = l.status === 'new' 
                     ? `<div class="flex gap-2 mt-4 pt-4 border-t-[3px] border-black">
                         <button onclick="claimLead('${l.id}')" class="flex-1 neo-btn bg-[#bbf7d0] py-2 text-[10px] font-black uppercase"><i class="ph-bold ph-whatsapp-logo mr-1 text-sm"></i> Ambil & Reach Out</button>
@@ -465,7 +466,7 @@
             let text = waTemplates[val];
             
             text = text.replace(/\[NAMA_KLIEN\]/g, pendingWALead.name);
-            text = text.replace(/\[NAMA_SAYA\]/g, getSenderName()); // Menggunakan alias nama
+            text = text.replace(/\[NAMA_SAYA\]/g, getSenderName()); 
             text = text.replace(/\[INDUSTRI\]/g, pendingWALead.industri || 'Anda');
             
             document.getElementById('waMessageText').value = text;
@@ -499,16 +500,23 @@
             pendingWALead = null;
         }
 
-        async function sendWA() {
+        // =======================================================
+        // METODE HYBRID: BUKA WA LINK MANUAL ATAU WAHA AUTO
+        // =======================================================
+        
+        async function sendWAHA() {
             if(!pendingWALead) return;
             
             let safePhone = String(pendingWALead.phone).replace(/[^0-9]/g, '');
             if (safePhone.startsWith('0')) { safePhone = '62' + safePhone.substring(1); }
 
             const msg = document.getElementById('waMessageText').value;
-            const btn = document.getElementById('btnSendWA');
-            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin mr-2 text-lg"></i> MENGIRIM...'; 
-            btn.disabled = true;
+            const btn1 = document.getElementById('btnSendWAHA');
+            const btn2 = document.getElementById('btnSendWAManual');
+            
+            btn1.innerHTML = '<i class="ph-bold ph-spinner animate-spin mr-2 text-lg"></i> MENGIRIM...'; 
+            btn1.disabled = true;
+            btn2.disabled = true;
 
             try {
                 const res = await fetch(WEBHOOK_URL, {
@@ -517,40 +525,71 @@
                 });
 
                 if(res.ok) {
-                    logActivity(`Kirim penawaran Website (WAHA) ke ${pendingWALead.name}`);
-                    
-                    pendingWALead.pic = session.name; 
-                    pendingWALead.status = 'reached'; 
-                    try { fetch(WEBHOOK_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ ACTION: 'update_lead_status', lead_id: pendingWALead.id, new_status: 'reached', pic: session.name }) }); } catch(e) {}
-                    
-                    filterRoom(); renderHub();
-
-                    const animScreen = document.getElementById('waSuccessAnim');
-                    const plane = document.getElementById('iconPlane');
-                    const check = document.getElementById('iconCheck');
-                    
-                    animScreen.classList.remove('hidden');
-                    plane.classList.add('animate-fly');
-                    
-                    setTimeout(() => {
-                        plane.style.display = 'none';
-                        check.classList.remove('hidden');
-                        check.classList.add('animate-bounce');
-                    }, 800);
-
-                    setTimeout(() => { closeWAModal(); }, 2500);
-
+                    logActivity(`Kirim penawaran Website (WAHA Auto) ke ${pendingWALead.name}`);
+                    document.getElementById('waAnimTitle').innerText = "Terkirim via WAHA!";
+                    updateStatusAfterReachOut();
                 } else {
-                    alert('Gagal mengirim pesan WAHA. Cek backend Anda.');
+                    alert('Gagal mengirim pesan WAHA. Silakan gunakan tombol manual (WA Link).');
                 }
             } catch(e) {
                 alert('Terjadi kesalahan jaringan.');
             } finally {
-                btn.innerHTML = '<i class="ph-bold ph-paper-plane-tilt mr-2 text-lg"></i> Kirim via WAHA'; 
-                btn.disabled = false;
-                setTimeout(() => { document.getElementById('iconPlane').style.display = 'block'; }, 3000);
+                btn1.innerHTML = '<i class="ph-bold ph-robot mr-1 text-base"></i> WAHA (Auto)'; 
+                btn1.disabled = false;
+                btn2.disabled = false;
             }
         }
+
+        async function sendWAManual() {
+            if(!pendingWALead) return;
+            
+            let safePhone = String(pendingWALead.phone).replace(/[^0-9]/g, '');
+            if (safePhone.startsWith('0')) { safePhone = '62' + safePhone.substring(1); }
+
+            const msg = document.getElementById('waMessageText').value;
+            const encodedMsg = encodeURIComponent(msg);
+            
+            const waLink = `https://wa.me/${safePhone}?text=${encodedMsg}`;
+            window.open(waLink, '_blank');
+
+            logActivity(`Reach out manual via WA Link ke ${pendingWALead.name}`);
+            document.getElementById('waAnimTitle').innerText = "Tab WA Dibuka!";
+            updateStatusAfterReachOut();
+        }
+
+        // Fungsi bantuan (helper) untuk animasi dan update status agar kode lebih rapi
+        function updateStatusAfterReachOut() {
+            pendingWALead.pic = session.name; 
+            pendingWALead.status = 'reached'; 
+            
+            try { 
+                fetch(WEBHOOK_URL, { 
+                    method: 'POST', 
+                    headers: {'Content-Type': 'application/json'}, 
+                    body: JSON.stringify({ ACTION: 'update_lead_status', lead_id: pendingWALead.id, new_status: 'reached', pic: session.name }) 
+                }); 
+            } catch(e) {}
+            
+            filterRoom(); renderHub();
+
+            const animScreen = document.getElementById('waSuccessAnim');
+            const plane = document.getElementById('iconPlane');
+            const check = document.getElementById('iconCheck');
+            
+            animScreen.classList.remove('hidden');
+            plane.classList.add('animate-fly');
+            
+            setTimeout(() => {
+                plane.style.display = 'none';
+                check.classList.remove('hidden');
+                check.classList.add('animate-bounce');
+            }, 800);
+
+            setTimeout(() => { closeWAModal(); }, 2500);
+            setTimeout(() => { document.getElementById('iconPlane').style.display = 'block'; }, 3000);
+        }
+
+        // =======================================================
 
         function handleStatusChange(id, stat) {
             if(stat === 'won') { pendingWonId = String(id); document.getElementById('wonClientName').innerText = leads.find(x => String(x.id) === pendingWonId).name; document.getElementById('modalWon').classList.remove('hidden'); }
@@ -564,7 +603,7 @@
             if(stat === 'lost') { r = prompt("Alasan Lost?"); if(!r) { filterRoom(); return; } } else if(stat === 'nurture') { f = prompt("Estimasi Follow-up?"); }
             
             let targetPic = session.name;
-            if (stat === 'new') { targetPic = ''; } // Revert ke Fresh melepas kepemilikan
+            if (stat === 'new') { targetPic = ''; }
 
             l.status = stat; l.pic = targetPic; filterRoom(); renderHub(); 
             
