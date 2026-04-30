@@ -8,7 +8,6 @@
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    <!-- Library Pembaca CSV yang Super Stabil -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;900&display=swap" rel="stylesheet">
     
@@ -61,7 +60,7 @@
                 </div>
                 <div>
                     <h2 class="text-4xl font-black uppercase tracking-tight">Bulk Dev Logs</h2>
-                    <p class="text-sm font-bold text-gray-500 uppercase">Upload aktivitas harian developer via CSV.</p>
+                    <p class="text-sm font-bold text-gray-500 uppercase">Sistem Pintar: Ekspor Data Historis Langsung Diterima.</p>
                 </div>
             </div>
 
@@ -71,18 +70,20 @@
                     <h3 class="text-sm font-black uppercase tracking-widest mb-4 border-b-[3px] border-black pb-2 flex items-center gap-2">
                         <i class="ph-bold ph-info text-xl"></i> Format CSV
                     </h3>
-                    <p class="text-xs font-bold text-gray-700 leading-relaxed mb-4">Pastikan file CSV Anda memiliki **Header (Baris 1)** persis seperti ini:</p>
+                    <p class="text-xs font-bold text-gray-700 leading-relaxed mb-4">Urutan Header Data Historis Anda:</p>
                     
-                    <ul class="text-[11px] font-mono font-bold bg-white neo-border p-3 space-y-2 mb-4">
+                    <ul class="text-[10px] font-mono font-bold bg-white neo-border p-3 space-y-1 mb-4">
                         <li>PROJECT_ID</li>
+                        <li>TIMESTAMP</li>
                         <li>LOG_TYPE</li>
                         <li>MODULE</li>
                         <li>DESCRIPTION</li>
+                        <li>AUTHOR</li>
                         <li>STATUS</li>
+                        <li>TANGGAL</li>
                     </ul>
-
                     <p class="text-[10px] font-bold text-gray-600 bg-[#f4f4f0] p-2 neo-border">
-                        *Nama AUTHOR dan TIMESTAMP akan diisi otomatis oleh sistem sesuai dengan akun yang sedang login saat ini.
+                        *Sistem akan mendeteksi otomatis jika tanggal salah masuk ke kolom STATUS.
                     </p>
                 </div>
 
@@ -90,7 +91,7 @@
                 <div class="neo-card bg-white p-6 md:col-span-2 flex flex-col justify-center items-center text-center border-dashed border-[4px]">
                     <i class="ph-fill ph-upload-simple text-6xl text-gray-300 mb-4"></i>
                     <h3 class="text-xl font-black uppercase mb-2">Pilih File CSV</h3>
-                    <p class="text-xs font-bold text-gray-500 mb-6">Maksimal 500 baris log per sekali upload agar aman.</p>
+                    <p class="text-xs font-bold text-gray-500 mb-6">File ekspor langsung bisa di-upload tanpa diedit.</p>
                     
                     <input type="file" id="csvFile" accept=".csv" class="hidden" onchange="handleFileSelect(event)">
                     <button onclick="document.getElementById('csvFile').click()" class="neo-btn bg-black text-white px-8 py-3 uppercase tracking-widest">
@@ -100,20 +101,21 @@
                 </div>
             </div>
 
-            <!-- PREVIEW DATA (Muncul setelah pilih file) -->
+            <!-- PREVIEW DATA -->
             <div id="previewSection" class="mt-8 hidden">
                 <div class="neo-card bg-white overflow-hidden flex flex-col">
                     <div class="p-4 border-b-[3px] border-black bg-[#bfdbfe] flex justify-between items-center">
                         <h3 class="font-black uppercase tracking-widest text-sm"><i class="ph-bold ph-table mr-2"></i> Preview Data (<span id="rowCount">0</span> Baris)</h3>
                         <button onclick="processUpload()" id="btnProcess" class="neo-btn bg-black text-white px-6 py-2 text-xs uppercase tracking-widest">
-                            <i class="ph-bold ph-cloud-arrow-up mr-2"></i> Import ke Database
+                            <i class="ph-bold ph-cloud-arrow-up mr-2"></i> Import Data Historis
                         </button>
                     </div>
                     <div class="overflow-x-auto custom-scroll max-h-[400px]">
                         <table class="w-full text-left border-collapse">
                             <thead class="bg-gray-100 text-[10px] uppercase font-black tracking-widest border-b-[3px] border-black sticky top-0 z-10">
                                 <tr>
-                                    <th class="p-3 border-r-[3px] border-black">PROJECT_ID</th>
+                                    <th class="p-3 border-r-[3px] border-black text-blue-600 bg-blue-50">WAKTU / TGL</th>
+                                    <th class="p-3 border-r-[3px] border-black">AUTHOR</th>
                                     <th class="p-3 border-r-[3px] border-black">LOG_TYPE</th>
                                     <th class="p-3 border-r-[3px] border-black">MODULE</th>
                                     <th class="p-3 border-r-[3px] border-black">DESCRIPTION</th>
@@ -132,13 +134,12 @@
     </main>
 
     <script>
-        const WEBHOOK_URL = 'https://n8n-mzbmiib3etk4.kangkung.sumopod.my.id/webhook/beuna-crm-api';
+        const WEBHOOK_URL = 'https://n8n-mzbmiib3etk4.kangkung.sumopod.my.id/webhook/beuna-bulk-import';
         let session = JSON.parse(localStorage.getItem('beunaSession'));
         
         if(!session) window.location.href = 'index.html';
         const userRole = session.role.toLowerCase();
         
-        // Proteksi: Hanya Developer atau Admin yang bisa akses
         if(userRole === 'sales') { window.location.href = 'crm.html'; }
 
         let parsedData = [];
@@ -164,29 +165,36 @@
         }
 
         function renderPreview() {
-            if (parsedData.length === 0) {
-                alert("Data kosong.");
-                return;
-            }
-
+            if (parsedData.length === 0) { alert("Data kosong."); return; }
             document.getElementById('rowCount').innerText = parsedData.length;
             const tbody = document.getElementById('previewTableBody');
             
-            // Render maksimal 10 baris pertama saja biar tidak ngelag
-            const previewLimit = parsedData.slice(0, 10);
+            const previewLimit = parsedData.slice(0, 15);
             
-            tbody.innerHTML = previewLimit.map(row => `
+            tbody.innerHTML = previewLimit.map(row => {
+                // SMART AUTO-CORRECTOR: Jika Status berwujud Tanggal
+                let logStatus = row.STATUS || 'Done';
+                let logTanggal = row.TANGGAL || row.TIMESTAMP || '';
+                
+                if (logStatus.match(/^\d{4}-\d{2}-\d{2}$/)) {
+                    logTanggal = logStatus;
+                    logStatus = 'Done';
+                }
+
+                return `
                 <tr class="border-b-2 border-dashed border-gray-200 hover:bg-gray-50">
-                    <td class="p-3 border-r-[3px] border-black font-mono text-blue-600">${row.PROJECT_ID || '-'}</td>
+                    <td class="p-3 border-r-[3px] border-black bg-blue-50 text-blue-700">${logTanggal || '<span class="text-gray-400 italic text-[10px]">Hari Ini</span>'}</td>
+                    <td class="p-3 border-r-[3px] border-black font-mono">${row.AUTHOR || session.name}</td>
                     <td class="p-3 border-r-[3px] border-black bg-yellow-50">${row.LOG_TYPE || '-'}</td>
                     <td class="p-3 border-r-[3px] border-black">${row.MODULE || '-'}</td>
                     <td class="p-3 border-r-[3px] border-black truncate max-w-[200px]" title="${row.DESCRIPTION}">${row.DESCRIPTION || '-'}</td>
-                    <td class="p-3">${row.STATUS || '-'}</td>
+                    <td class="p-3">${logStatus}</td>
                 </tr>
-            `).join('');
+                `
+            }).join('');
 
-            if(parsedData.length > 10) {
-                tbody.innerHTML += `<tr><td colspan="5" class="p-3 text-center text-gray-500 italic border-t-[3px] border-black bg-gray-100">... dan ${parsedData.length - 10} baris lainnya disembunyikan untuk preview.</td></tr>`;
+            if(parsedData.length > 15) {
+                tbody.innerHTML += `<tr><td colspan="6" class="p-3 text-center text-gray-500 italic border-t-[3px] border-black bg-gray-100">... dan ${parsedData.length - 15} baris historis lainnya.</td></tr>`;
             }
 
             document.getElementById('previewSection').classList.remove('hidden');
@@ -194,21 +202,33 @@
 
         async function processUpload() {
             if (parsedData.length === 0) return;
-            if (!confirm(`Yakin ingin mengunggah ${parsedData.length} aktivitas log ke Database?`)) return;
+            if (!confirm(`Yakin ingin mengunggah ${parsedData.length} data historis ke Database?`)) return;
 
             const btn = document.getElementById('btnProcess');
             btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin mr-2"></i> MENGUNGGAH...';
             btn.disabled = true;
 
-            // Memformat ulang data untuk memastikan nama AUTHOR terisi otomatis dari session
-            const formattedData = parsedData.map(item => ({
-                project_id: item.PROJECT_ID || '',
-                log_type: item.LOG_TYPE || '',
-                module: item.MODULE || '',
-                description: item.DESCRIPTION || '',
-                status: item.STATUS || '',
-                author: session.name // INJECT NAMA DEV DARI SESSION
-            }));
+            const formattedData = parsedData.map(item => {
+                let logStatus = item.STATUS || 'Done';
+                let logTanggal = item.TANGGAL || '';
+                
+                // Eksekusi Smart Corrector untuk dikirim ke Backend
+                if (logStatus.match(/^\d{4}-\d{2}-\d{2}$/)) {
+                    logTanggal = logStatus;
+                    logStatus = 'Done';
+                }
+
+                return {
+                    project_id: item.PROJECT_ID || '',
+                    log_type: item.LOG_TYPE || '',
+                    module: item.MODULE || '',
+                    description: item.DESCRIPTION || '',
+                    status: logStatus,
+                    tanggal: logTanggal,
+                    timestamp: item.TIMESTAMP || '',
+                    author: item.AUTHOR || session.name
+                };
+            });
 
             try {
                 const payload = {
@@ -223,21 +243,23 @@
                 });
 
                 if (res.ok) {
-                    // Catat ke Activity Feed CRM bahwa ada aktivitas import
-                    await fetch(WEBHOOK_URL, { 
-                        method: 'POST', headers: {'Content-Type': 'application/json'}, 
-                        body: JSON.stringify({ ACTION: 'log_activity', time: new Date().toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'}), user_name: session.name, action_text: `melakukan import bulk ${parsedData.length} Dev Logs` }) 
-                    });
+                    // Tembak activity log ke API Utama (bukan bulk api)
+                    try {
+                        await fetch('https://n8n-mzbmiib3etk4.kangkung.sumopod.my.id/webhook/beuna-crm-api', { 
+                            method: 'POST', headers: {'Content-Type': 'application/json'}, 
+                            body: JSON.stringify({ ACTION: 'log_activity', time: new Date().toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'}), user_name: session.name, action_text: `melakukan import historis ${parsedData.length} Dev Logs` }) 
+                        });
+                    } catch(e){}
 
-                    alert('SUKSES! Data berhasil diimport.');
-                    window.location.href = 'developer.html'; // Redirect ke halaman Dev Engine
+                    alert('SUKSES! Data historis berhasil diimport.');
+                    window.location.href = 'developer.html'; 
                 } else {
                     alert('Gagal mengirim ke server. Cek N8N Anda.');
                 }
             } catch (err) {
                 alert('Terjadi kesalahan jaringan.');
             } finally {
-                btn.innerHTML = '<i class="ph-bold ph-cloud-arrow-up mr-2"></i> Import ke Database';
+                btn.innerHTML = '<i class="ph-bold ph-cloud-arrow-up mr-2"></i> Import Data Historis';
                 btn.disabled = false;
             }
         }
