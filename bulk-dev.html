@@ -134,12 +134,13 @@
     </main>
 
     <script>
-        const WEBHOOK_URL = 'https://n8n-mzbmiib3etk4.kangkung.sumopod.my.id/webhook/beuna-bulk-import';
+        // KODE DIPERBAIKI: Mengarah ke webhook utama agar bisa ditangkap Switch N8N
+        const WEBHOOK_URL = 'https://n8n-mzbmiib3etk4.kangkung.sumopod.my.id/webhook/beuna-crm-api';
+        
         let session = JSON.parse(localStorage.getItem('beunaSession'));
-        
         if(!session) window.location.href = 'index.html';
-        const userRole = session.role.toLowerCase();
         
+        const userRole = session.role.toLowerCase();
         if(userRole === 'sales') { window.location.href = 'crm.html'; }
 
         let parsedData = [];
@@ -172,10 +173,10 @@
             const previewLimit = parsedData.slice(0, 15);
             
             tbody.innerHTML = previewLimit.map(row => {
-                // SMART AUTO-CORRECTOR: Jika Status berwujud Tanggal
                 let logStatus = row.STATUS || 'Done';
                 let logTanggal = row.TANGGAL || row.TIMESTAMP || '';
                 
+                // SMART AUTO-CORRECTOR: Jika Status berwujud Tanggal (YYYY-MM-DD)
                 if (logStatus.match(/^\d{4}-\d{2}-\d{2}$/)) {
                     logTanggal = logStatus;
                     logStatus = 'Done';
@@ -212,7 +213,6 @@
                 let logStatus = item.STATUS || 'Done';
                 let logTanggal = item.TANGGAL || '';
                 
-                // Eksekusi Smart Corrector untuk dikirim ke Backend
                 if (logStatus.match(/^\d{4}-\d{2}-\d{2}$/)) {
                     logTanggal = logStatus;
                     logStatus = 'Done';
@@ -243,9 +243,8 @@
                 });
 
                 if (res.ok) {
-                    // Tembak activity log ke API Utama (bukan bulk api)
                     try {
-                        await fetch('https://n8n-mzbmiib3etk4.kangkung.sumopod.my.id/webhook/beuna-crm-api', { 
+                        await fetch(WEBHOOK_URL, { 
                             method: 'POST', headers: {'Content-Type': 'application/json'}, 
                             body: JSON.stringify({ ACTION: 'log_activity', time: new Date().toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'}), user_name: session.name, action_text: `melakukan import historis ${parsedData.length} Dev Logs` }) 
                         });
