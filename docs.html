@@ -164,10 +164,21 @@
                         <div><label class="block text-[10px] font-black uppercase mb-1">Untuk Pembayaran</label><textarea id="recFor" rows="3" oninput="renderA4()" class="neo-input text-xs">Pelunasan Jasa Pengembangan Sistem & Automasi Web</textarea></div>
                     </div>
 
-                    <div id="f-BAP" class="doc-form hidden">
+                    <div id="f-BAP" class="doc-form hidden space-y-4">
                         <div class="bg-blue-50 border border-blue-200 text-blue-800 p-3 rounded text-[10px] leading-relaxed">
                             Log Developer ditarik otomatis. Pastikan Klien telah dipilih dari daftar pencarian.
                         </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-[10px] font-black uppercase mb-1">Dari Tanggal</label>
+                                <input type="date" id="bapStartDate" onchange="renderA4()" class="neo-input text-xs">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-black uppercase mb-1">Sampai Tanggal</label>
+                                <input type="date" id="bapEndDate" onchange="renderA4()" class="neo-input text-xs">
+                            </div>
+                        </div>
+                        <p class="text-[9px] text-gray-500 italic">*Kosongkan untuk memunculkan semua riwayat log (All Time).</p>
                     </div>
 
                     <div id="f-BAST" class="doc-form hidden space-y-4">
@@ -382,7 +393,6 @@
         let invItems = [{id: Date.now(), d: "Layanan Pengembangan Sistem IT", a: 5000000}];
         const rom = ['I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII'];
 
-        // FUNGSI TERBILANG UNTUK KWITANSI
         function ejaAngka(nilai) {
             let val = Math.abs(nilai);
             let huruf = ["", "Satu", "Dua", "Tiga", "Empat", "Lima", "Enam", "Tujuh", "Delapan", "Sembilan", "Sepuluh", "Sebelas"];
@@ -428,7 +438,7 @@
                 populateDatalist();
             } finally { 
                 toggleLoader(false); 
-                updateTerbilang(); // Inisialisasi Terbilang awal
+                updateTerbilang();
                 renderA4(); 
             }
         }
@@ -457,8 +467,6 @@
             });
             
             document.getElementById('bapWarning').classList.toggle('hidden', !(t === 'BAP' || t === 'BAST'));
-            
-            // Sembunyikan tanda tangan klien jika Kwitansi
             document.getElementById('signClientBlock').style.display = (t === 'REC') ? 'none' : 'block';
 
             populateDatalist();
@@ -505,9 +513,49 @@
             } else if(activeType === 'BAP') {
                 document.getElementById('a4bapClient').innerText = clientName;
                 const foundProj = ongoing.find(x => x.CLEINT_NAME === clientName || x.PROJECT_NAME === clientName);
+                
                 if(foundProj) {
                     const pId = foundProj.PROJECT_ID || foundProj.PROJECT_NAME || foundProj.id;
-                    const logs = devLogs.filter(log => String(log.PROJECT_ID) === String(pId));
+                    let logs = devLogs.filter(log => String(log.PROJECT_ID) === String(pId));
+
+                    // --- LOGIKA FILTER TANGGAL ---
+                    const startVal = document.getElementById('bapStartDate').value;
+                    const endVal = document.getElementById('bapEndDate').value;
+
+                    if (startVal || endVal) {
+                        logs = logs.filter(log => {
+                            let dateStr = log.TANGGAL || log.TIMESTAMP || '';
+                            let logDate = new Date(dateStr);
+                            
+                            // Deteksi format DD/MM/YYYY jika format Date standard gagal
+                            if (isNaN(logDate.getTime())) {
+                                const parts = dateStr.substring(0,10).split('/');
+                                if (parts.length === 3) logDate = new Date(`${parts[2]}-${parts[1]}-${parts[0]}`);
+                            }
+                            
+                            // Lewati pemfilteran baris ini jika tetap gagal terbaca
+                            if (isNaN(logDate.getTime())) return true;
+
+                            logDate.setHours(0,0,0,0);
+                            let isAfterStart = true;
+                            let isBeforeEnd = true;
+
+                            if (startVal) {
+                                let startD = new Date(startVal);
+                                startD.setHours(0,0,0,0);
+                                isAfterStart = logDate >= startD;
+                            }
+                            if (endVal) {
+                                let endD = new Date(endVal);
+                                endD.setHours(23,59,59,999);
+                                isBeforeEnd = logDate <= endD;
+                            }
+
+                            return isAfterStart && isBeforeEnd;
+                        });
+                    }
+                    // -----------------------------
+
                     document.getElementById('a4bapBody').innerHTML = logs.length ? logs.map(log => `
                         <tr>
                             <td class="text-[10px] text-gray-500">${log.TANGGAL || log.STATUS || log.TIMESTAMP || '-'}</td>
@@ -515,7 +563,7 @@
                             <td class="text-[11px] leading-relaxed">${log.DESCRIPTION || '-'}</td>
                             <td class="text-[10px] uppercase font-bold text-center text-gray-600">${log.AUTHOR || '-'}</td>
                         </tr>
-                    `).join('') : '<tr><td colspan="4" class="py-10 text-center text-gray-400 italic text-[11px]">Belum ada log perbaikan / maintenance.</td></tr>';
+                    `).join('') : '<tr><td colspan="4" class="py-10 text-center text-gray-400 italic text-[11px]">Belum ada log perbaikan / maintenance pada rentang tanggal ini.</td></tr>';
                 } else {
                     document.getElementById('a4bapBody').innerHTML = '<tr><td colspan="4" class="py-10 text-center text-red-500 text-[11px]">Klien On Going belum dipilih.</td></tr>';
                 }
