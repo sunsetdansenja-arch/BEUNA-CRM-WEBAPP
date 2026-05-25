@@ -171,11 +171,11 @@
                         <div class="grid grid-cols-2 gap-3">
                             <div>
                                 <label class="block text-[10px] font-black uppercase mb-1">Dari Tanggal</label>
-                                <input type="date" id="bapStartDate" onchange="renderA4()" class="neo-input text-xs">
+                                <input type="date" id="bapStartDate" oninput="renderA4()" onchange="renderA4()" class="neo-input text-xs">
                             </div>
                             <div>
                                 <label class="block text-[10px] font-black uppercase mb-1">Sampai Tanggal</label>
-                                <input type="date" id="bapEndDate" onchange="renderA4()" class="neo-input text-xs">
+                                <input type="date" id="bapEndDate" oninput="renderA4()" onchange="renderA4()" class="neo-input text-xs">
                             </div>
                         </div>
                         <p class="text-[9px] text-gray-500 italic">*Kosongkan untuk memunculkan semua riwayat log (All Time).</p>
@@ -393,6 +393,7 @@
         let invItems = [{id: Date.now(), d: "Layanan Pengembangan Sistem IT", a: 5000000}];
         const rom = ['I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII'];
 
+        // FUNGSI TERBILANG UNTUK KWITANSI
         function ejaAngka(nilai) {
             let val = Math.abs(nilai);
             let huruf = ["", "Satu", "Dua", "Tiga", "Empat", "Lima", "Enam", "Tujuh", "Delapan", "Sembilan", "Sepuluh", "Sebelas"];
@@ -438,7 +439,7 @@
                 populateDatalist();
             } finally { 
                 toggleLoader(false); 
-                updateTerbilang();
+                updateTerbilang(); 
                 renderA4(); 
             }
         }
@@ -467,6 +468,8 @@
             });
             
             document.getElementById('bapWarning').classList.toggle('hidden', !(t === 'BAP' || t === 'BAST'));
+            
+            // Sembunyikan tanda tangan klien jika Kwitansi
             document.getElementById('signClientBlock').style.display = (t === 'REC') ? 'none' : 'block';
 
             populateDatalist();
@@ -518,25 +521,38 @@
                     const pId = foundProj.PROJECT_ID || foundProj.PROJECT_NAME || foundProj.id;
                     let logs = devLogs.filter(log => String(log.PROJECT_ID) === String(pId));
 
-                    // --- LOGIKA FILTER TANGGAL ---
+                    // ==============================================================
+                    // LOGIKA BARU: FILTER TANGGAL ANTI-GAGAL DENGAN REGEX
+                    // ==============================================================
                     const startVal = document.getElementById('bapStartDate').value;
                     const endVal = document.getElementById('bapEndDate').value;
 
                     if (startVal || endVal) {
                         logs = logs.filter(log => {
-                            let dateStr = log.TANGGAL || log.TIMESTAMP || '';
-                            let logDate = new Date(dateStr);
+                            let dateStr = String(log.TANGGAL || log.TIMESTAMP || '').trim();
+                            let logDate = null;
                             
-                            // Deteksi format DD/MM/YYYY jika format Date standard gagal
-                            if (isNaN(logDate.getTime())) {
-                                const parts = dateStr.substring(0,10).split('/');
-                                if (parts.length === 3) logDate = new Date(`${parts[2]}-${parts[1]}-${parts[0]}`);
+                            // Cari pola YYYY-MM-DD
+                            let matchISO = dateStr.match(/(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})/);
+                            // Cari pola DD/MM/YYYY atau DD-MM-YYYY
+                            let matchID = dateStr.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
+
+                            if (matchISO) {
+                                // Format: YYYY-MM-DD
+                                logDate = new Date(`${matchISO[1]}-${matchISO[2].padStart(2,'0')}-${matchISO[3].padStart(2,'0')}T00:00:00`);
+                            } else if (matchID) {
+                                // Format: DD/MM/YYYY diubah ke standar YYYY-MM-DD
+                                logDate = new Date(`${matchID[3]}-${matchID[2].padStart(2,'0')}-${matchID[1].padStart(2,'0')}T00:00:00`);
+                            } else {
+                                // Coba parse native jika formatnya aneh
+                                logDate = new Date(dateStr); 
                             }
-                            
-                            // Lewati pemfilteran baris ini jika tetap gagal terbaca
-                            if (isNaN(logDate.getTime())) return true;
+
+                            // Jika tanggal benar-benar rusak/kosong, sembunyikan baris ini (return false)
+                            if (isNaN(logDate.getTime())) return false; 
 
                             logDate.setHours(0,0,0,0);
+                            
                             let isAfterStart = true;
                             let isBeforeEnd = true;
 
@@ -554,11 +570,11 @@
                             return isAfterStart && isBeforeEnd;
                         });
                     }
-                    // -----------------------------
+                    // ==============================================================
 
                     document.getElementById('a4bapBody').innerHTML = logs.length ? logs.map(log => `
                         <tr>
-                            <td class="text-[10px] text-gray-500">${log.TANGGAL || log.STATUS || log.TIMESTAMP || '-'}</td>
+                            <td class="text-[10px] text-gray-500">${log.TANGGAL || log.TIMESTAMP || '-'}</td>
                             <td class="text-[10px] uppercase font-bold text-black">${log.LOG_TYPE || '-'}</td>
                             <td class="text-[11px] leading-relaxed">${log.DESCRIPTION || '-'}</td>
                             <td class="text-[10px] uppercase font-bold text-center text-gray-600">${log.AUTHOR || '-'}</td>
