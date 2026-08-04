@@ -113,11 +113,18 @@
                     <button onclick="changeDocType('BAST')" id="btn-BAST" class="neo-btn bg-white py-2 text-[9px] font-black uppercase">BAST</button>
                 </div>
 
-                <div class="bg-gray-50 border-2 border-black p-4 rounded-lg">
-                    <label class="block text-[10px] font-black uppercase tracking-widest mb-2">Cari Klien / Proyek</label>
-                    <input type="text" id="clientInput" list="projectList" oninput="renderA4()" placeholder="Ketik nama klien..." class="neo-input">
-                    <datalist id="projectList"></datalist>
-                    <p id="bapWarning" class="hidden text-[9px] font-bold text-red-600 mt-2">*Wajib status On Going untuk BAP/BAST.</p>
+                <div class="bg-gray-50 border-2 border-black p-4 rounded-lg space-y-3">
+                    <div>
+                        <label class="block text-[10px] font-black uppercase tracking-widest mb-1">Cari Klien / Proyek</label>
+                        <input type="text" id="clientInput" list="projectList" oninput="renderA4()" placeholder="Ketik nama klien..." class="neo-input">
+                        <datalist id="projectList"></datalist>
+                        <p id="bapWarning" class="hidden text-[9px] font-bold text-red-600 mt-1">*Wajib status On Going untuk BAP/BAST.</p>
+                    </div>
+                    <!-- FIELD BARU UNTUK EDIT NOMOR INVOICE / DOKUMEN -->
+                    <div>
+                        <label class="block text-[10px] font-black uppercase tracking-widest mb-1">Nomor Dokumen / Invoice</label>
+                        <input type="text" id="docNumInput" oninput="renderA4()" placeholder="Kosongkan untuk otomatis..." class="neo-input text-xs">
+                    </div>
                 </div>
 
                 <div id="forms-container" class="space-y-5">
@@ -392,6 +399,7 @@
         let activeType = 'OFF';
         let invItems = [{id: Date.now(), d: "Layanan Pengembangan Sistem IT", a: 5000000}];
         const rom = ['I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII'];
+        let defaultRandomNum = Math.floor(Math.random()*90+10); // Variabel penampung acak acuan dasar
 
         // FUNGSI TERBILANG UNTUK KWITANSI
         function ejaAngka(nilai) {
@@ -489,7 +497,14 @@
             
             const d = new Date();
             document.getElementById('a4Date').innerText = "Tgl: " + d.toLocaleDateString('id-ID', {day:'numeric', month:'short', year:'numeric'});
-            document.getElementById('a4DocNum').innerText = `${Math.floor(Math.random()*90+10)}/BEUNA/${activeType}/${rom[d.getMonth()]}/${d.getFullYear()}`;
+            
+            // LOGIK NOMOR INVOICE / DOKUMEN EDITABLE
+            const customDocNum = document.getElementById('docNumInput').value;
+            if(customDocNum.trim() !== "") {
+                document.getElementById('a4DocNum').innerText = customDocNum;
+            } else {
+                document.getElementById('a4DocNum').innerText = `${defaultRandomNum}/BEUNA/${activeType}/${rom[d.getMonth()]}/${d.getFullYear()}`;
+            }
 
             if(activeType === 'OFF') {
                 document.getElementById('a4offT').innerText = document.getElementById('offTitle').value;
@@ -521,9 +536,6 @@
                     const pId = foundProj.PROJECT_ID || foundProj.PROJECT_NAME || foundProj.id;
                     let logs = devLogs.filter(log => String(log.PROJECT_ID) === String(pId));
 
-                    // ==============================================================
-                    // LOGIKA BARU: FILTER TANGGAL ANTI-GAGAL DENGAN REGEX
-                    // ==============================================================
                     const startVal = document.getElementById('bapStartDate').value;
                     const endVal = document.getElementById('bapEndDate').value;
 
@@ -532,23 +544,17 @@
                             let dateStr = String(log.TANGGAL || log.TIMESTAMP || '').trim();
                             let logDate = null;
                             
-                            // Cari pola YYYY-MM-DD
                             let matchISO = dateStr.match(/(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})/);
-                            // Cari pola DD/MM/YYYY atau DD-MM-YYYY
                             let matchID = dateStr.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
 
                             if (matchISO) {
-                                // Format: YYYY-MM-DD
                                 logDate = new Date(`${matchISO[1]}-${matchISO[2].padStart(2,'0')}-${matchISO[3].padStart(2,'0')}T00:00:00`);
                             } else if (matchID) {
-                                // Format: DD/MM/YYYY diubah ke standar YYYY-MM-DD
                                 logDate = new Date(`${matchID[3]}-${matchID[2].padStart(2,'0')}-${matchID[1].padStart(2,'0')}T00:00:00`);
                             } else {
-                                // Coba parse native jika formatnya aneh
                                 logDate = new Date(dateStr); 
                             }
 
-                            // Jika tanggal benar-benar rusak/kosong, sembunyikan baris ini (return false)
                             if (isNaN(logDate.getTime())) return false; 
 
                             logDate.setHours(0,0,0,0);
@@ -570,7 +576,6 @@
                             return isAfterStart && isBeforeEnd;
                         });
                     }
-                    // ==============================================================
 
                     document.getElementById('a4bapBody').innerHTML = logs.length ? logs.map(log => `
                         <tr>
