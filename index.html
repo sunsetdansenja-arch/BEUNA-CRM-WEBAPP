@@ -1,140 +1,19 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Beuna OS - Login Gateway</title>
-    <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/sunsetdansenja-arch/beuna-agency/main/beuna%20logo%20v2.png">
+// Tambahkan fungsi khusus untuk pengujian lokal (Dev Mode)
+function devLogin(usernameOverride) {
+    const sessionData = {
+        id: usernameOverride.toLowerCase(),
+        name: "Dimas (Dev Mode)",
+        role: "Developer", // Atau "Staff" sesuai kebutuhan pengujian
+        initials: "DM"
+    };
+
+    // Simpan session langsung ke LocalStorage
+    localStorage.setItem('beunaSession', JSON.stringify(sessionData));
     
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;900&display=swap" rel="stylesheet">
-    
-    <style>
-        body { font-family: 'Space Grotesk', sans-serif; background-color: #f4f4f0; color: #000; min-height: 100vh; }
-        .neo-border { border: 3px solid #000; }
-        .neo-card { background-color: #fff; border: 3px solid #000; box-shadow: 8px 8px 0px 0px #000; border-radius: 12px; }
-        .neo-btn { border: 3px solid #000; box-shadow: 4px 4px 0px 0px #000; border-radius: 8px; font-weight: 900; cursor: pointer; transition: all 0.15s ease; }
-        .neo-btn:hover { transform: translate(2px, 2px); box-shadow: 2px 2px 0px 0px #000; }
-        .neo-btn:active { transform: translate(4px, 4px); box-shadow: 0px 0px 0px 0px #000; }
-        .neo-input { border: 3px solid #000; box-shadow: 3px 3px 0px 0px #000; border-radius: 8px; padding: 1rem 1.25rem; width: 100%; outline: none; transition: all 0.2s; font-weight: 700; font-size: 1rem; }
-        .neo-input:focus { background-color: #fef08a; transform: translate(1px, 1px); box-shadow: 2px 2px 0px 0px #000; }
-        .loader { border-top-color: #000; -webkit-animation: spinner 1s linear infinite; animation: spinner 1s linear infinite; }
-        @keyframes spinner { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    </style>
-</head>
-<body class="antialiased flex items-center justify-center selection:bg-black selection:text-white relative">
-
-    <div id="loadingOverlay" class="absolute inset-0 bg-[#f4f4f0]/80 backdrop-blur-sm z-50 flex flex-col items-center justify-center hidden">
-        <div class="loader ease-linear rounded-full border-4 border-t-4 border-gray-300 h-16 w-16 mb-4"></div>
-        <p class="text-lg font-black uppercase tracking-widest bg-black text-white px-6 py-2 neo-border">Otentikasi Sistem...</p>
-    </div>
-
-    <div class="neo-card p-10 w-full max-w-md flex flex-col items-center relative z-10 m-4">
-        
-        <div class="w-20 h-20 bg-[#bbf7d0] neo-border rounded-full flex items-center justify-center mb-6 mt-[-4rem] shadow-[4px_4px_0_0_#000]">
-            <img src="https://raw.githubusercontent.com/sunsetdansenja-arch/beuna-agency/main/beuna%20logo%20v2.png" alt="Beuna Logo" class="w-12 h-12 object-contain">
-        </div>
-        
-        <h1 class="text-4xl font-black mb-1 tracking-tight uppercase text-center w-full">Beuna OS</h1>
-        <p class="text-xs font-bold text-gray-500 mb-8 text-center uppercase tracking-widest border-b-3 border-black pb-4 w-full">Command Center Gateway</p>
-        
-        <form id="loginForm" class="w-full space-y-5" onsubmit="handleLogin(event)">
-            <div>
-                <label class="block text-xs font-black uppercase tracking-widest mb-2 ml-1">Username</label>
-                <input type="text" id="username" placeholder="Masukkan username..." class="neo-input" required autocomplete="username">
-            </div>
-            
-            <div>
-                <label class="block text-xs font-black uppercase tracking-widest mb-2 ml-1">Password</label>
-                <input type="password" id="password" placeholder="••••••••" class="neo-input" required autocomplete="current-password">
-            </div>
-
-            <button type="submit" id="loginBtn" class="w-full neo-btn bg-[#bfdbfe] text-black text-lg py-4 mt-4 uppercase tracking-wider hover:bg-[#93c5fd]">
-                <span class="flex items-center justify-center gap-2">Masuk <i class="ph-bold ph-arrow-right"></i></span>
-            </button>
-        </form>
-    </div>
-
-    <script>
-        const WEBHOOK_URL = 'https://n8n-mzbmiib3etk4.kangkung.sumopod.my.id/webhook/beuna-crm-api';
-
-        // Cek apakah sudah login sebelumnya (Smart Auto-Routing)
-        window.onload = () => {
-            const savedSession = localStorage.getItem('beunaSession');
-            if(savedSession) {
-                const session = JSON.parse(savedSession);
-                if(session.role.toLowerCase() === 'developer') {
-                    window.location.href = 'developer.html';
-                } else {
-                    window.location.href = 'crm.html';
-                }
-            }
-        };
-
-        async function handleLogin(e) {
-            e.preventDefault();
-            
-            const u = document.getElementById('username').value.toLowerCase().trim();
-            const p = document.getElementById('password').value.trim();
-            const btn = document.getElementById('loginBtn');
-            const loader = document.getElementById('loadingOverlay');
-
-            loader.classList.remove('hidden');
-            btn.disabled = true;
-
-            try {
-                // Tarik data Auth dari N8N
-                const res = await fetch(WEBHOOK_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ ACTION: 'get_auth' })
-                });
-
-                const json = await res.json();
-
-                if(json.status === 'success' && json.data) {
-                    
-                    const validUser = json.data.find(row => 
-                        row.USERNAME && row.USERNAME.toLowerCase() === u && 
-                        row.PASSWORD && row.PASSWORD.toString() === p
-                    );
-
-                    if(validUser) {
-                        const sessionData = {
-                            id: validUser.USERNAME.toLowerCase(),
-                            name: validUser.FULL_NAME || validUser.USERNAME,
-                            role: validUser.ROLE || 'Staff',
-                            initials: validUser.INITIALS || validUser.USERNAME.substring(0,2).toUpperCase()
-                        };
-
-                        // Simpan Session
-                        localStorage.setItem('beunaSession', JSON.stringify(sessionData));
-                        
-                        // SMART ROUTING BERDASARKAN ROLE
-                        if(sessionData.role.toLowerCase() === 'developer') {
-                            window.location.href = 'developer.html';
-                        } else {
-                            window.location.href = 'crm.html';
-                        }
-                    } else {
-                        alert("❌ Username atau Password tidak cocok dengan database kami.");
-                    }
-
-                } else {
-                    alert("⚠️ Gagal membaca data dari N8N. Pastikan tabel Auth tidak kosong.");
-                }
-
-            } catch(error) {
-                console.error("Login Error:", error);
-                alert("📡 Terjadi kesalahan koneksi. Pastikan N8N Anda sedang aktif.");
-            } finally {
-                loader.classList.add('hidden');
-                btn.disabled = false;
-            }
-        }
-    </script>
-</body>
-</html>
+    // Alihkan halaman sesuai role
+    if (sessionData.role.toLowerCase() === 'developer') {
+        window.location.href = 'developer.html';
+    } else {
+        window.location.href = 'crm.html';
+    }
+}
