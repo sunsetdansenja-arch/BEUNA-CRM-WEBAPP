@@ -61,6 +61,21 @@
             thead { display: table-header-group; }
             tfoot { display: table-footer-group; }
             .print-break-avoid { break-inside: avoid; page-break-inside: avoid; }
+            /* Offer: rapikan jarak cetak agar ketentuan dan tanda tangan tetap muat bila memungkinkan. */
+            #pdfArea.offer-print { font-size: 10px !important; }
+            #pdfArea.offer-print .doc-header { padding-bottom: 8px !important; margin-bottom: 12px !important; }
+            #pdfArea.offer-print .doc-header img { width: 36px !important; height: 36px !important; }
+            #pdfArea.offer-print .doc-title { font-size: 20px !important; }
+            #pdfArea.offer-print .offer-recipient { margin-bottom: 16px !important; }
+            #pdfArea.offer-print .offer-body { font-size: 10px !important; line-height: 1.4 !important; }
+            #pdfArea.offer-print .offer-body p { margin-bottom: 8px !important; }
+            #pdfArea.offer-print #a4offS { padding: 8px !important; margin-bottom: 10px !important; font-size: 10px !important; }
+            #pdfArea.offer-print .doc-table { margin-bottom: 8px !important; }
+            #pdfArea.offer-print .doc-table td { padding: 6px !important; }
+            #pdfArea.offer-print .offer-terms { margin-top: 8px !important; }
+            #pdfArea.offer-print .offer-terms li { margin-bottom: 2px !important; }
+            #pdfArea.offer-print .offer-signatures { margin-top: 18px !important; padding-left: 20px !important; padding-right: 20px !important; }
+            #pdfArea.offer-print .offer-signatures .signature-label { margin-bottom: 42px !important; }
             * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
         }
     </style>
@@ -228,7 +243,7 @@
                     </div>
                 </div>
 
-                <div class="flex justify-between items-end mb-10 print-break-avoid shrink-0">
+                <div class="flex justify-between items-end mb-10 print-break-avoid shrink-0 offer-recipient">
                     <div>
                         <p class="text-[10px] uppercase text-gray-500 font-bold mb-1">Ditujukan Kepada:</p>
                         <p class="text-lg font-bold uppercase text-black" id="a4ClientName">NAMA KLIEN</p>
@@ -240,7 +255,7 @@
                     </div>
                 </div>
 
-                <div class="mb-auto text-[12px] text-gray-800 leading-relaxed grow">
+                <div class="mb-auto text-[12px] text-gray-800 leading-relaxed grow offer-body">
                     
                     <div id="l-OFF" class="block">
                         <p class="mb-3">Dengan hormat,</p>
@@ -259,7 +274,18 @@
                                 <td class="text-right font-bold text-black text-lg py-3" id="a4offA">Rp 0</td>
                             </tr>
                         </table>
-                        <p class="text-[10px] italic text-gray-500">*Harga di atas sudah bersih (Nett) dan mencakup seluruh fitur pada ruang lingkup.</p>
+                        <p class="text-[10px] italic text-gray-500 mb-3">*Harga mencakup pekerjaan yang tercantum pada ruang lingkup di atas.</p>
+
+                        <div class="offer-terms border border-gray-200 rounded p-3 mt-4 print-break-avoid">
+                            <p class="text-[10px] font-bold uppercase text-gray-600 mb-2">Ketentuan</p>
+                            <ol class="list-decimal pl-4 text-[10px] leading-relaxed space-y-1">
+                                <li>Harga pembuatan website merupakan pembayaran satu kali sesuai ruang lingkup penawaran ini.</li>
+                                <li>Biaya perpanjangan domain dan hosting pada tahun berikutnya mengikuti penyedia layanan yang digunakan. Biaya tersebut tidak termasuk kecuali dinyatakan secara tertulis dalam penawaran.</li>
+                                <li>Maintenance, pembaruan konten, dan pengembangan fitur di luar ruang lingkup awal dikenakan biaya terpisah berdasarkan kesepakatan.</li>
+                                <li>Waktu pengerjaan dihitung setelah pembayaran awal (jika disepakati) dan materi yang diperlukan diterima lengkap. Keterlambatan materi atau persetujuan dari klien dapat memengaruhi jadwal.</li>
+                                <li>Revisi dibatasi sesuai kesepakatan. Perubahan atau permintaan di luar ruang lingkup dapat memerlukan penyesuaian biaya dan waktu.</li>
+                            </ol>
+                        </div>
                     </div>
 
                     <div id="l-INV" class="hidden">
@@ -367,14 +393,14 @@
                     </div>
                 </div>
 
-                <div class="mt-12 flex justify-between px-8 print-break-avoid shrink-0">
+                <div class="mt-12 flex justify-between px-8 print-break-avoid shrink-0" id="signatureArea">
                     <div class="text-center w-40" id="signClientBlock">
-                        <p class="text-[10px] uppercase mb-20 text-gray-600">Pihak Klien,</p>
+                        <p class="text-[10px] uppercase mb-20 text-gray-600 signature-label">Pihak Klien,</p>
                         <div class="border-b border-black w-full"></div>
                         <p class="text-[11px] font-bold mt-2 uppercase text-black" id="a4SignClient">KLIEN</p>
                     </div>
                     <div class="text-center w-40 ml-auto">
-                        <p class="text-[10px] uppercase mb-20 text-gray-600">Beuna Agency,</p>
+                        <p class="text-[10px] uppercase mb-20 text-gray-600 signature-label">Beuna Agency,</p>
                         <div class="border-b border-black w-full"></div>
                         <p class="text-[11px] font-bold mt-2 uppercase text-black" id="a4Signer">DIMAS SANTOSA</p>
                     </div>
@@ -476,6 +502,8 @@
             });
             
             document.getElementById('bapWarning').classList.toggle('hidden', !(t === 'BAP' || t === 'BAST'));
+            document.getElementById('pdfArea').classList.toggle('offer-print', t === 'OFF');
+            document.getElementById('signatureArea').classList.toggle('offer-signatures', t === 'OFF');
             
             // Sembunyikan tanda tangan klien jika Kwitansi
             document.getElementById('signClientBlock').style.display = (t === 'REC') ? 'none' : 'block';
