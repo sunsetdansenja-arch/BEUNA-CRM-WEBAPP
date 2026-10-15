@@ -149,6 +149,7 @@
                         <div><label class="block text-[10px] font-black uppercase mb-1">Scope Pekerjaan</label><textarea id="offScope" rows="4" oninput="renderA4()" class="neo-input text-xs leading-relaxed">1. Analisa Kebutuhan Sistem
 2. Setup Web & Integrasi
 3. UAT & Handover</textarea></div>
+                        <div><label class="block text-[10px] font-black uppercase mb-1">Ketentuan</label><textarea id="offTerms" rows="5" oninput="renderA4()" class="neo-input text-xs leading-relaxed" placeholder="Tulis ketentuan khusus untuk penawaran ini..."></textarea></div>
                         <div class="grid grid-cols-2 gap-3">
                             <div><label class="block text-[10px] font-black uppercase mb-1">Durasi</label><input type="text" id="offDur" value="14 Hari Kerja" oninput="renderA4()" class="neo-input"></div>
                             <div><label class="block text-[10px] font-black uppercase mb-1">Total Biaya</label><input type="number" id="offAmt" value="15000000" oninput="renderA4()" class="neo-input"></div>
@@ -278,13 +279,7 @@
 
                         <div class="offer-terms border border-gray-200 rounded p-3 mt-4 print-break-avoid">
                             <p class="text-[10px] font-bold uppercase text-gray-600 mb-2">Ketentuan</p>
-                            <ol class="list-decimal pl-4 text-[10px] leading-relaxed space-y-1">
-                                <li>Harga pembuatan website merupakan pembayaran satu kali sesuai ruang lingkup penawaran ini.</li>
-                                <li>Biaya perpanjangan domain dan hosting pada tahun berikutnya mengikuti penyedia layanan yang digunakan. Biaya tersebut tidak termasuk kecuali dinyatakan secara tertulis dalam penawaran.</li>
-                                <li>Maintenance, pembaruan konten, dan pengembangan fitur di luar ruang lingkup awal dikenakan biaya terpisah berdasarkan kesepakatan.</li>
-                                <li>Waktu pengerjaan dihitung setelah pembayaran awal (jika disepakati) dan materi yang diperlukan diterima lengkap. Keterlambatan materi atau persetujuan dari klien dapat memengaruhi jadwal.</li>
-                                <li>Revisi dibatasi sesuai kesepakatan. Perubahan atau permintaan di luar ruang lingkup dapat memerlukan penyesuaian biaya dan waktu.</li>
-                            </ol>
+                            <div id="a4offTerms" class="whitespace-pre-wrap text-[10px] leading-relaxed"></div>
                         </div>
                     </div>
 
@@ -537,6 +532,7 @@
             if(activeType === 'OFF') {
                 document.getElementById('a4offT').innerText = document.getElementById('offTitle').value;
                 document.getElementById('a4offS').innerText = document.getElementById('offScope').value;
+                document.getElementById('a4offTerms').innerText = document.getElementById('offTerms').value;
                 document.getElementById('a4offD').innerText = document.getElementById('offDur').value;
                 document.getElementById('a4offA').innerText = new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',minimumFractionDigits:0}).format(document.getElementById('offAmt').value);
             
