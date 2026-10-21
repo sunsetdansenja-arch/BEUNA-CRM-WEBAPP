@@ -541,7 +541,7 @@
                 let total = 0;
                 document.getElementById('a4invBody').innerHTML = invItems.map(i => { 
                     total += i.a; 
-                    return `<tr class="print-break-avoid"><td class="text-black">${i.d}</td><td class="text-right text-black">${new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',minimumFractionDigits:0}).format(i.a)}</td></tr>`; 
+                    return `<tr class="print-break-avoid"><td class="text-black" style="white-space:pre-line; overflow-wrap:anywhere;">${escapeHtml(i.d)}</td><td class="text-right text-black">${new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',minimumFractionDigits:0}).format(i.a)}</td></tr>`; 
                 }).join('');
                 document.getElementById('a4invTotal').innerText = new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',minimumFractionDigits:0}).format(total);
                 renderInvForm();
@@ -619,11 +619,17 @@
             }
         }
 
+        function escapeHtml(value) {
+            return String(value ?? '').replace(/[&<>"']/g, char => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            }[char]));
+        }
+
         function renderInvForm() {
             const list = document.getElementById('invItemsList');
             list.innerHTML = invItems.map(i => `
                 <div class="flex gap-2 items-center">
-                    <input type="text" value="${i.d}" onchange="updInv(${i.id},'d',this.value)" class="neo-input flex-1 text-[10px] py-1 border border-gray-400 shadow-none">
+                    <textarea rows="3" oninput="updInv(${i.id},'d',this.value)" class="neo-input flex-1 text-[10px] py-1 border border-gray-400 shadow-none leading-relaxed" style="white-space:pre-wrap; resize:vertical;">${escapeHtml(i.d)}</textarea>
                     <input type="number" value="${i.a}" onchange="updInv(${i.id},'a',this.value)" class="neo-input w-24 text-[10px] py-1 border border-gray-400 shadow-none text-right">
                     <button onclick="rmInv(${i.id})" class="text-red-500 hover:bg-red-50 p-1 rounded font-bold">✕</button>
                 </div>
