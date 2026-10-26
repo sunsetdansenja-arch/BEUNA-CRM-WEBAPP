@@ -63,6 +63,8 @@
             #l-INV .doc-table tbody td { break-inside: auto !important; page-break-inside: auto !important; }
             thead { display: table-header-group; }
             tfoot { display: table-footer-group; }
+            /* Invoice Grand Total must appear only once, never repeat on each printed page. */
+            #l-INV .doc-table tfoot { display: table-row-group !important; }
             .print-break-avoid { break-inside: avoid; page-break-inside: avoid; }
             /* Offer: rapikan jarak cetak agar ketentuan dan tanda tangan tetap muat bila memungkinkan. */
             #pdfArea.offer-print { font-size: 10px !important; }
