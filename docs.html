@@ -531,10 +531,7 @@
 
             if(activeType === 'OFF') {
                 document.getElementById('a4offT').innerText = document.getElementById('offTitle').value;
-                document.getElementById('a4offS').innerText = document.getElementById('offScope').value
-                    .split('\\n')
-                    .map(line => line.replace(/^\\s*(?:-\\s*)?(?:\\[[ xX✓✔]\\]|[☐☑✓✔])\\s*/, '• '))
-                    .join('\\n');
+                document.getElementById('a4offS').innerText = document.getElementById('offScope').value;
                 document.getElementById('a4offTerms').innerText = document.getElementById('offTerms').value;
                 document.getElementById('a4offD').innerText = document.getElementById('offDur').value;
                 document.getElementById('a4offA').innerText = new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',minimumFractionDigits:0}).format(document.getElementById('offAmt').value);
