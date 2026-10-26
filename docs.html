@@ -58,6 +58,9 @@
             .a4-container { width: 100% !important; margin: 0 !important; padding: 0 !important; border: none !important; box-shadow: none !important; }
             table { page-break-inside: auto; }
             tr { page-break-inside: avoid; page-break-after: auto; }
+            /* Allow long invoice descriptions to flow across pages instead of pushing the entire row to page 2. */
+            #l-INV .doc-table tbody tr,
+            #l-INV .doc-table tbody td { break-inside: auto !important; page-break-inside: auto !important; }
             thead { display: table-header-group; }
             tfoot { display: table-footer-group; }
             .print-break-avoid { break-inside: avoid; page-break-inside: avoid; }
@@ -541,7 +544,7 @@
                 let total = 0;
                 document.getElementById('a4invBody').innerHTML = invItems.map(i => { 
                     total += i.a; 
-                    return `<tr class="print-break-avoid"><td class="text-black" style="white-space:pre-line; overflow-wrap:anywhere;">${escapeHtml(i.d)}</td><td class="text-right text-black">${new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',minimumFractionDigits:0}).format(i.a)}</td></tr>`; 
+                    return `<tr><td class="text-black" style="white-space:pre-line; overflow-wrap:anywhere;">${escapeHtml(i.d)}</td><td class="text-right text-black">${new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',minimumFractionDigits:0}).format(i.a)}</td></tr>`; 
                 }).join('');
                 document.getElementById('a4invTotal').innerText = new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',minimumFractionDigits:0}).format(total);
                 renderInvForm();
